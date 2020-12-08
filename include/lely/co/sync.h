@@ -60,6 +60,14 @@ typedef void co_sync_ind_t(co_sync_t *sync, co_unsigned8_t cnt, void *data);
 typedef void co_sync_err_t(co_sync_t *sync, co_unsigned16_t eec,
 		co_unsigned8_t er, void *data);
 
+/**
+ * Checks if the structure of the SYNC objects (1005, 1006 and 1019, if present)
+ * conforms to CiA 301.
+ *
+ * @returns 1 if the SYNC objects are conformant (or not present), and 0 if not.
+ */
+int co_sync_chk_dev(const co_dev_t *dev);
+
 /// Returns the alignment (in bytes) of the #co_sync_t structure.
 size_t co_sync_alignof(void);
 

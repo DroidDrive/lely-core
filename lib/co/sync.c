@@ -30,7 +30,7 @@
 #include <lely/co/sdo.h>
 #include <lely/co/sync.h>
 #include <lely/co/val.h>
-#include <lely/util/error.h>
+#include <lely/util/diag.h>
 #include <lely/util/time.h>
 
 #include <assert.h>
@@ -125,6 +125,36 @@ static int co_sync_recv(const struct can_msg *msg, void *data);
  */
 static int co_sync_timer(const struct timespec *tp, void *data);
 
+int
+co_sync_chk_dev(const co_dev_t *dev)
+{
+	// Check object 1005 (COB-ID SYNC message).
+	co_obj_t *obj_1005 = co_dev_find_obj(dev, 0x1005);
+	if (obj_1005 && !co_obj_is_var(obj_1005, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"SYNC: object 1005 is not an UNSIGNED32 VAR");
+		return 0;
+	}
+
+	// Check object 1006 (Communication cycle period).
+	co_obj_t *obj_1006 = co_dev_find_obj(dev, 0x1006);
+	if (obj_1006 && !co_obj_is_var(obj_1006, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"SYNC: object 1006 is not an UNSIGNED32 VAR");
+		return 0;
+	}
+
+	// Check object 1019 (Synchronous counter overflow value).
+	co_obj_t *obj_1019 = co_dev_find_obj(dev, 0x1019);
+	if (obj_1019 && !co_obj_is_var(obj_1019, CO_DEFTYPE_UNSIGNED8)) {
+		diag(DIAG_ERROR, 0,
+				"SYNC: object 1019 is not an UNSIGNED8 VAR");
+		return 0;
+	}
+
+	return 1;
+}
+
 size_t
 co_sync_alignof(void)
 {
@@ -178,6 +208,7 @@ int
 co_sync_start(co_sync_t *sync)
 {
 	assert(sync);
+	assert(co_sync_chk_dev(sync->dev));
 
 	if (!sync->stopped)
 		return 0;
@@ -561,6 +592,11 @@ co_sync_init(co_sync_t *sync, can_net_t *net, co_dev_t *dev)
 
 	int errc = 0;
 
+	if (!co_sync_chk_dev(dev)) {
+		errc = errnum2c(ERRNUM_INVAL);
+		goto error_chk_dev;
+	}
+
 	sync->net = net;
 	sync->dev = dev;
 
@@ -606,6 +642,7 @@ error_create_timer:
 error_create_recv:
 	co_obj_set_dn_ind(obj_1005, NULL, NULL);
 error_obj_1005:
+error_chk_dev:
 	set_errc(errc);
 	return NULL;
 }

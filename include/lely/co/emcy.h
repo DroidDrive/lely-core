@@ -53,6 +53,14 @@ typedef void co_emcy_ind_t(co_emcy_t *emcy, co_unsigned8_t id,
 		co_unsigned16_t eec, co_unsigned8_t er, co_unsigned8_t msef[5],
 		void *data);
 
+/**
+ * Checks if the structure of the EMCY objects (1001, 1003, 1014, 1015 and 1028,
+ * if present) conforms to CiA 301.
+ *
+ * @returns 1 if the EMCY objects are conformant (or not present), and 0 if not.
+ */
+int co_emcy_chk_dev(const co_dev_t *dev);
+
 /// Returns the alignment (in bytes) of the #co_emcy_t structure.
 size_t co_emcy_alignof(void);
 

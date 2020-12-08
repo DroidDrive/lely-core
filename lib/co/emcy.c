@@ -214,6 +214,56 @@ static int co_emcy_send(co_emcy_t *emcy, co_unsigned16_t eec, co_unsigned8_t er,
  */
 static void co_emcy_flush(co_emcy_t *emcy);
 
+int
+co_emcy_chk_dev(const co_dev_t *dev)
+{
+	// Check object 1001 (Error register).
+	co_obj_t *obj_1001 = co_dev_find_obj(dev, 0x1001);
+	if (!obj_1001) {
+		diag(DIAG_ERROR, 0, "EMCY: mandatory object 1001 missing");
+		return 0;
+	}
+	if (!co_obj_is_var(obj_1001, CO_DEFTYPE_UNSIGNED8)) {
+		diag(DIAG_ERROR, 0,
+				"EMCY: object 1001 is not an UNSIGNED8 VAR");
+		return 0;
+	}
+
+	// Check object 1003 (Pre-defined error field).
+	co_obj_t *obj_1003 = co_dev_find_obj(dev, 0x1003);
+	if (obj_1003 && !co_obj_is_array(obj_1003, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"EMCY: object 1003 is not an UNSIGNED32 ARRAY");
+		return 0;
+	}
+
+	// Check object 1014 (COB-ID EMCY).
+	co_obj_t *obj_1014 = co_dev_find_obj(dev, 0x1014);
+	if (obj_1014 && !co_obj_is_var(obj_1014, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"EMCY: object 1014 is not an UNSIGNED32 VAR");
+		return 0;
+	}
+
+	// Check object 1015 (Inhibit time EMCY).
+	co_obj_t *obj_1015 = co_dev_find_obj(dev, 0x1015);
+	if (obj_1015 && !co_obj_is_var(obj_1015, CO_DEFTYPE_UNSIGNED16)) {
+		diag(DIAG_ERROR, 0,
+				"EMCY: object 1015 is not an UNSIGNED16 VAR");
+		return 0;
+	}
+
+	// Check object 1028 (Emergency consumer object).
+	co_obj_t *obj_1028 = co_dev_find_obj(dev, 0x1028);
+	if (obj_1028 && !co_obj_is_array(obj_1028, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"EMCY: object 1028 is not an UNSIGNED32 ARRAY");
+		return 0;
+	}
+
+	return 1;
+}
+
 size_t
 co_emcy_alignof(void)
 {
@@ -267,6 +317,7 @@ int
 co_emcy_start(co_emcy_t *emcy)
 {
 	assert(emcy);
+	assert(co_emcy_chk_dev(emcy->dev));
 
 	if (!emcy->stopped)
 		return 0;
@@ -829,16 +880,18 @@ co_emcy_init(co_emcy_t *emcy, can_net_t *net, co_dev_t *dev)
 
 	int errc = 0;
 
+	if (!co_emcy_chk_dev(dev)) {
+		errc = errnum2c(ERRNUM_INVAL);
+		goto error_chk_dev;
+	}
+
 	emcy->net = net;
 	emcy->dev = dev;
 
 	emcy->stopped = 1;
 
 	emcy->sub_1001_00 = co_dev_find_sub(emcy->dev, 0x1001, 0x00);
-	if (!emcy->sub_1001_00) {
-		errc = errnum2c(ERRNUM_NOSYS);
-		goto error_sub_1001_00;
-	}
+	assert(emcy->sub_1001_00);
 	emcy->obj_1003 = co_dev_find_obj(emcy->dev, 0x1003);
 
 	emcy->nmsg = 0;
@@ -900,7 +953,7 @@ error_create_recv:
 	can_timer_destroy(emcy->timer);
 error_create_timer:
 	can_buf_fini(&emcy->buf);
-error_sub_1001_00:
+error_chk_dev:
 	set_errc(errc);
 	return NULL;
 }

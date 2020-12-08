@@ -405,6 +405,119 @@ co_obj_set_up_ind(co_obj_t *obj, co_sub_up_ind_t *ind, void *data)
 }
 #endif
 
+int
+co_obj_is_var(const co_obj_t *obj, co_unsigned16_t type)
+{
+	if (co_obj_get_code(obj) != CO_OBJECT_VAR)
+		return 0;
+
+	// A VAR only contains sub-index 0.
+	co_sub_t *sub = co_obj_first_sub(obj);
+	if (!sub)
+		return 0;
+	if (co_sub_get_subidx(sub) != 0x00)
+		return 0;
+	if (sub != co_obj_last_sub(obj))
+		return 0;
+
+	if (co_sub_get_type(sub) != type)
+		return 0;
+
+	return 1;
+}
+
+int
+co_obj_is_array(const co_obj_t *obj, co_unsigned16_t type)
+{
+	// A RECORD can be used as an ARRAY.
+	co_unsigned8_t code = co_obj_get_code(obj);
+	if (code != CO_OBJECT_ARRAY && code != CO_OBJECT_RECORD)
+		return 0;
+
+	// Sub-index 0 contains the highest sub-index supported.
+	co_sub_t *sub = co_obj_find_sub(obj, 0x00);
+	if (!sub || co_sub_get_type(sub) != CO_DEFTYPE_UNSIGNED8)
+		return 0;
+	co_unsigned8_t n = co_sub_get_val_u8(sub);
+	if (n == 0xff)
+		return 0;
+
+	// In an ARRAY, all sub-indices except 0x00 and 0xFF have the same data
+	// type.
+	co_unsigned8_t subidx = 0;
+	for (sub = co_sub_next(sub); sub; sub = co_sub_next(sub)) {
+		// ARRAY objects cannot contain gaps in the sub-indices.
+		if (co_sub_get_subidx(sub) != ++subidx)
+			return 0;
+		// Sub-index 0xFF is not part of the ARRAY (see below).
+		if (subidx == 0xff)
+			break;
+		if (co_sub_get_type(sub) != type)
+			return 0;
+	}
+
+	sub = co_obj_last_sub(obj);
+	// Sub-index 0xFF, if provided, contains the data type and object type
+	// encoded as UNSIGNED32
+	if (co_sub_get_subidx(sub) == 0xff) {
+		if (co_sub_get_type(sub) != CO_DEFTYPE_UNSIGNED32)
+			return 0;
+		// Check the object type.
+		co_unsigned32_t val = co_sub_get_val_u32(sub);
+		if ((val & 0xff) != code)
+			return 0;
+		// Sub-index 0xFF does not count as the highest supported
+		// sub-index.
+		sub = co_sub_prev(sub);
+	}
+
+	// Check if the highest supported sub-index exists.
+	if (co_sub_get_subidx(sub) < n)
+		return 0;
+
+	return 1;
+}
+
+int
+co_obj_is_record(const co_obj_t *obj, co_unsigned16_t type)
+{
+	co_unsigned8_t code = co_obj_get_code(obj);
+	if (code != CO_OBJECT_RECORD)
+		return 0;
+
+	// Sub-object 0 contains the highest sub-index supported.
+	co_sub_t *sub = co_obj_find_sub(obj, 0x00);
+	if (!sub || co_sub_get_type(sub) != CO_DEFTYPE_UNSIGNED8)
+		return 0;
+	co_unsigned8_t n = co_sub_get_val_u8(sub);
+	if (n == 0xff)
+		return 0;
+
+	sub = co_obj_last_sub(obj);
+	// Sub-index 0xFF, if provided, contains the data type and object type
+	// encoded as UNSIGNED32
+	if (co_sub_get_subidx(sub) == 0xff) {
+		if (co_sub_get_type(sub) != CO_DEFTYPE_UNSIGNED32)
+			return 0;
+		// Check the object type.
+		co_unsigned32_t val = co_sub_get_val_u32(sub);
+		if ((val & 0xff) != code)
+			return 0;
+		// Check the data type.
+		if (type && ((val >> 8) & 0xffff) != type)
+			return 0;
+		// Sub-index 0xFF does not count as the highest supported
+		// sub-index.
+		sub = co_sub_prev(sub);
+	}
+
+	// Check if the highest supported sub-index exists.
+	if (co_sub_get_subidx(sub) < n)
+		return 0;
+
+	return 1;
+}
+
 #if !LELY_NO_MALLOC
 
 void *

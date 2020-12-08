@@ -30,8 +30,8 @@
 #include <lely/co/sdo.h>
 #include <lely/co/time.h>
 #include <lely/co/val.h>
+#include <lely/util/diag.h>
 #include <lely/util/endian.h>
-#include <lely/util/error.h>
 #include <lely/util/time.h>
 
 #include <assert.h>
@@ -153,6 +153,28 @@ co_time_diff_set(co_time_diff_t *td, const struct timespec *tp)
 	td->days = (co_unsigned16_t)(tp->tv_sec / (24 * 60 * 60));
 }
 
+int
+co_time_chk_dev(const co_dev_t *dev)
+{
+	// Check object 1012 (COB-ID time stamp object).
+	co_obj_t *obj_1012 = co_dev_find_obj(dev, 0x1012);
+	if (obj_1012 && !co_obj_is_var(obj_1012, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"TIME: object 1012 is not an UNSIGNED32 VAR");
+		return 0;
+	}
+
+	// Check object 1013 (High resolution time stamp).
+	co_obj_t *obj_1013 = co_dev_find_obj(dev, 0x1013);
+	if (obj_1013 && !co_obj_is_var(obj_1013, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"TIME: object 1013 is not an UNSIGNED32 VAR");
+		return 0;
+	}
+
+	return 1;
+}
+
 size_t
 co_time_alignof(void)
 {
@@ -206,6 +228,7 @@ int
 co_time_start(co_time_t *time)
 {
 	assert(time);
+	assert(co_time_chk_dev(time->dev));
 
 	if (!time->stopped)
 		return 0;
@@ -488,6 +511,11 @@ co_time_init(co_time_t *time, can_net_t *net, co_dev_t *dev)
 
 	int errc = 0;
 
+	if (!co_time_chk_dev(dev)) {
+		errc = errnum2c(ERRNUM_INVAL);
+		goto error_chk_dev;
+	}
+
 	time->net = net;
 	time->dev = dev;
 
@@ -530,6 +558,7 @@ error_create_timer:
 error_create_recv:
 	co_obj_set_dn_ind(obj_1012, NULL, NULL);
 error_obj_1012:
+error_chk_dev:
 	set_errc(errc);
 	return NULL;
 }

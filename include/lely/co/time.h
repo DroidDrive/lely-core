@@ -80,6 +80,14 @@ void co_time_diff_get(const co_time_diff_t *td, struct timespec *tp);
  */
 void co_time_diff_set(co_time_diff_t *td, const struct timespec *tp);
 
+/**
+ * Checks if the structure of the TIME objects (1012 an 1013, if present)
+ * conforms to CiA 301.
+ *
+ * @returns 1 if the TIME objects are conformant (or not present), and 0 if not.
+ */
+int co_time_chk_dev(const co_dev_t *dev);
+
 /// Returns the alignment (in bytes) of the #co_time_t structure.
 size_t co_time_alignof(void);
 

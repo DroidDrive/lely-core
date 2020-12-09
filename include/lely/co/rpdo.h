@@ -56,6 +56,19 @@ typedef void co_rpdo_ind_t(co_rpdo_t *pdo, co_unsigned32_t ac, const void *ptr,
 typedef void co_rpdo_err_t(co_rpdo_t *pdo, co_unsigned16_t eec,
 		co_unsigned8_t er, void *data);
 
+/**
+ * Checks if the structure of the communication and mapping parameters (object
+ * 1400-15FF and 1600-17FF) of the specified Receive-PDO service conforms to CiA
+ * 301.
+ *
+ * @param dev a pointer to a CANopen device.
+ * @param num the PDO number (in the range [1..512]).
+ *
+ * @returns 1 if the communication and mapping parameters are conformant (or not
+ * present), and 0 if not.
+ */
+int co_rpdo_chk_dev(const co_dev_t *dev, co_unsigned16_t num);
+
 /// Returns the alignment (in bytes) of the #co_rpdo_t structure.
 size_t co_rpdo_alignof(void);
 

@@ -73,6 +73,16 @@ TEST_BASE(CO_SdoRpdoBase) {
     co_rpdo_start(rpdo);
   }
 
+  void Insert1600Values() {
+      // 0x00 - number of mapped application objects in PDO
+      obj1600->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8,
+                               co_unsigned8_t(CO_PDO_NUM_MAPS));
+      // 0x01-0x40 - application objects
+      for (co_unsigned8_t i = 0x01u; i <= CO_PDO_NUM_MAPS; ++i) {
+          obj1600->InsertAndSetSub(i, CO_DEFTYPE_UNSIGNED32, co_unsigned32_t(0));
+      }
+  }
+
   TEST_SETUP() {
     LelyUnitTest::DisableDiagnosticMessages();
     net = can_net_create(allocator.ToAllocT());
@@ -85,6 +95,9 @@ TEST_BASE(CO_SdoRpdoBase) {
     CreateObjInDev(obj1400, 0x1400u);
     CreateObjInDev(obj1600, 0x1600u);
 
+    co_obj_set_code(obj1400->Get(), CO_OBJECT_RECORD);
+    co_obj_set_code(obj1600->Get(), CO_OBJECT_ARRAY);
+
     // 0x00 - highest sub-index supported
     obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8,
                              co_unsigned8_t(0x02u));
@@ -94,6 +107,8 @@ TEST_BASE(CO_SdoRpdoBase) {
     // 0x02 - transmission type
     obj1400->InsertAndSetSub(0x02u, CO_DEFTYPE_UNSIGNED8,
                              co_unsigned8_t(0xfeu));  // event-driven
+
+    Insert1600Values();
 
     rpdo = co_rpdo_create(net, dev, RPDO_NUM);
     CHECK(rpdo != nullptr);
@@ -414,16 +429,6 @@ TEST(CO_SdoRpdo1400, Co1400DnInd_EventTimer) {
 TEST_GROUP_BASE(CO_SdoRpdo1600, CO_SdoRpdoBase) {
   std::unique_ptr<CoObjTHolder> obj2021;
 
-  void Insert1600Values() {
-    // 0x00 - number of mapped application objects in PDO
-    obj1600->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8,
-                             co_unsigned8_t(CO_PDO_NUM_MAPS));
-    // 0x01-0x40 - application objects
-    for (co_unsigned8_t i = 0x01u; i <= CO_PDO_NUM_MAPS; ++i) {
-      obj1600->InsertAndSetSub(i, CO_DEFTYPE_UNSIGNED32, co_unsigned32_t(0));
-    }
-  }
-
   void Set1600Sub1Mapping(co_unsigned32_t mapping) {
     co_sub_t* const sub = co_dev_find_sub(dev, 0x1600u, 0x01u);
     co_sub_set_val_u32(sub, mapping);
@@ -447,7 +452,6 @@ TEST_GROUP_BASE(CO_SdoRpdo1600, CO_SdoRpdoBase) {
   TEST_SETUP() {
     TEST_BASE_SETUP();
 
-    Insert1600Values();
     co_rpdo_start(rpdo);
 
     CoCsdoDnCon::Clear();

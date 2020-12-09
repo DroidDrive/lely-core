@@ -30,7 +30,7 @@
 #include <lely/co/rpdo.h>
 #include <lely/co/sdo.h>
 #include <lely/co/val.h>
-#include <lely/util/error.h>
+#include <lely/util/diag.h>
 #include <lely/util/time.h>
 
 #include <assert.h>
@@ -162,6 +162,107 @@ static int co_rpdo_timer_swnd(const struct timespec *tp, void *data);
 static co_unsigned32_t co_rpdo_read_frame(
 		co_rpdo_t *pdo, const struct can_msg *msg);
 
+int
+co_rpdo_chk_dev(const co_dev_t *dev, co_unsigned16_t num)
+{
+	// Ignore non-existing Receive-PDOs.
+	if (!num || num > CO_NUM_PDOS)
+		return 1;
+
+	// Check object 1400-15FF (RPDO communication parameter).
+	co_unsigned16_t idx_1400 = 0x1400 + num - 1;
+	co_obj_t *obj_1400 = co_dev_find_obj(dev, idx_1400);
+	if (obj_1400) {
+		if (!co_obj_is_record(obj_1400, 0x0020)) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: object %04X is not an PDO_COMMUNICATION_PARAMETER RECORD",
+					idx_1400);
+			return 0;
+		}
+		// Check sub-index 1 (COB-ID used by RPDO).
+		co_sub_t *sub_1400_01 = co_obj_find_sub(obj_1400, 0x01);
+		if (!sub_1400_01) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: mandatory object %04X:01 missing",
+					idx_1400);
+			return 0;
+		}
+		if (co_sub_get_type(sub_1400_01) != CO_DEFTYPE_UNSIGNED32) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: object %04X:01 is not UNSIGNED32",
+					idx_1400);
+			return 0;
+		}
+		// Check sub-index 2 (transmission type).
+		co_sub_t *sub_1400_02 = co_obj_find_sub(obj_1400, 0x02);
+		if (!sub_1400_02) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: mandatory object %04X:02 missing",
+					idx_1400);
+			return 0;
+		}
+		if (co_sub_get_type(sub_1400_02) != CO_DEFTYPE_UNSIGNED8) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: object %04X:02 is not UNSIGNED8",
+					idx_1400);
+			return 0;
+		}
+		// Check sub-index 3 (inhibit time).
+		co_sub_t *sub_1400_03 = co_obj_find_sub(obj_1400, 0x03);
+		if (sub_1400_03
+				&& co_sub_get_type(sub_1400_03)
+						!= CO_DEFTYPE_UNSIGNED16) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: object %04X:03 is not UNSIGNED16",
+					idx_1400);
+			return 0;
+		}
+		// Check sub-index 4 (compatibility entry).
+		co_sub_t *sub_1400_04 = co_obj_find_sub(obj_1400, 0x04);
+		if (sub_1400_04
+				&& co_sub_get_type(sub_1400_04)
+						!= CO_DEFTYPE_UNSIGNED8) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: object %04X:04 is not UNSIGNED8",
+					idx_1400);
+			return 0;
+		}
+		// Check sub-index 5 (event-timer).
+		co_sub_t *sub_1400_05 = co_obj_find_sub(obj_1400, 0x05);
+		if (sub_1400_05
+				&& co_sub_get_type(sub_1400_05)
+						!= CO_DEFTYPE_UNSIGNED16) {
+			diag(DIAG_ERROR, 0,
+					"RPDO: object %04X:05 is not UNSIGNED16",
+					idx_1400);
+			return 0;
+		}
+		// Check sub-index 6 (SYNC start value).
+		co_sub_t *sub_1400_06 = co_obj_find_sub(obj_1400, 0x06);
+		if (sub_1400_06) {
+			if (co_sub_get_type(sub_1400_06)
+					!= CO_DEFTYPE_UNSIGNED8) {
+				diag(DIAG_ERROR, 0,
+						"RPDO: object %04X:06 is not UNSIGNED8",
+						idx_1400);
+				return 0;
+			}
+		}
+	}
+
+	// Check object 1600-17FF (RPDO mapping parameter).
+	co_unsigned16_t idx_1600 = 0x1600 + num - 1;
+	co_obj_t *obj_1600 = co_dev_find_obj(dev, idx_1600);
+	if (obj_1600 && !co_obj_is_array(obj_1600, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"RPDO: object %04X is not an UNSIGNED32 ARRAY or RECORD",
+				idx_1600);
+		return 0;
+	}
+
+	return 1;
+}
+
 size_t
 co_rpdo_alignof(void)
 {
@@ -215,6 +316,7 @@ int
 co_rpdo_start(co_rpdo_t *pdo)
 {
 	assert(pdo);
+	assert(co_rpdo_chk_dev(pdo->dev, pdo->num));
 
 	if (!pdo->stopped)
 		return 0;
@@ -787,6 +889,11 @@ co_rpdo_init(co_rpdo_t *pdo, can_net_t *net, co_dev_t *dev, co_unsigned16_t num)
 		goto error_param;
 	}
 
+	if (!co_rpdo_chk_dev(dev, num)) {
+		errc = errnum2c(ERRNUM_INVAL);
+		goto error_chk_dev;
+	}
+
 	pdo->net = net;
 	pdo->dev = dev;
 	pdo->num = num;
@@ -836,6 +943,7 @@ error_create_timer_swnd:
 error_create_timer_event:
 	can_recv_destroy(pdo->recv);
 error_create_recv:
+error_chk_dev:
 error_param:
 	set_errc(errc);
 	return NULL;

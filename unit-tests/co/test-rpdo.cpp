@@ -63,8 +63,10 @@ TEST_BASE(CO_RpdoBase) {
   Allocators::Default allocator;
 
   void CreateObj(std::unique_ptr<CoObjTHolder> & obj_holder,
-                 co_unsigned16_t idx) {
+                 co_unsigned16_t idx,
+                 co_unsigned16_t code) {
     obj_holder.reset(new CoObjTHolder(idx));
+    CHECK(co_obj_set_code(obj_holder->Get(), code));
     CHECK(obj_holder->Get() != nullptr);
     CHECK_EQUAL(0, co_dev_insert_obj(dev, obj_holder->Take()));
   }
@@ -129,7 +131,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_NoRPDOParameters) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_NoRPDOMappingParamRecord) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
 
@@ -140,7 +142,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_NoRPDOMappingParamRecord) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_NoRPDOCommParamRecord) {
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
 
@@ -151,8 +153,8 @@ TEST(CO_RpdoCreate, CoRpdoCreate_NoRPDOCommParamRecord) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_MinimalRPDO) {
-  CreateObj(obj1400, 0x1400u);
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
 
@@ -210,7 +212,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_MinimalRPDOMaxNum) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoStart_ExtendedFrame) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
   // 0x00 - highest sub-index supported
   obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x02u));
 
@@ -221,7 +223,7 @@ TEST(CO_RpdoCreate, CoRpdoStart_ExtendedFrame) {
   obj1400->InsertAndSetSub(0x02u, CO_DEFTYPE_UNSIGNED8,
                            co_unsigned8_t(0x00u));  // synchronous
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
   CHECK(rpdo != nullptr);
@@ -254,7 +256,7 @@ TEST(CO_RpdoCreate, CoRpdoStart_AlreadyStarted) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoStart_InvalidBit) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
   // 0x00 - highest sub-index supported
   obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x02u));
 
@@ -265,7 +267,7 @@ TEST(CO_RpdoCreate, CoRpdoStart_InvalidBit) {
   obj1400->InsertAndSetSub(0x02u, CO_DEFTYPE_UNSIGNED8,
                            co_unsigned8_t(0x00u));  // synchronous
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
   CHECK(rpdo != nullptr);
@@ -285,7 +287,7 @@ TEST(CO_RpdoCreate, CoRpdoStart_InvalidBit) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_FullRPDOCommParamRecord) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
   // 0x00 - highest sub-index supported
   obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x06u));
 
@@ -307,7 +309,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_FullRPDOCommParamRecord) {
   // 0x06 - SYNC start value (not used)
   obj1400->InsertAndSetSub(0x06u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x05u));
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
   CHECK(rpdo != nullptr);
@@ -327,9 +329,9 @@ TEST(CO_RpdoCreate, CoRpdoCreate_FullRPDOCommParamRecord) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_FullRPDOMappingParamRecord) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
   // 0x00 - number of mapped application objects in PDO
   obj1600->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8,
                            co_unsigned8_t(CO_PDO_NUM_MAPS));
@@ -351,7 +353,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_FullRPDOMappingParamRecord) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_OversizedRPDOCommParamRecord) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
   // 0x00 - highest sub-index supported
   obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x07u));
 
@@ -376,7 +378,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_OversizedRPDOCommParamRecord) {
   // 0x07 - illegal sub-object
   obj1400->InsertAndSetSub(0x07u, CO_DEFTYPE_UNSIGNED32, co_unsigned32_t(0));
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
   CHECK(rpdo != nullptr);
@@ -396,7 +398,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_OversizedRPDOCommParamRecord) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_EventDrivenTransmission) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
   // 0x00 - highest sub-index supported
   obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x02u));
 
@@ -407,7 +409,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_EventDrivenTransmission) {
   obj1400->InsertAndSetSub(0x02u, CO_DEFTYPE_UNSIGNED8,
                            co_unsigned8_t(0xfeu));  // event-driven
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
   rpdo = co_rpdo_create(net, dev, RPDO_NUM);
   CHECK(rpdo != nullptr);
@@ -427,7 +429,7 @@ TEST(CO_RpdoCreate, CoRpdoCreate_EventDrivenTransmission) {
 }
 
 TEST(CO_RpdoCreate, CoRpdoCreate_TimerSet) {
-  CreateObj(obj1400, 0x1400u);
+  CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
   // 0x00 - highest sub-index supported
   obj1400->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x02u));
 
@@ -438,9 +440,9 @@ TEST(CO_RpdoCreate, CoRpdoCreate_TimerSet) {
   obj1400->InsertAndSetSub(0x02u, CO_DEFTYPE_UNSIGNED8,
                            co_unsigned8_t(0x00u));  // synchronous
 
-  CreateObj(obj1600, 0x1600u);
+  CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
-  CreateObj(obj1007, 0x1007u);
+  CreateObj(obj1007, 0x1007u, CO_OBJECT_RECORD);
   // 0x00 - synchronous window length
   obj1007->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED32,
                            co_unsigned32_t(0x00000001u));
@@ -527,8 +529,8 @@ TEST_GROUP_BASE(CO_Rpdo, CO_RpdoBase) {
   TEST_SETUP() {
     TEST_BASE_SETUP();
 
-    CreateObj(obj1400, 0x1400u);
-    CreateObj(obj1600, 0x1600u);
+    CreateObj(obj1400, 0x1400u, CO_OBJECT_RECORD);
+    CreateObj(obj1600, 0x1600u, CO_OBJECT_ARRAY);
 
     CO_RpdoStatic::rpdo_ind_func_called = false;
     CO_RpdoStatic::rpdo_ind_args.rpdo = nullptr;
@@ -836,7 +838,7 @@ TEST(CO_Rpdo, CoRpdoSync_BadMappingLength) {
                            co_unsigned32_t(0x20000001u));
 
   // object 0x2000
-  CreateObj(obj2000, 0x2000u);
+  CreateObj(obj2000, 0x2000u, CO_OBJECT_ARRAY);
   // 0x00
   obj2000->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
 
@@ -891,7 +893,7 @@ TEST(CO_Rpdo, CoRpdoSync_RPDOLengthExceedsMapping) {
   obj1600->InsertAndSetSub(0x01u, CO_DEFTYPE_UNSIGNED32,
                            co_unsigned32_t(0x20000001u));
 
-  CreateObj(obj2000, 0x2000u);
+  CreateObj(obj2000, 0x2000u, CO_OBJECT_ARRAY);
   // 0x00
   obj2000->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
   co_sub_set_pdo_mapping(obj2000->GetLastSub(), 1);
@@ -1010,7 +1012,7 @@ TEST(CO_Rpdo, CoRpdoRecv_ExpiredSyncWindow) {
   obj1400->InsertAndSetSub(0x05u, CO_DEFTYPE_UNSIGNED16,
                            co_unsigned16_t(0x0001u));  // ms
 
-  CreateObj(obj1007, 0x1007u);
+  CreateObj(obj1007, 0x1007u, CO_OBJECT_RECORD);
   // 0x00 - synchronous window length
   obj1007->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED32,
                            co_unsigned32_t(0x00000001u));  // us
@@ -1106,7 +1108,7 @@ TEST(CO_Rpdo, CoRpdoRecv_NoPDOInSyncWindow) {
   obj1400->InsertAndSetSub(0x05u, CO_DEFTYPE_UNSIGNED16,
                            co_unsigned16_t(0x0001u));  // ms
 
-  CreateObj(obj1007, 0x1007u);
+  CreateObj(obj1007, 0x1007u, CO_OBJECT_RECORD);
   // 0x00 - synchronous window length
   obj1007->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED32,
                            co_unsigned32_t(0x00000001u));  // us

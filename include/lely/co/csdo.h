@@ -160,6 +160,17 @@ int co_dev_dn_dcf_req(co_dev_t *dev, const uint_least8_t *begin,
 int co_dev_up_req(const co_dev_t *dev, co_unsigned16_t idx,
 		co_unsigned8_t subidx, struct membuf *buf,
 		co_csdo_up_con_t *con, void *data);
+/**
+ * Checks if the structure of the SDO client parameter (object 1280-12FF) of the
+ * specified Client-SDO service conforms to CiA 301.
+ *
+ * @param dev a pointer to a CANopen device.
+ * @param num the SDO number (in the range [1..128]).
+ *
+ * @returns 1 if the SDO client parameter is conformant (or not present), and 0
+ * if not.
+ */
+int co_csdo_chk_dev(const co_dev_t *dev, co_unsigned8_t num);
 
 /// Returns the alignment (in bytes) of the #co_csdo_t structure.
 size_t co_csdo_alignof(void);

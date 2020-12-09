@@ -31,8 +31,8 @@
 #include <lely/co/dev.h>
 #include <lely/co/obj.h>
 #include <lely/co/val.h>
+#include <lely/util/diag.h>
 #include <lely/util/endian.h>
-#include <lely/util/error.h>
 
 #include <assert.h>
 
@@ -889,6 +889,67 @@ done:
 	return 0;
 }
 
+int
+co_csdo_chk_dev(const co_dev_t *dev, co_unsigned8_t num)
+{
+	// Ignore non-existing SDO client parameters.
+	if (!num || num > 128)
+		return 1;
+	co_unsigned16_t idx = 0x1280 + num - 1;
+	co_obj_t *obj_1280 = co_dev_find_obj(dev, idx);
+	if (!obj_1280)
+		return 1;
+
+	// Check object 1280-12FF (SDO client parameter).
+	if (!co_obj_is_record(obj_1280, 0x0022)) {
+		diag(DIAG_ERROR, 0,
+				"CSDO: object %04X is not an SDO_PARAMETER RECORD",
+				idx);
+		return 0;
+	}
+
+	// Check sub-index 1 (COB-ID client -> server (tx)).
+	co_sub_t *sub_1280_01 = co_obj_find_sub(obj_1280, 0x01);
+	if (!sub_1280_01) {
+		diag(DIAG_ERROR, 0, "CSDO: mandatory object %04X:01 missing",
+				idx);
+		return 0;
+	}
+	if (co_sub_get_type(sub_1280_01) != CO_DEFTYPE_UNSIGNED32) {
+		diag(DIAG_ERROR, 0, "CSDO: object %04X:01 is not UNSIGNED32",
+				idx);
+		return 0;
+	}
+
+	// Check sub-index 2 (COB-ID server -> client (rx)).
+	co_sub_t *sub_1280_02 = co_obj_find_sub(obj_1280, 0x02);
+	if (!sub_1280_02) {
+		diag(DIAG_ERROR, 0, "CSDO: mandatory object %04X:02 missing",
+				idx);
+		return 0;
+	}
+	if (co_sub_get_type(sub_1280_02) != CO_DEFTYPE_UNSIGNED32) {
+		diag(DIAG_ERROR, 0, "CSDO: object %04X:02 is not UNSIGNED32",
+				idx);
+		return 0;
+	}
+
+	// Check sub-index 3 (Node-ID of the SDO server).
+	co_sub_t *sub_1280_03 = co_obj_find_sub(obj_1280, 0x03);
+	if (!sub_1280_03) {
+		diag(DIAG_ERROR, 0, "CSDO: mandatory object %04X:03 missing",
+				idx);
+		return 0;
+	}
+	if (co_sub_get_type(sub_1280_03) != CO_DEFTYPE_UNSIGNED8) {
+		diag(DIAG_ERROR, 0, "CSDO: object %04X:03 is not UNSIGNED8",
+				idx);
+		return 0;
+	}
+
+	return 1;
+}
+
 size_t
 co_csdo_alignof(void)
 {
@@ -942,6 +1003,7 @@ int
 co_csdo_start(co_csdo_t *sdo)
 {
 	assert(sdo);
+	assert(!sdo->dev || co_csdo_chk_dev(sdo->dev, sdo->num));
 
 	if (!co_csdo_is_stopped(sdo))
 		return 0;
@@ -2610,6 +2672,11 @@ co_csdo_init(co_csdo_t *sdo, can_net_t *net, co_dev_t *dev, co_unsigned8_t num)
 		goto error_param;
 	}
 
+	if (dev && !co_csdo_chk_dev(dev, num)) {
+		errc = errnum2c(ERRNUM_INVAL);
+		goto error_chk_dev;
+	}
+
 	sdo->net = net;
 	sdo->dev = dev;
 	sdo->num = num;
@@ -2675,6 +2742,7 @@ co_csdo_init(co_csdo_t *sdo, can_net_t *net, co_dev_t *dev, co_unsigned8_t num)
 error_create_timer:
 	can_recv_destroy(sdo->recv);
 error_create_recv:
+error_chk_dev:
 error_param:
 	set_errc(errc);
 	return NULL;

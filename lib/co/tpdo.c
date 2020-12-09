@@ -39,7 +39,7 @@
 #include <lely/co/sdo.h>
 #include <lely/co/tpdo.h>
 #include <lely/co/val.h>
-#include <lely/util/error.h>
+#include <lely/util/diag.h>
 #include <lely/util/time.h>
 
 #include <assert.h>
@@ -186,6 +186,107 @@ static int co_tpdo_init_frame(co_tpdo_t *pdo, struct can_msg *msg);
  */
 static int co_tpdo_send_frame(co_tpdo_t *pdo, const struct can_msg *msg);
 
+int
+co_tpdo_chk_dev(const co_dev_t *dev, co_unsigned16_t num)
+{
+	// Ignore non-existing Transmit-PDOs.
+	if (!num || num > CO_NUM_PDOS)
+		return 1;
+
+	// Check object 1800-19FF (TPDO communication parameter).
+	co_unsigned16_t idx_1800 = 0x1800 + num - 1;
+	co_obj_t *obj_1800 = co_dev_find_obj(dev, idx_1800);
+	if (obj_1800) {
+		if (!co_obj_is_record(obj_1800, 0x0020)) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: object %04X is not an PDO_COMMUNICATION_PARAMETER RECORD",
+					idx_1800);
+			return 0;
+		}
+		// Check sub-index 1 (COB-ID used by TPDO).
+		co_sub_t *sub_1800_01 = co_obj_find_sub(obj_1800, 0x01);
+		if (!sub_1800_01) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: mandatory object %04X:01 missing",
+					idx_1800);
+			return 0;
+		}
+		if (co_sub_get_type(sub_1800_01) != CO_DEFTYPE_UNSIGNED32) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: object %04X:01 is not UNSIGNED32",
+					idx_1800);
+			return 0;
+		}
+		// Check sub-index 2 (transmission type).
+		co_sub_t *sub_1800_02 = co_obj_find_sub(obj_1800, 0x02);
+		if (!sub_1800_02) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: mandatory object %04X:02 missing",
+					idx_1800);
+			return 0;
+		}
+		if (co_sub_get_type(sub_1800_02) != CO_DEFTYPE_UNSIGNED8) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: object %04X:02 is not UNSIGNED8",
+					idx_1800);
+			return 0;
+		}
+		// Check sub-index 3 (inhibit time).
+		co_sub_t *sub_1800_03 = co_obj_find_sub(obj_1800, 0x03);
+		if (sub_1800_03
+				&& co_sub_get_type(sub_1800_03)
+						!= CO_DEFTYPE_UNSIGNED16) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: object %04X:03 is not UNSIGNED16",
+					idx_1800);
+			return 0;
+		}
+		// Check sub-index 4 (compatibility entry).
+		co_sub_t *sub_1800_04 = co_obj_find_sub(obj_1800, 0x04);
+		if (sub_1800_04
+				&& co_sub_get_type(sub_1800_04)
+						!= CO_DEFTYPE_UNSIGNED8) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: object %04X:04 is not UNSIGNED8",
+					idx_1800);
+			return 0;
+		}
+		// Check sub-index 5 (event-timer).
+		co_sub_t *sub_1800_05 = co_obj_find_sub(obj_1800, 0x05);
+		if (sub_1800_05
+				&& co_sub_get_type(sub_1800_05)
+						!= CO_DEFTYPE_UNSIGNED16) {
+			diag(DIAG_ERROR, 0,
+					"TPDO: object %04X:05 is not UNSIGNED16",
+					idx_1800);
+			return 0;
+		}
+		// Check sub-index 6 (SYNC start value).
+		co_sub_t *sub_1800_06 = co_obj_find_sub(obj_1800, 0x06);
+		if (sub_1800_06) {
+			if (co_sub_get_type(sub_1800_06)
+					!= CO_DEFTYPE_UNSIGNED8) {
+				diag(DIAG_ERROR, 0,
+						"TPDO: object %04X:06 is not UNSIGNED8",
+						idx_1800);
+				return 0;
+			}
+		}
+	}
+
+	// Check object 1A00-1BFF (TPDO mapping parameter).
+	co_unsigned16_t idx_1a00 = 0x1a00 + num - 1;
+	co_obj_t *obj_1a00 = co_dev_find_obj(dev, idx_1a00);
+	if (obj_1a00 && !co_obj_is_array(obj_1a00, CO_DEFTYPE_UNSIGNED32)) {
+		diag(DIAG_ERROR, 0,
+				"TPDO: object %04X is not an UNSIGNED32 ARRAY or RECORD",
+				idx_1a00);
+		return 0;
+	}
+
+	return 1;
+}
+
 size_t
 co_tpdo_alignof(void)
 {
@@ -239,6 +340,7 @@ int
 co_tpdo_start(co_tpdo_t *pdo)
 {
 	assert(pdo);
+	assert(co_tpdo_chk_dev(pdo->dev, pdo->num));
 
 	if (!pdo->stopped)
 		return 0;
@@ -964,6 +1066,11 @@ co_tpdo_init(co_tpdo_t *pdo, can_net_t *net, co_dev_t *dev, co_unsigned16_t num)
 		goto error_param;
 	}
 
+	if (!co_tpdo_chk_dev(dev, num)) {
+		errc = errnum2c(ERRNUM_INVAL);
+		goto error_chk_dev;
+	}
+
 	pdo->net = net;
 	pdo->dev = dev;
 	pdo->num = num;
@@ -1018,6 +1125,7 @@ error_create_timer_swnd:
 error_create_timer_event:
 	can_recv_destroy(pdo->recv);
 error_create_recv:
+error_chk_dev:
 error_param:
 	set_errc(errc);
 	return NULL;

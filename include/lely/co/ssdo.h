@@ -29,6 +29,18 @@
 extern "C" {
 #endif
 
+/**
+ * Checks if the structure of the SDO server parameter (object 1200-127F) of the
+ * specified Server-SDO service conforms to CiA 301.
+ *
+ * @param dev a pointer to a CANopen device.
+ * @param num the SDO number (in the range [1..128]).
+ *
+ * @returns 1 if the SDO server parameter is conformant (or not present), and 0
+ * if not.
+ */
+int co_ssdo_chk_dev(const co_dev_t *dev, co_unsigned8_t num);
+
 /// Returns the alignment (in bytes) of the #co_ssdo_t structure.
 size_t co_ssdo_alignof(void);
 

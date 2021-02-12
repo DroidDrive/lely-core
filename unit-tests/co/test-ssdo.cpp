@@ -123,6 +123,9 @@ TEST_GROUP(CO_SsdoInit) {
   }
 };
 
+/// @name co_ssdo_alignof()
+///@{
+
 TEST(CO_SsdoInit, CoSsdoAlignof_Nominal) {
   const auto ret = co_ssdo_alignof();
 
@@ -132,6 +135,11 @@ TEST(CO_SsdoInit, CoSsdoAlignof_Nominal) {
   CHECK_EQUAL(8u, ret);
 #endif
 }
+
+///@}
+
+/// @name co_ssdo_sizeof()
+///@{
 
 TEST(CO_SsdoInit, CoSsdoSizeof_Nominal) {
   const auto ret = co_ssdo_sizeof();
@@ -146,6 +154,11 @@ TEST(CO_SsdoInit, CoSsdoSizeof_Nominal) {
 #endif
 #endif  // LELY_NO_MALLOC
 }
+
+///@}
+
+/// @name co_ssdo_create()
+///@{
 
 TEST(CO_SsdoInit, CoSsdoCreate_FailSsdoAlloc) {
   co_ssdo_t* const ssdo = co_ssdo_create(failing_net, dev, SSDO_NUM);
@@ -224,6 +237,8 @@ TEST(CO_SsdoInit, CoSsdoCreate_DefaultSsdo_WithObj1200) {
 
   co_ssdo_destroy(ssdo);
 }
+
+///@}
 
 TEST(CO_SsdoInit, CoSsdoDestroy_Nullptr) {
   co_ssdo_t* const ssdo = nullptr;

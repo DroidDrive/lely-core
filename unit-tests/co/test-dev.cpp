@@ -1,7 +1,7 @@
 /**@file
  * This file is part of the CANopen Library Unit Test Suite.
  *
- * @copyright 2020 N7 Space Sp. z o.o.
+ * @copyright 2020-2021 N7 Space Sp. z o.o.
  *
  * Unit Test Suite was developed under a programme of,
  * and funded by, the European Space Agency.
@@ -84,16 +84,22 @@ TEST_GROUP(CO_DevInit) {
 };
 
 #if !LELY_NO_MALLOC
-TEST(CO_DevInit, CODevAllocFree) {
+/// @name co_dev_alloc()
+///@{
+TEST(CO_DevInit, CoDevAllocFree) {
   void* const ptr = co_dev_alloc();
 
   CHECK(ptr != nullptr);
 
   co_dev_free(ptr);
 }
+///@}
 #endif  // !LELY_NO_MALLOC
 
-TEST(CO_DevInit, CODevInit) {
+/// @name co_dev_init()
+///@{
+
+TEST(CO_DevInit, CoDevInit) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
@@ -133,7 +139,7 @@ TEST(CO_DevInit, CODevInit) {
   DestroyCoDevT(dev);
 }
 
-TEST(CO_DevInit, CODevInit_UnconfiguredId) {
+TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
@@ -159,7 +165,7 @@ TEST(CO_DevInit, CODevInit_UnconfiguredId) {
   DestroyCoDevT(dev);
 }
 
-TEST(CO_DevInit, CODevInit_ZeroId) {
+TEST(CO_DevInit, CoDevInit_ZeroId) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
@@ -168,7 +174,7 @@ TEST(CO_DevInit, CODevInit_ZeroId) {
   ReleaseCoDevT(dev);
 }
 
-TEST(CO_DevInit, CODevInit_InvalidId) {
+TEST(CO_DevInit, CoDevInit_InvalidId) {
   auto* const dev = AcquireCoDevT();
   CHECK(dev != nullptr);
 
@@ -181,7 +187,12 @@ TEST(CO_DevInit, CODevInit_InvalidId) {
   ReleaseCoDevT(dev);
 }
 
-TEST(CO_DevInit, CODevFini) {
+///@}
+
+/// @name co_dev_fini()
+///@{
+
+TEST(CO_DevInit, CoDevFini) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
@@ -190,9 +201,16 @@ TEST(CO_DevInit, CODevFini) {
   ReleaseCoDevT(dev);
 }
 
+///@}
+
+/// @name co_dev_destroy()
+///@{
+
 #if !LELY_NO_MALLOC
-TEST(CO_DevInit, CODevDestroy_Null) { co_dev_destroy(nullptr); }
+TEST(CO_DevInit, CoDevDestroy_Null) { co_dev_destroy(nullptr); }
 #endif
+
+///@}
 
 TEST_GROUP(CO_Dev) {
   co_dev_t* dev = nullptr;
@@ -207,6 +225,9 @@ TEST_GROUP(CO_Dev) {
 
   TEST_TEARDOWN() { dev_holder.reset(); }
 };
+
+/// @name co_dev_set_net_id()
+///@{
 
 TEST(CO_Dev, CoDevSetNetId) {
   const auto ret = co_dev_set_netid(dev, 0x3d);
@@ -233,6 +254,11 @@ TEST(CO_Dev, CoDevSetNetId_InvalidId) {
   CHECK_EQUAL(-1, ret2);
   CHECK_EQUAL(0, co_dev_get_netid(dev));
 }
+
+///@}
+
+/// @name co_dev_set_id()
+///@{
 
 TEST(CO_Dev, CoDevSetId) {
   const auto ret = co_dev_set_id(dev, 0x3d);
@@ -406,6 +432,11 @@ TEST(CO_Dev, CoDevSetId_InvalidId) {
   CHECK_EQUAL(0x01, co_dev_get_id(dev));
 }
 
+///@}
+
+/// @name co_dev_get_idx()
+///@{
+
 TEST(CO_Dev, CoDevGetIdx_Empty) {
   co_unsigned16_t out_idx = 0x0000;
   const auto ret = co_dev_get_idx(dev, 1, &out_idx);
@@ -482,6 +513,11 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj2) {
   CHECK_EQUAL(0x0000, out_idx[4]);
 }
 
+///@}
+
+/// @name co_dev_insert_obj()
+///@{
+
 TEST(CO_Dev, CoDevInsertObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Take();
@@ -528,6 +564,11 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
   CHECK_EQUAL(-1, ret);
 }
 
+///@}
+
+/// @name co_dev_remove_obj()
+///@{
+
 TEST(CO_Dev, CoDevRemoveObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Get();
@@ -548,6 +589,11 @@ TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
   CHECK_EQUAL(-1, ret);
 }
 
+///@}
+
+/// @name co_dev_find_obj()
+///@{
+
 TEST(CO_Dev, CoDevFindObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Take();
@@ -563,6 +609,11 @@ TEST(CO_Dev, CoDevFindObj_NotFound) {
 
   POINTERS_EQUAL(nullptr, ret);
 }
+
+///@}
+
+/// @name co_dev_find_sub()
+///@{
 
 TEST(CO_Dev, CoDevFindSub) {
   CoObjTHolder obj_holder(0x1234);
@@ -591,6 +642,11 @@ TEST(CO_Dev, CoDevFindSub_NoSub) {
   POINTERS_EQUAL(nullptr, ret);
 }
 
+///@}
+
+/// @name co_dev_first_obj()
+///@{
+
 TEST(CO_Dev, CoDevFirstObj) {
   CoObjTHolder obj_holder(0x1234);
   const auto obj = obj_holder.Take();
@@ -606,6 +662,11 @@ TEST(CO_Dev, CoDevFirstObj_Empty) {
 
   POINTERS_EQUAL(nullptr, ret);
 }
+
+///@}
+
+/// @name co_dev_last_obj()
+///@{
 
 TEST(CO_Dev, CoDevLastObj) {
   CoObjTHolder obj_holder(0x1234);
@@ -623,7 +684,12 @@ TEST(CO_Dev, CoDevLastObj_Empty) {
   POINTERS_EQUAL(nullptr, ret);
 }
 
+///@}
+
 #if !LELY_NO_CO_OBJ_NAME
+
+/// @name co_dev_set_name()
+///@{
 
 TEST(CO_Dev, CoDevSetName) {
   const char* name = "DeviceName";
@@ -653,6 +719,11 @@ TEST(CO_Dev, CoDevSetName_Empty) {
   POINTERS_EQUAL(nullptr, co_dev_get_name(dev));
 }
 
+///@}
+
+/// @name co_dev_set_vendor_name()
+///@{
+
 TEST(CO_Dev, CoDevSetVendorName) {
   const char* vendor_name = "VendorName";
   const auto ret = co_dev_set_vendor_name(dev, vendor_name);
@@ -680,6 +751,11 @@ TEST(CO_Dev, CoDevSetVendorName_Empty) {
   CHECK_EQUAL(0, ret);
   POINTERS_EQUAL(nullptr, co_dev_get_vendor_name(dev));
 }
+
+///@}
+
+/// @name co_dev_set_product_name()
+///@{
 
 TEST(CO_Dev, CoDevSetProductName) {
   const char* product_name = "ProductName";
@@ -709,6 +785,11 @@ TEST(CO_Dev, CoDevSetProductName_Empty) {
   POINTERS_EQUAL(nullptr, co_dev_get_product_name(dev));
 }
 
+///@}
+
+/// @name co_dev_set_order_code()
+///@{
+
 TEST(CO_Dev, CoDevSetOrderCode) {
   const char* order_code = "OrderCode";
   const auto ret = co_dev_set_order_code(dev, order_code);
@@ -737,7 +818,12 @@ TEST(CO_Dev, CoDevSetOrderCode_Empty) {
   POINTERS_EQUAL(nullptr, co_dev_get_order_code(dev));
 }
 
+///@}
+
 #endif  // !LELY_NO_CO_OBJ_NAME
+
+/// @name co_dev_set_vendor_id()
+///@{
 
 TEST(CO_Dev, CoDevSetVendorId) {
   co_dev_set_vendor_id(dev, 0x12345678);
@@ -745,11 +831,21 @@ TEST(CO_Dev, CoDevSetVendorId) {
   CHECK_EQUAL(0x12345678, co_dev_get_vendor_id(dev));
 }
 
+///@}
+
+/// @name co_dev_set_product_code()
+///@{
+
 TEST(CO_Dev, CoDevSetProductCode) {
   co_dev_set_product_code(dev, 0x12345678);
 
   CHECK_EQUAL(0x12345678, co_dev_get_product_code(dev));
 }
+
+///@}
+
+/// @name co_dev_set_revision()
+///@{
 
 TEST(CO_Dev, CoDevSetRevision) {
   co_dev_set_revision(dev, 0x12345678);
@@ -757,11 +853,21 @@ TEST(CO_Dev, CoDevSetRevision) {
   CHECK_EQUAL(0x12345678, co_dev_get_revision(dev));
 }
 
+///@}
+
+/// @name co_dev_set_baud()
+///@{
+
 TEST(CO_Dev, CoDevSetBaud) {
   co_dev_set_baud(dev, CO_BAUD_50 | CO_BAUD_1000);
 
   CHECK_EQUAL(CO_BAUD_50 | CO_BAUD_1000, co_dev_get_baud(dev));
 }
+
+///@}
+
+/// @name co_dev_set_rate()
+///@{
 
 TEST(CO_Dev, CoDevSetRate) {
   co_dev_set_rate(dev, 500);
@@ -769,17 +875,32 @@ TEST(CO_Dev, CoDevSetRate) {
   CHECK_EQUAL(500, co_dev_get_rate(dev));
 }
 
+///@}
+
+/// @name co_dev_set_lss()
+///@{
+
 TEST(CO_Dev, CoDevSetLSS) {
   co_dev_set_lss(dev, 123);
 
   CHECK_EQUAL(true, co_dev_get_lss(dev));
 }
 
-TEST(CO_Dev, CoDevSetDommy) {
+///@}
+
+/// @name co_dev_set_dummy()
+///@{
+
+TEST(CO_Dev, CoDevSetDummy) {
   co_dev_set_dummy(dev, 0x00010001);
 
   CHECK_EQUAL(0x00010001, co_dev_get_dummy(dev));
 }
+
+///@}
+
+/// @name co_dev_get_val()
+///@{
 
 TEST(CO_Dev, CoDevGetVal) {
   CoObjTHolder obj_holder(0x1234);
@@ -808,6 +929,11 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 
   POINTERS_EQUAL(nullptr, ret);
 }
+
+///@}
+
+/// @name co_dev_set_val()
+///@{
 
 TEST(CO_Dev, CoDevSetVal) {
   co_unsigned16_t val = 0x0987;
@@ -843,6 +969,11 @@ TEST(CO_Dev, CoDevSetVal_NotFound) {
   }
 #include <lely/co/def/basic.def>  // NOLINT(build/include)
 #undef LELY_CO_DEFINE_TYPE
+
+///@}
+
+/// @name co_dev_read_sub()
+///@{
 
 TEST(CO_Dev, CoDevReadSub) {
   CoObjTHolder obj(0x1234);
@@ -1029,6 +1160,11 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
   CHECK_EQUAL(0x1a1a, co_dev_get_val_i16(dev, 0x1234, 0xab));
 }
 
+///@}
+
+/// @name co_dev_write_sub()
+///@{
+
 TEST(CO_Dev, CoDevWriteSub) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
@@ -1214,6 +1350,8 @@ TEST(CO_Dev, CoDevWriteSub_ValWriteFailed) {
 }
 #endif
 
+///@}
+
 TEST_GROUP(CO_DevDCF) {
   co_dev_t* dev = nullptr;
   std::unique_ptr<CoDevTHolder> dev_holder;
@@ -1251,6 +1389,9 @@ TEST_GROUP(CO_DevDCF) {
     arrays.Clear();
   }
 };
+
+/// @name co_dev_set_vendor_id()
+///@{
 
 TEST(CO_DevDCF, CoDevReadDcf) {
   co_unsigned16_t pmin = 0x0000;
@@ -1297,6 +1438,11 @@ TEST(CO_DevDCF, CoDevReadDcf_FailedToReadNumberOfSubIndexes) {
   CHECK_EQUAL(0, ret);
 }
 #endif
+
+///@}
+
+/// @name co_dev_write_dcf()
+///@{
 
 TEST(CO_DevDCF, CoDevWriteDcf) {
   co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987);
@@ -1352,6 +1498,8 @@ TEST(CO_DevDCF, CoDevWriteDcf_FailedToWriteSubObject) {
 }
 #endif
 
+///@}
+
 #if !LELY_NO_CO_TPDO
 namespace CO_DevTPDO_Static {
 static unsigned int tpdo_event_ind_counter = 0;
@@ -1384,9 +1532,17 @@ TEST_BASE(CO_DevTpdoBase) {
 
 TEST_GROUP_BASE(CO_DevTpdoEventInd, CO_DevTpdoBase){};
 
+/// @name co_dev_get_tpdo_event_ind()
+///@{
+
 TEST(CO_DevTpdoEventInd, CoDevGetTpdoEventInd_Null) {
   co_dev_get_tpdo_event_ind(dev, nullptr, nullptr);
 }
+
+///@}
+
+/// @name co_dev_set_tpdo_event_ind()
+///@{
 
 TEST(CO_DevTpdoEventInd, CoDevSetTpdoEventInd) {
   int data = 42;
@@ -1398,6 +1554,8 @@ TEST(CO_DevTpdoEventInd, CoDevSetTpdoEventInd) {
   FUNCTIONPOINTERS_EQUAL(tpdo_event_ind, ind_ptr);
   POINTERS_EQUAL(&data, data_ptr);
 }
+
+///@}
 
 TEST_GROUP_BASE(CO_DevTpdoEvent, CO_DevTpdoBase) {
   const co_unsigned16_t OBJ_IDX = 0x1234u;
@@ -1480,6 +1638,9 @@ TEST_GROUP_BASE(CO_DevTpdoEvent, CO_DevTpdoBase) {
     TEST_BASE_TEARDOWN();
   }
 };
+
+/// @name co_dev_tpdo_event()
+///@{
 
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
   co_dev_tpdo_event(dev, 0x0000, 0x00);
@@ -1595,5 +1756,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdEvent_CallsIndicationFunction_ForMatchedTpdos) {
   CHECK_EQUAL(2, CO_DevTPDO_Static::tpdo_event_ind_counter);
   CHECK_EQUAL(30, CO_DevTPDO_Static::tpdo_event_ind_last_pdo_num);
 }
+
+///@}
 
 #endif  // !LELY_NO_CO_TPDO

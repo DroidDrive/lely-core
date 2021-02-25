@@ -86,6 +86,12 @@ TEST_GROUP(CO_DevInit) {
 #if !LELY_NO_MALLOC
 /// @name co_dev_alloc()
 ///@{
+
+/// \Given N/A
+///
+/// \When co_dev_alloc() is called
+///
+/// \Then non-null pointer is returned
 TEST(CO_DevInit, CoDevAllocFree) {
   void* const ptr = co_dev_alloc();
 
@@ -99,7 +105,12 @@ TEST(CO_DevInit, CoDevAllocFree) {
 /// @name co_dev_init()
 ///@{
 
-TEST(CO_DevInit, CoDevInit) {
+/// \Given a pointer to the unintialized device (co_dev_t)
+///
+/// \When co_dev_init() is called with a valid id
+///
+/// \Then device is initialized with the default values and the requested id
+TEST(CO_DevInit, CoDevInit_Nominal) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
@@ -139,23 +150,25 @@ TEST(CO_DevInit, CoDevInit) {
   DestroyCoDevT(dev);
 }
 
+/// \Given a pointer to the unintialized device (co_dev_t)
+///
+/// \When co_dev_init() is called with 0xff
+///
+/// \Then device is initialized with the default values and the requested id
 TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
   POINTERS_EQUAL(dev, co_dev_init(dev, 0xff));
 
-  CoObjTHolder obj1(0x0000);
-  CoObjTHolder obj2(0x0001);
-  CoObjTHolder obj3(0xffff);
-  CHECK(obj1.Get() != nullptr);
-  CHECK(obj2.Get() != nullptr);
-  CHECK(obj3.Get() != nullptr);
-  CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1.Take()));
-  CHECK_EQUAL(0, co_dev_insert_obj(dev, obj2.Take()));
-  CHECK_EQUAL(0, co_dev_insert_obj(dev, obj3.Take()));
+  CHECK_EQUAL(0, co_dev_get_idx(dev, 0, nullptr));
+
+  CHECK_EQUAL(0, co_dev_get_vendor_id(dev));
+  CHECK_EQUAL(0, co_dev_get_product_code(dev));
+  CHECK_EQUAL(0, co_dev_get_revision(dev));
 
 #if !LELY_NO_CO_OBJ_NAME
+  CHECK_EQUAL(0, co_dev_set_name(dev, "name"));
   CHECK_EQUAL(0, co_dev_set_name(dev, "name"));
   CHECK_EQUAL(0, co_dev_set_vendor_name(dev, "vendor"));
   CHECK_EQUAL(0, co_dev_set_product_name(dev, "product name"));
@@ -165,6 +178,11 @@ TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
   DestroyCoDevT(dev);
 }
 
+/// \Given a pointer to the unintialized device (co_dev_t)
+///
+/// \When co_dev_init() is called with zero
+///
+/// \Then a null pointer is returned
 TEST(CO_DevInit, CoDevInit_ZeroId) {
   auto* const dev = AcquireCoDevT();
 
@@ -174,6 +192,11 @@ TEST(CO_DevInit, CoDevInit_ZeroId) {
   ReleaseCoDevT(dev);
 }
 
+/// \Given a pointer to the unintialized device (co_dev_t)
+///
+/// \When co_dev_init() is called with an invalid id
+///
+/// \Then a null pointer is returned
 TEST(CO_DevInit, CoDevInit_InvalidId) {
   auto* const dev = AcquireCoDevT();
   CHECK(dev != nullptr);
@@ -192,11 +215,17 @@ TEST(CO_DevInit, CoDevInit_InvalidId) {
 /// @name co_dev_fini()
 ///@{
 
+/// \Given a pointer to the intialized device (co_dev_t)
+///
+/// \When co_dev_init() is called with 0xff
+///
+/// \Then the device is finalized
 TEST(CO_DevInit, CoDevFini) {
   auto* const dev = AcquireCoDevT();
-
   CHECK(dev != nullptr);
   POINTERS_EQUAL(dev, co_dev_init(dev, 0x01));
+
+  co_dev_fini(dev);
 
   ReleaseCoDevT(dev);
 }
@@ -207,7 +236,16 @@ TEST(CO_DevInit, CoDevFini) {
 ///@{
 
 #if !LELY_NO_MALLOC
-TEST(CO_DevInit, CoDevDestroy_Null) { co_dev_destroy(nullptr); }
+/// \Given a null pointer to the intialized device (co_dev_t)
+///
+/// \When co_dev_destroy() is called
+///
+/// \Then nothing is changed
+TEST(CO_DevInit, CoDevDestroy_Null) {
+  co_dev_t* const dev = nullptr;
+
+  co_dev_destroy(dev);
+}
 #endif
 
 ///@}
@@ -229,6 +267,11 @@ TEST_GROUP(CO_Dev) {
 /// @name co_dev_set_net_id()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_netid() is called with a valid ID
+///
+/// \Then 0 is returned, the ID is set
 TEST(CO_Dev, CoDevSetNetId) {
   const auto ret = co_dev_set_netid(dev, 0x3d);
 

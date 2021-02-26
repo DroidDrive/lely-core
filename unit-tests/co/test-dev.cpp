@@ -272,13 +272,18 @@ TEST_GROUP(CO_Dev) {
 /// \When co_dev_set_netid() is called with a valid ID
 ///
 /// \Then 0 is returned, the ID is set
-TEST(CO_Dev, CoDevSetNetId) {
+TEST(CO_Dev, CoDevSetNetId_Nominal) {
   const auto ret = co_dev_set_netid(dev, 0x3d);
 
   CHECK_EQUAL(0, ret);
   CHECK_EQUAL(0x3d, co_dev_get_netid(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_netid() is called with an ID of 0xff
+///
+/// \Then 0 is returned, the ID is set
 TEST(CO_Dev, CoDevSetNetId_Unconfigured) {
   const auto ret = co_dev_set_netid(dev, 0xff);
 
@@ -286,6 +291,11 @@ TEST(CO_Dev, CoDevSetNetId_Unconfigured) {
   CHECK_EQUAL(0xff, co_dev_get_netid(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_netid() is called with an invalid ID
+///
+/// \Then -1 is returned, the ID is not set
 TEST(CO_Dev, CoDevSetNetId_InvalidId) {
   const auto ret1 = co_dev_set_netid(dev, CO_NUM_NETWORKS + 1);
 
@@ -303,13 +313,23 @@ TEST(CO_Dev, CoDevSetNetId_InvalidId) {
 /// @name co_dev_set_id()
 ///@{
 
-TEST(CO_Dev, CoDevSetId) {
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_id() is called with a valid ID
+///
+/// \Then 0 is returned, requested ID is set
+TEST(CO_Dev, CoDevSetId_Nominal) {
   const auto ret = co_dev_set_id(dev, 0x3d);
 
   CHECK_EQUAL(0, ret);
   CHECK_EQUAL(0x3d, co_dev_get_id(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t) with objects and sub-objects inserted
+///
+/// \When co_dev_set_id() is called with a valid ID
+///
+/// \Then 0 is returned, requested ID is set
 TEST(CO_Dev, CoDevSetId_CheckObj) {
   CoObjTHolder obj_holder(0x0000);
 #if !LELY_NO_CO_OBJ_LIMITS
@@ -404,6 +424,11 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 #endif
 }
 
+/// \Given a pointer to the device (co_dev_t) with objects and sub-objects of the basic type inserted
+///
+/// \When co_dev_set_id() is called with a valid ID
+///
+/// \Then 0 is returned and the requested ID is set
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
   TEST(CO_Dev, CoDevSetId_CoType_##a) { \
     CoObjTHolder obj_holder(0x1234); \
@@ -416,7 +441,9 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
     co_sub_set_flags(sub, CO_OBJ_FLAGS_VAL_NODEID); \
     CHECK_EQUAL(0, co_dev_insert_obj(dev, obj)); \
     const co_unsigned8_t new_id = 0x14; \
+\
     const auto ret = co_dev_set_id(dev, new_id); \
+\
     CHECK_EQUAL(0, ret); \
     CHECK_EQUAL(new_id, co_dev_get_id(dev)); \
     const co_obj_t* const out_obj = co_dev_first_obj(dev); \
@@ -427,6 +454,11 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 #include <lely/co/def/basic.def>
 #undef LELY_CO_DEFINE_TYPE
 
+/// \Given a pointer to the device (co_dev_t) with objects and sub-objects of the non-basic type inserted
+///
+/// \When co_dev_set_id() is called with a valid ID
+///
+/// \Then 0 is returned and the requested ID is set
 TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
   CoObjTHolder obj_holder(0x1234);
   CoSubTHolder sub_holder(0x01, CO_DEFTYPE_TIME_OF_DAY);
@@ -449,6 +481,11 @@ TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
   CHECK_EQUAL(value.days, val_ret->t.days);
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_id() is called with an ID of 0xff
+///
+/// \Then 0 is returned and the required ID is set
 TEST(CO_Dev, CoDevSetId_Unconfigured) {
   const auto ret = co_dev_set_id(dev, 0xff);
 
@@ -456,6 +493,11 @@ TEST(CO_Dev, CoDevSetId_Unconfigured) {
   CHECK_EQUAL(0xff, co_dev_get_id(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_id() is called with an ID of zero
+///
+/// \Then 0 is returned and the required ID is set
 TEST(CO_Dev, CoDevSetId_ZeroId) {
   const auto ret = co_dev_set_id(dev, 0x00);
 
@@ -463,6 +505,11 @@ TEST(CO_Dev, CoDevSetId_ZeroId) {
   CHECK_EQUAL(0x01, co_dev_get_id(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_id() is called with an invalid ID
+///
+/// \Then -1 is returned and the required ID is not set
 TEST(CO_Dev, CoDevSetId_InvalidId) {
   const auto ret1 = co_dev_set_id(dev, CO_NUM_NETWORKS + 1);
 

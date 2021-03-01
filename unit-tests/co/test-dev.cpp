@@ -527,6 +527,12 @@ TEST(CO_Dev, CoDevSetId_InvalidId) {
 /// @name co_dev_get_idx()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an empty object dictionary
+///
+/// \When co_dev_get_idx() is called with a maximum index and a memory area to
+///       store the object indices
+///
+/// \Then 0 is returned and the memory area is not changed
 TEST(CO_Dev, CoDevGetIdx_Empty) {
   co_unsigned16_t out_idx = 0x0000;
   const auto ret = co_dev_get_idx(dev, 1, &out_idx);
@@ -535,6 +541,11 @@ TEST(CO_Dev, CoDevGetIdx_Empty) {
   CHECK_EQUAL(0x0000, out_idx);
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_get_idx() is called with no memory area t ostore the results
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevGetIdx_EmptyNull) {
   const auto ret = co_dev_get_idx(dev, 0, nullptr);
 

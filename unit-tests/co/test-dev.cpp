@@ -532,7 +532,7 @@ TEST(CO_Dev, CoDevSetId_InvalidId) {
 /// \When co_dev_get_idx() is called with a maximum index and a memory area to
 ///       store the object indices
 ///
-/// \Then 0 is returned and the memory area is not changed
+/// \Then 0 is returned and the memory area is not modified
 TEST(CO_Dev, CoDevGetIdx_Empty) {
   co_unsigned16_t out_idx = 0x0000;
   const auto ret = co_dev_get_idx(dev, 1, &out_idx);
@@ -566,6 +566,11 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
   CHECK_EQUAL(1, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with one object inserted
+///
+/// \When co_dev_get_idx() is called with a memory area to store the results
+///
+/// \Then 1 is returned, area contains the index
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -577,7 +582,12 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CHECK_EQUAL(0x1234, out_idx);
 }
 
-TEST(CO_Dev, CoDevGetIdx_ManyObj1) {
+/// \Given a pointer to the device (co_dev_t) with many objects inserted
+///
+/// \When co_dev_get_idx() is called with a memory area to store the results
+///
+/// \Then number of objects inserted is returned, the memory area contains indices of the objects
+TEST(CO_Dev, CoDevGetIdx_ManyObj) {
   CoObjTHolder obj1(0x0000);
   CoObjTHolder obj2(0x1234);
   CoObjTHolder obj3(0xffff);
@@ -596,7 +606,12 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj1) {
   CHECK_EQUAL(0x0000, out_idx[4]);
 }
 
-TEST(CO_Dev, CoDevGetIdx_ManyObj2) {
+/// \Given a pointer to the device (co_dev_t) with many objects inserted
+///
+/// \When co_dev_get_idx() is called with maximum index lower than the object's number, a memory area to store the results
+///
+/// \Then a number of the inserted objects is returned, indices of object's up to the maximum are stored in the memory area
+TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
   CoObjTHolder obj1(0x0000);
   CoObjTHolder obj2(0x1234);
   CoObjTHolder obj3(0xffff);

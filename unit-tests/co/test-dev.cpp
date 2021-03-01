@@ -543,7 +543,7 @@ TEST(CO_Dev, CoDevGetIdx_Empty) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_get_idx() is called with no memory area t ostore the results
+/// \When co_dev_get_idx() is called with no memory area to store the results
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevGetIdx_EmptyNull) {
@@ -552,11 +552,16 @@ TEST(CO_Dev, CoDevGetIdx_EmptyNull) {
   CHECK_EQUAL(0, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with one object inserted
+///
+/// \When co_dev_get_idx() is called with no memory area to store the results
+///
+/// \Then 1 is returned
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
   CoObjTHolder obj(0x0000);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const auto ret = co_dev_get_idx(dev, 0xffff, nullptr);
+  const auto ret = co_dev_get_idx(dev, 0, nullptr);
 
   CHECK_EQUAL(1, ret);
 }

@@ -643,7 +643,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
 ///
 /// \When co_dev_insert_obj() is called with a pointer to an object (co_obj_t)
 ///
-/// \Then 0 is returned, the object is inserted
+/// \Then 0 is returned, the object is inserted into the device
 TEST(CO_Dev, CoDevInsertObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Take();
@@ -663,7 +663,7 @@ TEST(CO_Dev, CoDevInsertObj) {
 /// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
 ///       which was inserted into other device
 ///
-/// \Then -1 is returned, the object remains in the other device
+/// \Then -1 is returned, the object is still inserted into other device
 TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
   CoDevTHolder other_dev_holder(0x02);
   CoObjTHolder obj_holder(0x0001);
@@ -675,14 +675,15 @@ TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
 
   CHECK_EQUAL(-1, ret);
   POINTERS_EQUAL(obj, co_dev_find_obj(other_dev, 0x0001));
+  POINTERS_EQUAL(nullptr, co_dev_find_obj(dev, 0x0001));
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
-///       which was inserted into other device
+///       which was already inserted into the device
 ///
-/// \Then -1 is returned, the object remains in the other device
+/// \Then 0 is returned, the object is still inserted into the device
 TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
   CoObjTHolder obj_holder(0x00001);
   co_obj_t* const obj = obj_holder.Take();
@@ -691,16 +692,26 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
   const auto ret = co_dev_insert_obj(dev, obj);
 
   CHECK_EQUAL(0, ret);
+  POINTERS_EQUAL(obj, co_dev_find_obj(dev, 0x0001));
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object inserted
+///
+/// \When co_dev_insert_obj() is called with a pointer to the another object
+///       (co_obj_t) with an index equal to the index of the object which was
+///       already inserted into the device
+///
+/// \Then -1 is returned, the initial object is still inserted into the device
 TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
-  CoObjTHolder obj1(0x0001);
-  CoObjTHolder obj2(0x0001);
-  CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1.Take()));
+  CoObjTHolder obj1_holder(0x0001);
+  CoObjTHolder obj2_holder(0x0001);
+  co_obj_t* const obj1 = obj1_holder.Take();
+  CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1));
 
-  const auto ret = co_dev_insert_obj(dev, obj2.Get());
+  const auto ret = co_dev_insert_obj(dev, obj2_holder.Get());
 
   CHECK_EQUAL(-1, ret);
+  POINTERS_EQUAL(obj1, co_dev_find_obj(dev, 0x0001));
 }
 
 ///@}
@@ -708,6 +719,11 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
 /// @name co_dev_remove_obj()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object inserted
+///
+/// \When co_dev_remove_obj() is called with a pointer to the object (co_obj_t)
+///
+/// \Then 0 is returned, the object is not present in the device
 TEST(CO_Dev, CoDevRemoveObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Get();
@@ -720,6 +736,11 @@ TEST(CO_Dev, CoDevRemoveObj) {
   POINTERS_EQUAL(nullptr, co_obj_get_dev(obj));
 }
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_remove_obj() is called with a pointer to the object (co_obj_t)
+///
+/// \Then -1 is returned, nothing is changed
 TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
   CoObjTHolder obj(0x1234);
 
@@ -733,6 +754,11 @@ TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
 /// @name co_dev_find_obj()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object inserted
+///
+/// \When co_dev_find_obj() is called with the object's index
+///
+/// \Then a pointer to the object is returned
 TEST(CO_Dev, CoDevFindObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Take();
@@ -743,6 +769,11 @@ TEST(CO_Dev, CoDevFindObj) {
   POINTERS_EQUAL(obj, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_find_obj() is called with an index
+///
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevFindObj_NotFound) {
   const auto* const ret = co_dev_find_obj(dev, 0x1234);
 
@@ -754,6 +785,11 @@ TEST(CO_Dev, CoDevFindObj_NotFound) {
 /// @name co_dev_find_sub()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object and a sub-object inserted
+///
+/// \When co_dev_find_sub() is called with the index and the sub-index of the sub-object
+///
+/// \Then a pointer to the sub-object is returned
 TEST(CO_Dev, CoDevFindSub) {
   CoObjTHolder obj_holder(0x1234);
   CoSubTHolder sub_holder(0xab, CO_DEFTYPE_INTEGER16);
@@ -766,12 +802,22 @@ TEST(CO_Dev, CoDevFindSub) {
   POINTERS_EQUAL(sub, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_find_sub() is called with an index and a sub-index
+///
+/// \Then a pointer to the sub-object is returned
 TEST(CO_Dev, CoDevFindSub_NoObj) {
   const auto* const ret = co_dev_find_sub(dev, 0x1234, 0x00);
 
   POINTERS_EQUAL(nullptr, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without sub-objects inserted
+///
+/// \When co_dev_find_sub() is called with the index of the object and a sub-index
+///
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevFindSub_NoSub) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -786,6 +832,11 @@ TEST(CO_Dev, CoDevFindSub_NoSub) {
 /// @name co_dev_first_obj()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object inserted
+///
+/// \When co_dev_first_obj() is called
+///
+/// \Then a pointer to the inserted object is returned
 TEST(CO_Dev, CoDevFirstObj) {
   CoObjTHolder obj_holder(0x1234);
   const auto obj = obj_holder.Take();
@@ -796,6 +847,11 @@ TEST(CO_Dev, CoDevFirstObj) {
   POINTERS_EQUAL(obj, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_first_obj() is called
+///
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevFirstObj_Empty) {
   const auto* const ret = co_dev_first_obj(dev);
 
@@ -807,6 +863,11 @@ TEST(CO_Dev, CoDevFirstObj_Empty) {
 /// @name co_dev_last_obj()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object inserted
+///
+/// \When co_dev_last_obj() is called
+///
+/// \Then a pointer to the object is returned
 TEST(CO_Dev, CoDevLastObj) {
   CoObjTHolder obj_holder(0x1234);
   const auto obj = obj_holder.Take();
@@ -817,6 +878,11 @@ TEST(CO_Dev, CoDevLastObj) {
   POINTERS_EQUAL(obj, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_last_obj() is called
+///
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevLastObj_Empty) {
   const auto* const ret = co_dev_last_obj(dev);
 
@@ -964,6 +1030,11 @@ TEST(CO_Dev, CoDevSetOrderCode_Empty) {
 /// @name co_dev_set_vendor_id()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_vendor_id() is called with a valid ID
+///
+/// \Then the requested ID is set
 TEST(CO_Dev, CoDevSetVendorId) {
   co_dev_set_vendor_id(dev, 0x12345678);
 
@@ -975,6 +1046,11 @@ TEST(CO_Dev, CoDevSetVendorId) {
 /// @name co_dev_set_product_code()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_product_code() is called with a valid number
+///
+/// \Then the requested product code is set
 TEST(CO_Dev, CoDevSetProductCode) {
   co_dev_set_product_code(dev, 0x12345678);
 
@@ -986,6 +1062,11 @@ TEST(CO_Dev, CoDevSetProductCode) {
 /// @name co_dev_set_revision()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_revision() is called with a valid number
+///
+/// \Then the requested revision is set
 TEST(CO_Dev, CoDevSetRevision) {
   co_dev_set_revision(dev, 0x12345678);
 
@@ -997,6 +1078,11 @@ TEST(CO_Dev, CoDevSetRevision) {
 /// @name co_dev_set_baud()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_baud() is called with valid flags
+///
+/// \Then the requested flags are set
 TEST(CO_Dev, CoDevSetBaud) {
   co_dev_set_baud(dev, CO_BAUD_50 | CO_BAUD_1000);
 
@@ -1008,6 +1094,11 @@ TEST(CO_Dev, CoDevSetBaud) {
 /// @name co_dev_set_rate()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_rate() is called with valid flags
+///
+/// \Then the requested baudrate is set
 TEST(CO_Dev, CoDevSetRate) {
   co_dev_set_rate(dev, 500);
 
@@ -1019,6 +1110,11 @@ TEST(CO_Dev, CoDevSetRate) {
 /// @name co_dev_set_lss()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_lss() is called with valid flags
+///
+/// \Then the LSS support flag is set
 TEST(CO_Dev, CoDevSetLSS) {
   co_dev_set_lss(dev, 123);
 
@@ -1030,6 +1126,11 @@ TEST(CO_Dev, CoDevSetLSS) {
 /// @name co_dev_set_dummy()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_dummy() is called with valid flags
+///
+/// \Then the LSS support flag is set
 TEST(CO_Dev, CoDevSetDummy) {
   co_dev_set_dummy(dev, 0x00010001);
 
@@ -1041,6 +1142,11 @@ TEST(CO_Dev, CoDevSetDummy) {
 /// @name co_dev_get_val()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+///
+/// \When co_dev_get_val() is called with the index and sub-index of the sub-object
+///
+/// \Then a pointer to the sub-object's value is returned
 TEST(CO_Dev, CoDevGetVal) {
   CoObjTHolder obj_holder(0x1234);
   CoSubTHolder sub_holder(0xab, CO_DEFTYPE_INTEGER16);
@@ -1057,12 +1163,24 @@ TEST(CO_Dev, CoDevGetVal) {
   CHECK_EQUAL(0x0987, *ret);
 }
 
+/// \Given a null pointer to the device (co_dev_t)
+///
+/// \When co_dev_get_val() is called with the index and sub-index of the sub-object
+///
+/// \Then a pointer to the sub-object's value is returned
 TEST(CO_Dev, CoDevGetVal_NullDev) {
-  const auto ret = co_dev_get_val(nullptr, 0x0000, 0x00);
+  co_dev_t* const dev = nullptr;
+
+  const auto ret = co_dev_get_val(dev, 0x0000, 0x00);
 
   POINTERS_EQUAL(nullptr, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_get_val() is called with the index and sub-index of the non-existing sub-object
+///
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevGetVal_NotFound) {
   const auto ret = co_dev_get_val(dev, 0x0000, 0x00);
 
@@ -1074,6 +1192,11 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 /// @name co_dev_set_val()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object and sub-object inserted
+///
+/// \When co_dev_set_val() is called with the index and sub-index of the sub-object
+///
+/// \Then the length of the value is returned, the requested value is set 
 TEST(CO_Dev, CoDevSetVal) {
   co_unsigned16_t val = 0x0987;
 
@@ -1088,6 +1211,11 @@ TEST(CO_Dev, CoDevSetVal) {
   CHECK_EQUAL(val, co_dev_get_val_i16(dev, 0x1234, 0xab));
 }
 
+/// \Given a pointer to the device (co_dev_t) 
+///
+/// \When co_dev_set_val() is called with the index and sub-index of a non-existing sub-object
+///
+/// \Then 0 is returned 
 TEST(CO_Dev, CoDevSetVal_NotFound) {
   const auto ret = co_dev_set_val(dev, 0x0000, 0x00, nullptr, 0);
 
@@ -1503,7 +1631,7 @@ TEST_GROUP(CO_DevDCF) {
       0x01, 0x00, 0x00, 0x00,  // number of sub-indexes
       // value 1
       0x34, 0x12,              // index
-      0xab,                    // subindex
+      0xab,                    // sub-index
       0x02, 0x00, 0x00, 0x00,  // size
       0x87, 0x09               // value
   };

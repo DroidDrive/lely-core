@@ -639,6 +639,11 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
 /// @name co_dev_insert_obj()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_insert_obj() is called with a pointer to an object (co_obj_t)
+///
+/// \Then 0 is returned, the object is inserted
 TEST(CO_Dev, CoDevInsertObj) {
   CoObjTHolder obj_holder(0x1234);
   co_obj_t* const obj = obj_holder.Take();
@@ -653,6 +658,12 @@ TEST(CO_Dev, CoDevInsertObj) {
   CHECK_EQUAL(dev, co_obj_get_dev(obj));
 }
 
+/// \Given a pointer to the device (co_dev_t) without any object inserted
+///
+/// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
+///       which was inserted into other device
+///
+/// \Then -1 is returned, the object remains in the other device
 TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
   CoDevTHolder other_dev_holder(0x02);
   CoObjTHolder obj_holder(0x0001);
@@ -663,8 +674,15 @@ TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
   const auto ret = co_dev_insert_obj(dev, obj);
 
   CHECK_EQUAL(-1, ret);
+  POINTERS_EQUAL(obj, co_dev_find_obj(other_dev, 0x0001));
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object inserted
+///
+/// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
+///       which was inserted into other device
+///
+/// \Then -1 is returned, the object remains in the other device
 TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
   CoObjTHolder obj_holder(0x00001);
   co_obj_t* const obj = obj_holder.Take();

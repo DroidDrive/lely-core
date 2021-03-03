@@ -429,8 +429,15 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 /// \When co_dev_set_id() is called with a valid ID
 ///
 /// \Then 0 is returned and the requested ID is set
+TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
+  int clangformat_fix = 0;
+  (void)clangformat_fix;
+
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
-  TEST(CO_Dev, CoDevSetId_CoType_##a) { \
+  { \
+    dev_holder.reset(new CoDevTHolder(0x01)); \
+    dev = dev_holder->Get(); \
+\
     CoObjTHolder obj_holder(0x1234); \
     CoSubTHolder sub_holder(0xab, CO_DEFTYPE_##a); \
     co_sub_t* const sub = obj_holder.InsertSub(sub_holder); \
@@ -453,6 +460,7 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
   }
 #include <lely/co/def/basic.def>
 #undef LELY_CO_DEFINE_TYPE
+}
 
 /// \Given a pointer to the device (co_dev_t) with objects and sub-objects of the non-basic type inserted
 ///
@@ -563,7 +571,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
 
   const auto ret = co_dev_get_idx(dev, 0, nullptr);
 
-  CHECK_EQUAL(1, ret);
+  CHECK_EQUAL(1u, ret);
 }
 
 /// \Given a pointer to the device (co_dev_t) with one object inserted
@@ -574,7 +582,6 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-
   co_unsigned16_t out_idx = 0x0000;
   const auto ret = co_dev_get_idx(dev, 1, &out_idx);
 
@@ -1196,7 +1203,7 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 ///
 /// \When co_dev_set_val() is called with the index and sub-index of the sub-object
 ///
-/// \Then the length of the value is returned, the requested value is set 
+/// \Then the length of the value is returned, the requested value is set
 TEST(CO_Dev, CoDevSetVal) {
   co_unsigned16_t val = 0x0987;
 
@@ -1211,11 +1218,11 @@ TEST(CO_Dev, CoDevSetVal) {
   CHECK_EQUAL(val, co_dev_get_val_i16(dev, 0x1234, 0xab));
 }
 
-/// \Given a pointer to the device (co_dev_t) 
+/// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_set_val() is called with the index and sub-index of a non-existing sub-object
 ///
-/// \Then 0 is returned 
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevSetVal_NotFound) {
   const auto ret = co_dev_set_val(dev, 0x0000, 0x00, nullptr, 0);
 
@@ -1223,32 +1230,55 @@ TEST(CO_Dev, CoDevSetVal_NotFound) {
   CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_val_<typename>() is called with the index and sub-index of the sub-object
+///
+/// \Then co_dev_get_val_<typename>() returns the requested value
+TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
+  int clangformat_fix = 0;
+  (void)clangformat_fix;
+
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
-  TEST(CO_Dev, CoDevSetGetVal_CoType_##a) { \
+  { \
+    dev_holder.reset(new CoDevTHolder(0x01)); \
+    dev = dev_holder->Get(); \
+\
     CoObjTHolder obj(0x1234); \
     CoSubTHolder sub(0xab, CO_DEFTYPE_##a); \
     CHECK(obj.InsertSub(sub) != nullptr); \
     CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take())); \
+\
     const auto set_ret = co_dev_set_val_##c(dev, 0x1234, 0xab, 0x42); \
+\
     CHECK_EQUAL(co_type_sizeof(CO_DEFTYPE_##a), set_ret); \
+\
     const co_##b##_t get_ret = co_dev_get_val_##c(dev, 0x1234, 0xab); \
+\
     CHECK_EQUAL(get_ret, static_cast<co_##b##_t>(0x42)); \
   }
+  // add teardown fix to prevent .Take() fail
 #include <lely/co/def/basic.def>  // NOLINT(build/include)
 #undef LELY_CO_DEFINE_TYPE
+}
 
 ///@}
 
 /// @name co_dev_read_sub()
 ///@{
 
-TEST(CO_Dev, CoDevReadSub) {
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+///
+/// \When co_dev_read_sub() is called with pointers to memory area for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
+///
+/// \Then a size of the concise DCF buffer is returned, the index and the sub-index are stored in the memory and the requested value is set
+TEST(CO_Dev, CoDevReadSub_Nominal) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
   co_unsigned16_t idx = 0x0000;
@@ -1262,13 +1292,18 @@ TEST(CO_Dev, CoDevReadSub) {
   CHECK_EQUAL(0x0987, co_dev_get_val_i16(dev, idx, subidx));
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory are for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
+///
+/// \Then the requested value is set
 TEST(CO_Dev, CoDevReadSub_NoIdx) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
 
@@ -1278,11 +1313,16 @@ TEST(CO_Dev, CoDevReadSub_NoIdx) {
   CHECK_EQUAL(0x0987, co_dev_get_val_i16(dev, 0x1234, 0xab));
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
+///
+/// \Then a size of the concise DCF buffer is returned
 TEST(CO_Dev, CoDevReadSub_NoSub) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
 
@@ -1291,11 +1331,16 @@ TEST(CO_Dev, CoDevReadSub_NoSub) {
   CHECK_EQUAL(BUF_SIZE, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a null pointer to the concise DCF buffer begin and a pointer to the end of the buffer
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_NoBegin) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
 
@@ -1305,11 +1350,16 @@ TEST(CO_Dev, CoDevReadSub_NoBegin) {
   CHECK_EQUAL(0, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_NoEnd) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
 
@@ -1318,6 +1368,11 @@ TEST(CO_Dev, CoDevReadSub_NoEnd) {
   CHECK_EQUAL(0, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to too small concise DCF buffer and a null pointer to the end of the buffer
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_TooSmallBuffer) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -1330,6 +1385,11 @@ TEST(CO_Dev, CoDevReadSub_TooSmallBuffer) {
   CHECK_EQUAL(0, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to too small concise DCF buffer and a null pointer to the end of the buffer
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_TooSmallForType) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -1344,49 +1404,69 @@ TEST(CO_Dev, CoDevReadSub_TooSmallForType) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_ReadIdxFailed) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
-  LelyOverride::co_val_read(Override::NoneCallsValid);
 
+  LelyOverride::co_val_read(Override::NoneCallsValid);
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails on the second call
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_ReadSubidxFailed) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
-  LelyOverride::co_val_read(1);
 
+  LelyOverride::co_val_read(1);
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails on the third call
+///
+/// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
                                  0x00, 0x00, 0x87, 0x09};
-  LelyOverride::co_val_read(2);
 
+  LelyOverride::co_val_read(2);
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
 }
 
 #if LELY_NO_MALLOC
+/// \Given a pointer to the device (co_dev_t) with an object of the array type inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
+///
+/// \Then size of the buffer is returned, the index and the sub-index are stored in the memory area, the requested value is set
 TEST(CO_Dev, CoDevReadSub_ArrayType) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_OCTET_STRING);
@@ -1410,6 +1490,11 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
 
 #endif  // HAVE_LELY_OVERRIDE
 
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+///
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer with invalid datasize declared and a pointer to the end of the buffer
+///
+/// \Then size of the buffer is returned, the value is not changed
 TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
@@ -1417,7 +1502,7 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x1a1a));
 
-  const size_t BUF_SIZE = 10;
+  const size_t BUF_SIZE = 10u;
   uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x03, 0x00,
                                  0x00, 0x00, 0x87, 0x09, 0x00};
 
@@ -1439,7 +1524,7 @@ TEST(CO_Dev, CoDevWriteSub) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
 
   const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
@@ -1454,7 +1539,7 @@ TEST(CO_Dev, CoDevWriteSub_NoSub) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
 
   const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
@@ -1469,7 +1554,7 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(Override::NoneCallsValid);
 
@@ -1513,7 +1598,7 @@ TEST(CO_Dev, CoDevWriteSub_NoEnd) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
 
   const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, nullptr);
@@ -1548,7 +1633,7 @@ TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(1);
 
@@ -1566,7 +1651,7 @@ TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(2);
 
@@ -1585,7 +1670,7 @@ TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(3);
 
@@ -1604,7 +1689,7 @@ TEST(CO_Dev, CoDevWriteSub_ValWriteFailed) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
 
-  const size_t BUF_SIZE = 9;
+  const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(4);
 

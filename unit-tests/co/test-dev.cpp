@@ -1466,7 +1466,7 @@ TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
-/// \Then size of the buffer is returned, the index and the sub-index are stored in the memory area, the requested value is set
+/// \Then a size of the buffer is returned, the index and the sub-index are stored in the memory area, the requested value is set
 TEST(CO_Dev, CoDevReadSub_ArrayType) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_OCTET_STRING);
@@ -1492,9 +1492,9 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
 
 /// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
 ///
-/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer with invalid datasize declared and a pointer to the end of the buffer
+/// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer with invalid data size declared and a pointer to the end of the buffer
 ///
-/// \Then size of the buffer is returned, the value is not changed
+/// \Then a size of the buffer is returned, the value is not changed
 TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
@@ -1517,6 +1517,11 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
 /// @name co_dev_write_sub()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+///
+/// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
+///
+/// \Then a size of the buffer is returned, the concise DCF is written
 TEST(CO_Dev, CoDevWriteSub) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
@@ -1535,6 +1540,11 @@ TEST(CO_Dev, CoDevWriteSub) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
+/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+///
+/// \When co_dev_write_sub() is called with the index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
+///
+/// \Then a size of the buffer is returned, the concise DCF is not written
 TEST(CO_Dev, CoDevWriteSub_NoSub) {
   CoObjTHolder obj(0x1234);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -1545,9 +1555,16 @@ TEST(CO_Dev, CoDevWriteSub_NoSub) {
   const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
+  const uint_least8_t expected[BUF_SIZE] = {0};
+  CheckBuffers(expected, buf, BUF_SIZE);
 }
 
 #ifdef HAVE_LELY_OVERRIDE
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+///
+/// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but the co_val_write() fails
+///
+/// \Then a size of the buffer is returned, the concise DCF is not written
 TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
   CoObjTHolder obj(0x1234);
   CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
@@ -1556,11 +1573,13 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
-  LelyOverride::co_val_write(Override::NoneCallsValid);
 
+  LelyOverride::co_val_write(Override::NoneCallsValid);
   const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
+  const uint_least8_t expected[BUF_SIZE] = {0};
+  CheckBuffers(expected, buf, BUF_SIZE);
 }
 #endif
 

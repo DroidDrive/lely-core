@@ -1175,8 +1175,103 @@ TEST(CoCsdo, CoDevUpReq_NoBufPtr) {
   POINTERS_EQUAL(nullptr, CoCsdoUpCon::data);
 }
 
-// valid idx, invalid subidx, rest nominal
 // invalid idx, invalid subdix, rest nominal
+TEST(CoCsdo, CoDevUpReq_NoObj) {
+  membuf mbuf = MEMBUF_INIT;
+
+  const auto ret = co_dev_up_req(dev, INVALID_IDX, INVALID_SUBIDX, &mbuf,
+                                 CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, INVALID_IDX, INVALID_SUBIDX, CO_SDO_AC_NO_OBJ,
+                     mbuf.begin, 0, nullptr);
+  POINTERS_EQUAL(nullptr, mbuf.begin);
+  POINTERS_EQUAL(nullptr, mbuf.cur);
+  POINTERS_EQUAL(nullptr, mbuf.end);
+}
+
+// valid idx, invalid subidx, rest nominal
+TEST(CoCsdo, CoDevUpReq_NoSub) {
+  membuf mbuf = MEMBUF_INIT;
+
+  const auto ret = co_dev_up_req(dev, IDX, INVALID_SUBIDX, &mbuf,
+                                 CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, INVALID_SUBIDX, CO_SDO_AC_NO_SUB, mbuf.begin,
+                     0, nullptr);
+  POINTERS_EQUAL(nullptr, mbuf.begin);
+  POINTERS_EQUAL(nullptr, mbuf.cur);
+  POINTERS_EQUAL(nullptr, mbuf.end);
+}
+
+// array size do not match
+TEST(CoCsdo, CoDevUpReq_ObjIsAnArray_NoData) {
+  membuf mbuf = MEMBUF_INIT;
+  co_obj_set_code(obj2020->Get(), CO_OBJECT_ARRAY);
+  obj2020->RemoveAndDestroyLastSub();
+  obj2020->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
+  obj2020->InsertAndSetSub(0x01u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX + 1u, &mbuf, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX + 1u, CO_SDO_AC_NO_DATA, mbuf.begin,
+                     0, nullptr);
+  POINTERS_EQUAL(nullptr, mbuf.begin);
+  POINTERS_EQUAL(nullptr, mbuf.cur);
+  POINTERS_EQUAL(nullptr, mbuf.end);
+}
+
+TEST(CoCsdo, CoDevUpReq_ObjIsAnArray_DataPresent) {
+  membuf mbuf = MEMBUF_INIT;
+  co_obj_set_code(obj2020->Get(), CO_OBJECT_ARRAY);
+  obj2020->RemoveAndDestroyLastSub();
+  obj2020->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x01u));
+  obj2020->InsertAndSetSub(0x01u, SUB_TYPE, sub_type(0x1234u));
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, 0x01u, &mbuf, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, 0x01, 0, mbuf.begin, sizeof(sub_type),
+                     nullptr);
+  CHECK(mbuf.begin != nullptr);
+  CHECK(mbuf.cur != nullptr);
+  CHECK(mbuf.end != nullptr);
+  CHECK(mbuf.begin != mbuf.end);
+  POINTERS_EQUAL(mbuf.cur, (mbuf.begin + sizeof(sub_type)));
+  CHECK_EQUAL(0x34u, static_cast<int_least8_t>(mbuf.begin[0]));
+  CHECK_EQUAL(0x12u, static_cast<int_least8_t>(mbuf.begin[1]));
+}
+
+co_unsigned32_t
+failing_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+  (void)data;
+
+  co_unsigned32_t ac = 0;
+  co_sub_on_up(sub, req, &ac);
+  req->buf = nullptr;
+
+  return 0;
+}
+
+// csdo.c:863
+TEST(CoCsdo, CoDevUpReq_DefaultReqBuf) {
+  membuf mbuf = MEMBUF_INIT;
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_obj_set_up_ind(obj2020->Get(), failing_up_ind, nullptr);
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, nullptr, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(0, CoCsdoUpCon::ac);
+  POINTERS_EQUAL(nullptr, mbuf.begin);
+  POINTERS_EQUAL(nullptr, mbuf.cur);
+  POINTERS_EQUAL(nullptr, mbuf.end);
+}
 
 // Nominal
 TEST(CoCsdo, CoDevUpReq_Nominal) {

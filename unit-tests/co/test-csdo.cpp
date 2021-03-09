@@ -1135,3 +1135,67 @@ TEST(CoCsdo, CoDevDnDcfReq_Nominal) {
 }
 
 ///@}
+
+/// @name co_dev_up_req()
+///@{
+
+TEST(CoCsdo, CoDevUpReq_NoConfirmationFunction) {
+  membuf mbuf_ = MEMBUF_INIT;
+  membuf* mbuf = &mbuf_;
+
+  const auto ret = co_dev_up_req(dev, IDX, SUBIDX, mbuf, nullptr, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CHECK(mbuf != nullptr);
+  CHECK(mbuf->begin != nullptr);
+  CHECK(mbuf->cur != nullptr);
+  CHECK(mbuf->end != nullptr);
+  CHECK(mbuf->begin != mbuf->end);
+  POINTERS_EQUAL(mbuf->cur, (mbuf->begin + sizeof(sub_type)));
+  CHECK_EQUAL(0x00u, mbuf->begin[0]);
+  CHECK_EQUAL(0x00u, mbuf->begin[1]);
+}
+
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_up_req() is called with an index, a sub-index, no memory area to store the serialized value and no confirmation function
+///
+/// \Then 0 is returned
+TEST(CoCsdo, CoDevUpReq_NoBufPtr) {
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, nullptr, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  POINTERS_EQUAL(nullptr, CoCsdoUpCon::sdo);
+  CHECK_EQUAL(IDX, CoCsdoUpCon::idx);
+  CHECK_EQUAL(SUBIDX, CoCsdoUpCon::subidx);
+  CHECK_EQUAL(0, CoCsdoUpCon::ac);
+  CHECK(CoCsdoUpCon::ptr != nullptr);
+  CHECK_EQUAL(sizeof(sub_type), CoCsdoUpCon::n);
+  POINTERS_EQUAL(nullptr, CoCsdoUpCon::data);
+}
+
+// valid idx, invalid subidx, rest nominal
+// invalid idx, invalid subdix, rest nominal
+
+// Nominal
+TEST(CoCsdo, CoDevUpReq_Nominal) {
+  membuf mbuf = MEMBUF_INIT;
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, mbuf.begin, sizeof(sub_type),
+                     nullptr);
+  CHECK(mbuf.begin != nullptr);
+  CHECK(mbuf.cur != nullptr);
+  CHECK(mbuf.end != nullptr);
+  CHECK(mbuf.begin != mbuf.end);
+  POINTERS_EQUAL(mbuf.cur, (mbuf.begin + sizeof(sub_type)));
+  CHECK_EQUAL(0x34, static_cast<int_least8_t>(mbuf.begin[0]));
+  CHECK_EQUAL(0x12, static_cast<int_least8_t>(mbuf.begin[1]));
+}
+
+///@}

@@ -29,6 +29,15 @@ co_unsigned32_t CoCsdoDnCon::ac = 0;
 void* CoCsdoDnCon::data = nullptr;
 unsigned int CoCsdoDnCon::num_called = 0;
 
+co_csdo_t* CoCsdoUpCon::sdo = nullptr;
+co_unsigned16_t CoCsdoUpCon::idx = 0;
+co_unsigned8_t CoCsdoUpCon::subidx = 0;
+co_unsigned32_t CoCsdoUpCon::ac = 0;
+const void* CoCsdoUpCon::ptr = nullptr;
+size_t CoCsdoUpCon::n = 0;
+void* CoCsdoUpCon::data = nullptr;
+unsigned int CoCsdoUpCon::num_called = 0;
+
 int CanSend::ret = 0;
 void* CanSend::data = nullptr;
 unsigned int CanSend::num_called = 0;

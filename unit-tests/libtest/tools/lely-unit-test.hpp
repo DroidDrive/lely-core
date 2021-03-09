@@ -100,6 +100,61 @@ struct CoCsdoDnCon {
   }
 };
 
+struct CoCsdoUpCon {
+  static co_csdo_t* sdo;
+  static co_unsigned16_t idx;
+  static co_unsigned8_t subidx;
+  static co_unsigned32_t ac;
+  static const void* ptr;
+  static size_t n;
+  static void* data;
+  static unsigned int num_called;
+
+  static inline void
+  func(co_csdo_t* sdo_, co_unsigned16_t idx_, co_unsigned8_t subidx_,
+       co_unsigned32_t ac_, const void* ptr_, size_t n_, void* data_) {
+    sdo = sdo_;
+    idx = idx_;
+    subidx = subidx_;
+    ac = ac_;
+    ptr = ptr_;
+    n = n_;
+    data = data_;
+    num_called++;
+  }
+
+  static inline void
+  Clear() {
+    sdo = nullptr;
+    idx = 0;
+    subidx = 0;
+    ac = 0;
+    ptr = nullptr;
+    n = 0;
+    data = nullptr;
+
+    num_called = 0;
+  }
+
+  static inline void
+  Check(const co_csdo_t* sdo_, const co_unsigned16_t idx_,
+        const co_unsigned8_t subidx_, const co_unsigned32_t ac_,
+        const void* ptr_, const size_t n_, const void* data_) {
+    POINTERS_EQUAL(sdo_, sdo);
+    CHECK_EQUAL(idx_, idx);
+    CHECK_EQUAL(subidx_, subidx);
+    CHECK_EQUAL(ac_, ac);
+    POINTERS_EQUAL(ptr_, ptr);
+    CHECK_EQUAL(n_, n);
+    POINTERS_EQUAL(data_, data);
+  }
+
+  static inline bool
+  called() {
+    return num_called > 0;
+  }
+};
+
 struct CanSend {
  private:
   static size_t buf_size;

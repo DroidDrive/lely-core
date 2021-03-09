@@ -4,7 +4,7 @@
  *
  * @see lely/co/csdo.h, lib/co/sdo.h
  *
- * @copyright 2021 Lely Industries N.V.
+ * @copyright 2020-2021 Lely Industries N.V.
  *
  * @author J. S. Seldenthuis <jseldenthuis@lely.com>
  *

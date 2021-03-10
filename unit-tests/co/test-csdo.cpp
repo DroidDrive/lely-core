@@ -1247,21 +1247,21 @@ TEST(CoCsdo, CoDevUpReq_ObjIsAnArray_DataPresent) {
 }
 
 co_unsigned32_t
-failing_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_zero_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   (void)data;
 
   co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
   req->buf = nullptr;
+  req->size = 0;
 
   return 0;
 }
 
 // csdo.c:863
-TEST(CoCsdo, CoDevUpReq_DefaultReqBuf) {
+TEST(CoCsdo, CoDevUpReq_ReqZero) {
   membuf mbuf = MEMBUF_INIT;
-  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
-  co_obj_set_up_ind(obj2020->Get(), failing_up_ind, nullptr);
+  co_obj_set_up_ind(obj2020->Get(), req_up_zero_ind, nullptr);
 
   const auto ret =
       co_dev_up_req(dev, IDX, SUBIDX, nullptr, CoCsdoUpCon::func, nullptr);
@@ -1273,6 +1273,39 @@ TEST(CoCsdo, CoDevUpReq_DefaultReqBuf) {
   POINTERS_EQUAL(nullptr, mbuf.end);
 }
 
+uint_least8_t mbuf[10u] = {0};
+
+co_unsigned32_t
+req_up_too_many_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+  (void)data;
+
+  co_unsigned32_t ac = 0;
+  co_sub_on_up(sub, req, &ac);
+  // req->buf = mbuf;
+  req->size = 9u;
+
+  return 0;
+}
+
+IGNORE_TEST(CoCsdo, CoDevUpReq_NoMem) {
+  membuf mbuf = MEMBUF_INIT;
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_obj_set_up_ind(obj2020->Get(), req_up_too_many_ind, nullptr);
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, mbuf.begin, sizeof(sub_type),
+                     nullptr);
+  CHECK(mbuf.begin != nullptr);
+  CHECK(mbuf.cur != nullptr);
+  CHECK(mbuf.end != nullptr);
+  CHECK(mbuf.begin != mbuf.end);
+  POINTERS_EQUAL(mbuf.cur, (mbuf.begin + sizeof(sub_type)));
+  CHECK_EQUAL(0x34, static_cast<int_least8_t>(mbuf.begin[0]));
+  CHECK_EQUAL(0x12, static_cast<int_least8_t>(mbuf.begin[1]));
+}
 // Nominal
 TEST(CoCsdo, CoDevUpReq_Nominal) {
   membuf mbuf = MEMBUF_INIT;

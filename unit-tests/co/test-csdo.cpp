@@ -42,6 +42,11 @@
 #include "holder/obj.hpp"
 #include "holder/array-init.hpp"
 
+#include "../libtest/tools/lely-unit-test.hpp"
+#include "../libtest/tools/lely-cpputest-ext.hpp"
+#include "../libtest/override/lelyco-val.hpp"
+// #include "../libtest/override/libc-stdlib.hpp"
+
 TEST_GROUP(CO_CsdoInit) {
   const co_unsigned8_t CSDO_NUM = 0x01u;
   static const co_unsigned8_t DEV_ID = 0x01u;
@@ -1290,52 +1295,54 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 // csdo.c:863
 TEST(CoCsdo, CoDevUpReq_IndBufIsReqBuf) {
   co_obj_set_up_ind(obj2020->Get(), ind_buf_req_buf::req_up_ind, nullptr);
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
 
   const auto ret = co_dev_up_req(dev, IDX, SUBIDX, ind_buf_req_buf::mbuf,
                                  CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
   CHECK_EQUAL(0, CoCsdoUpCon::ac);
-  // POINTERS_EQUAL(nullptr, mbuf.begin);
-  // POINTERS_EQUAL(nullptr, mbuf.cur);
-  // POINTERS_EQUAL(nullptr, mbuf.end);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, ind_buf_req_buf::mbuf->begin,
+                     sizeof(sub_type), nullptr);
+  CHECK(ind_buf_req_buf::mbuf->begin != ind_buf_req_buf::mbuf->end);
+  POINTERS_EQUAL(ind_buf_req_buf::mbuf->cur,
+                 ind_buf_req_buf::mbuf->begin + sizeof(sub_type));
+  CHECK_EQUAL(0x34, static_cast<int_least8_t>(ind_buf_req_buf::mbuf->begin[0]));
+  CHECK_EQUAL(0x12, static_cast<int_least8_t>(ind_buf_req_buf::mbuf->begin[1]));
 }
 
-/// ///////////////////////
-uint_least8_t mbuf[10u] = {0};
-
+namespace no_mem_ind {
 co_unsigned32_t
-req_up_too_many_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   (void)data;
 
   co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
-  // req->buf = mbuf;
-  req->size = 9u;
+  req->size = 1u;
 
   return 0;
 }
+}  // namespace no_mem_ind
 
-IGNORE_TEST(CoCsdo, CoDevUpReq_NoMem) {
+// csdo.c: 867
+TEST(CoCsdo, CoDevUpReq_NoMemory) {
   membuf mbuf = MEMBUF_INIT;
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
-  co_obj_set_up_ind(obj2020->Get(), req_up_too_many_ind, nullptr);
+  co_obj_set_up_ind(obj2020->Get(), no_mem_ind::req_up_ind, nullptr);
+  LibCOverride::realloc_vc = Override::NoneCallsValid;
 
   const auto ret =
       co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
 
+  LibCOverride::realloc_vc = Override::AllCallsValid;
+
   CHECK_EQUAL(0, ret);
-  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, mbuf.begin,
-                     sizeof(sub_type), nullptr);
-  CHECK(mbuf.begin != nullptr);
-  CHECK(mbuf.cur != nullptr);
-  CHECK(mbuf.end != nullptr);
-  CHECK(mbuf.begin != mbuf.end);
-  POINTERS_EQUAL(mbuf.cur, (mbuf.begin + sizeof(sub_type)));
-  CHECK_EQUAL(0x34, static_cast<int_least8_t>(mbuf.begin[0]));
-  CHECK_EQUAL(0x12, static_cast<int_least8_t>(mbuf.begin[1]));
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, mbuf.begin, 0,
+                     nullptr);
+  POINTERS_EQUAL(nullptr, mbuf.begin);
+  POINTERS_EQUAL(nullptr, mbuf.cur);
+  POINTERS_EQUAL(nullptr, mbuf.end);
 }
-/// ///////////////////////
 
 // Nominal
 TEST(CoCsdo, CoDevUpReq_Nominal) {

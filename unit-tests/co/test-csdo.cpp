@@ -1344,6 +1344,46 @@ TEST(CoCsdo, CoDevUpReq_NoMemory) {
   POINTERS_EQUAL(nullptr, mbuf.end);
 }
 
+co_unsigned32_t
+req_up_ind_size(const co_sub_t* sub, co_sdo_req* req, void* data) {
+  (void)data;
+
+  co_unsigned32_t ac = 0;
+  co_sub_on_up(sub, req, &ac);
+  static bool called = false;
+  if (!called) {
+    called = true;
+    req->size = 2000u;
+  } else {
+    req->size = 0u;
+  }
+
+  return 0;
+}
+
+// csdo.c:869-870 (+871?)
+TEST(CoCsdo, CoDevUpReq_Domain) {
+  membuf mbuf = MEMBUF_INIT;
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_obj_set_up_ind(obj2020->Get(), req_up_ind_size, nullptr);
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
+
+  co_obj_set_up_ind(obj2020->Get(), nullptr, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, mbuf.begin, sizeof(sub_type),
+                     nullptr);
+  CHECK(mbuf.begin != nullptr);
+  CHECK(mbuf.cur != nullptr);
+  CHECK(mbuf.end != nullptr);
+  CHECK(mbuf.begin != mbuf.end);
+  POINTERS_EQUAL(mbuf.cur, (mbuf.begin + sizeof(sub_type)));
+  CHECK_EQUAL(0x34, static_cast<int_least8_t>(mbuf.begin[0]));
+  CHECK_EQUAL(0x12, static_cast<int_least8_t>(mbuf.begin[1]));
+}
+
 // Nominal
 TEST(CoCsdo, CoDevUpReq_Nominal) {
   membuf mbuf = MEMBUF_INIT;

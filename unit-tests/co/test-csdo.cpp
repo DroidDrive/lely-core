@@ -1436,6 +1436,7 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   req->buf = mbuf;
   req->offset = 0u;
   req->nbyte = 0u;
+  req->size = 2u;
 
   return 0;
 }
@@ -1452,7 +1453,8 @@ TEST(CoCsdo, CoDevUpReq_NotLastNoMem) {
   CHECK_EQUAL(0, ret);
   CHECK(not_last_no_mem::mbuf != nullptr);
 #if LELY_NO_MALLOC
-  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, nullptr, 0, nullptr);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
+                     nullptr);
   POINTERS_EQUAL(nullptr, not_last_no_mem::mbuf->begin);
   POINTERS_EQUAL(nullptr, not_last_no_mem::mbuf->cur);
   POINTERS_EQUAL(nullptr, not_last_no_mem::mbuf->end);

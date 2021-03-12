@@ -1169,7 +1169,8 @@ TEST(CoCsdo, CoDevUpReq_NoConfirmationFunction) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_up_req() is called with an index, a sub-index, no memory area to store the serialized value and no confirmation function
+/// \When co_dev_up_req() is called with an index, a sub-index, no memory area
+///       to store the serialized value and no confirmation function
 ///
 /// \Then 0 is returned
 TEST(CoCsdo, CoDevUpReq_NoBufPtr) {
@@ -1332,6 +1333,7 @@ TEST(CoCsdo, CoDevUpReq_IndBufIsReqBuf) {
 #endif
 }
 
+#if HAVE_REALLOC_OVERRIDE
 namespace no_mem_ind {
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
@@ -1365,6 +1367,7 @@ TEST(CoCsdo, CoDevUpReq_NoMemory) {
   POINTERS_EQUAL(nullptr, mbuf->cur);
   POINTERS_EQUAL(nullptr, mbuf->end);
 }
+#endif  // HAVE_REALLOC_OVERRIDE
 
 namespace diff_up_membuf {
 const size_t REQ_SIZE = 4u;

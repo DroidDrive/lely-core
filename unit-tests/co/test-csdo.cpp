@@ -46,6 +46,7 @@
 #include "../libtest/tools/lely-cpputest-ext.hpp"
 #include "../libtest/override/lelyco-val.hpp"
 // #include "../libtest/override/libc-stdlib.hpp"
+#include "../libtest/override/lelyutil-membuf.hpp"
 
 TEST_GROUP(CO_CsdoInit) {
   const co_unsigned8_t CSDO_NUM = 0x01u;
@@ -1360,6 +1361,46 @@ TEST(CoCsdo, CoDevUpReq_IndBufIsReqBuf) {
   CHECK_EQUAL(0x34, static_cast<int_least8_t>(ind_buf_req_buf::mbuf->begin[0]));
   CHECK_EQUAL(0x12, static_cast<int_least8_t>(ind_buf_req_buf::mbuf->begin[1]));
 }
+
+#if HAVE_REALLOC_OVERRIDE
+namespace no_mem_ind {
+co_unsigned32_t
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+  (void)data;
+
+  co_unsigned32_t ac = 0;
+  co_sub_on_up(sub, req, &ac);
+  req->size = 1u;
+
+  return 0;
+}
+}  // namespace no_mem_ind
+
+/// \Given a pointer to the device (co_dev_t) with an object inserted with an upload indication function which sets the requested size to a non-zero value
+///
+/// \When co_dev_up_req() is called with an index and a subindex of the object, a memory buffer to store the requested value and a confirmation function but realloc() fails
+///
+/// \Then 0 is returned, confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_MEM, a null pointer to the memory buffer, 0 as a size of the data and a null pointer to the user-specified data, memory buffer remains empty
+TEST(CoCsdo, CoDevUpReq_NoMemory) {
+  membuf mbuf_ = MEMBUF_INIT;
+  membuf* const mbuf = &mbuf_;
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_obj_set_up_ind(obj2020->Get(), no_mem_ind::req_up_ind, nullptr);
+
+  LelyOverride::membuf_reserve(0);
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, mbuf, CoCsdoUpCon::func, nullptr);
+
+  LelyOverride::membuf_reserve(-1);
+
+  CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
+                     nullptr);
+  POINTERS_EQUAL(nullptr, mbuf->begin);
+  POINTERS_EQUAL(nullptr, mbuf->cur);
+  POINTERS_EQUAL(nullptr, mbuf->end);
+}
+#endif  // HAVE_REALLOC_OVERRIDE
 
 namespace diff_up_membuf {
 const size_t REQ_SIZE = 4u;

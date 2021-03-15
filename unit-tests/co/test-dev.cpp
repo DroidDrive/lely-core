@@ -903,7 +903,12 @@ TEST(CO_Dev, CoDevLastObj_Empty) {
 /// @name co_dev_set_name()
 ///@{
 
-TEST(CO_Dev, CoDevSetName) {
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_name() is called with a pointer to a name
+///
+/// \Then 0 is returned and the name is set
+TEST(CO_Dev, CoDevSetName_Nominal) {
   const char* name = "DeviceName";
   const auto ret = co_dev_set_name(dev, name);
 
@@ -911,6 +916,11 @@ TEST(CO_Dev, CoDevSetName) {
   STRCMP_EQUAL(name, co_dev_get_name(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_name() is called with a null pointer
+///
+/// \Then 0 is returned and the device name is a null pointer
 TEST(CO_Dev, CoDevSetName_Null) {
   const char* name = "DeviceName";
   CHECK_EQUAL(0, co_dev_set_name(dev, name));
@@ -921,6 +931,11 @@ TEST(CO_Dev, CoDevSetName_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_name(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_name() is called with a pointer to an empty string
+///
+/// \Then 0 is returned and the empty string is the device name
 TEST(CO_Dev, CoDevSetName_Empty) {
   const char* name = "DeviceName";
   CHECK_EQUAL(0, co_dev_set_name(dev, name));
@@ -936,7 +951,12 @@ TEST(CO_Dev, CoDevSetName_Empty) {
 /// @name co_dev_set_vendor_name()
 ///@{
 
-TEST(CO_Dev, CoDevSetVendorName) {
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_vendor_name() is called with a pointer to a new name
+///
+/// \Then 0 is returned and the vendor name is set
+TEST(CO_Dev, CoDevSetVendorName_Nominal) {
   const char* vendor_name = "VendorName";
   const auto ret = co_dev_set_vendor_name(dev, vendor_name);
 
@@ -944,6 +964,11 @@ TEST(CO_Dev, CoDevSetVendorName) {
   STRCMP_EQUAL(vendor_name, co_dev_get_vendor_name(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_vendor_name() is called with a null pointer
+///
+/// \Then 0 is returned and the vendor name is a null pointer
 TEST(CO_Dev, CoDevSetVendorName_Null) {
   const char* vendor_name = "VendorName";
   CHECK_EQUAL(0, co_dev_set_vendor_name(dev, vendor_name));
@@ -954,6 +979,11 @@ TEST(CO_Dev, CoDevSetVendorName_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_vendor_name(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_vendor_name() is called with a pointer to the empty string
+///
+/// \Then 0 is returned and the vendor name is a null pointer
 TEST(CO_Dev, CoDevSetVendorName_Empty) {
   const char* vendor_name = "VendorName";
   CHECK_EQUAL(0, co_dev_set_vendor_name(dev, vendor_name));
@@ -969,7 +999,12 @@ TEST(CO_Dev, CoDevSetVendorName_Empty) {
 /// @name co_dev_set_product_name()
 ///@{
 
-TEST(CO_Dev, CoDevSetProductName) {
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_product_name() is called with a pointer to a name
+///
+/// \Then 0 is returned and the product name is set
+TEST(CO_Dev, CoDevSetProductName_Nominal) {
   const char* product_name = "ProductName";
   const auto ret = co_dev_set_product_name(dev, product_name);
 
@@ -977,6 +1012,11 @@ TEST(CO_Dev, CoDevSetProductName) {
   STRCMP_EQUAL(product_name, co_dev_get_product_name(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_product_name() is called with a null pointer
+///
+/// \Then 0 is returned and the product name is a null pointer
 TEST(CO_Dev, CoDevSetProductName_Null) {
   const char* product_name = "ProductName";
   CHECK_EQUAL(0, co_dev_set_product_name(dev, product_name));
@@ -987,6 +1027,11 @@ TEST(CO_Dev, CoDevSetProductName_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_product_name(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_product_name() is called with a pointer to an empty string
+///
+/// \Then 0 is returned and the product name is a null pointer
 TEST(CO_Dev, CoDevSetProductName_Empty) {
   const char* product_name = "ProductName";
   CHECK_EQUAL(0, co_dev_set_product_name(dev, product_name));
@@ -1002,6 +1047,11 @@ TEST(CO_Dev, CoDevSetProductName_Empty) {
 /// @name co_dev_set_order_code()
 ///@{
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_order_code() is called with a pointer to an order code
+///
+/// \Then 0 is returned and the order code is set
 TEST(CO_Dev, CoDevSetOrderCode) {
   const char* order_code = "OrderCode";
   const auto ret = co_dev_set_order_code(dev, order_code);
@@ -1010,6 +1060,11 @@ TEST(CO_Dev, CoDevSetOrderCode) {
   STRCMP_EQUAL(order_code, co_dev_get_order_code(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_order_code() is called with a null pointer
+///
+/// \Then 0 is returned and the order code is a null pointer
 TEST(CO_Dev, CoDevSetOrderCode_Null) {
   const char* order_code = "OrderCode";
   CHECK_EQUAL(0, co_dev_set_order_code(dev, order_code));
@@ -1020,6 +1075,11 @@ TEST(CO_Dev, CoDevSetOrderCode_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_order_code(dev));
 }
 
+/// \Given a pointer to the device (co_dev_t)
+///
+/// \When co_dev_set_order_code() is called with a pointer to an empty string
+///
+/// \Then 0 is returned and the order code is a null pointer
 TEST(CO_Dev, CoDevSetOrderCode_Empty) {
   const char* order_code = "OrderCode";
   CHECK_EQUAL(0, co_dev_set_order_code(dev, order_code));

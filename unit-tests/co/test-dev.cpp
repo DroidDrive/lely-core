@@ -91,8 +91,8 @@ TEST_GROUP(CO_DevInit) {
 ///
 /// \When co_dev_alloc() is called
 ///
-/// \Then non-null pointer is returned
-TEST(CO_DevInit, CoDevAllocFree) {
+/// \Then a non-null pointer is returned
+TEST(CO_DevInit, CoDevAllocFree_Nominal) {
   void* const ptr = co_dev_alloc();
 
   CHECK(ptr != nullptr);
@@ -169,7 +169,6 @@ TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
 
 #if !LELY_NO_CO_OBJ_NAME
   CHECK_EQUAL(0, co_dev_set_name(dev, "name"));
-  CHECK_EQUAL(0, co_dev_set_name(dev, "name"));
   CHECK_EQUAL(0, co_dev_set_vendor_name(dev, "vendor"));
   CHECK_EQUAL(0, co_dev_set_product_name(dev, "product name"));
   CHECK_EQUAL(0, co_dev_set_order_code(dev, "order code"));
@@ -217,10 +216,10 @@ TEST(CO_DevInit, CoDevInit_InvalidId) {
 
 /// \Given a pointer to the intialized device (co_dev_t)
 ///
-/// \When co_dev_init() is called with 0xff
+/// \When co_dev_fini() is called
 ///
 /// \Then the device is finalized
-TEST(CO_DevInit, CoDevFini) {
+TEST(CO_DevInit, CoDevFini_Nominal) {
   auto* const dev = AcquireCoDevT();
   CHECK(dev != nullptr);
   POINTERS_EQUAL(dev, co_dev_init(dev, 0x01));
@@ -232,10 +231,9 @@ TEST(CO_DevInit, CoDevFini) {
 
 ///@}
 
+#if !LELY_NO_MALLOC
 /// @name co_dev_destroy()
 ///@{
-
-#if !LELY_NO_MALLOC
 /// \Given a null pointer to the intialized device (co_dev_t)
 ///
 /// \When co_dev_destroy() is called
@@ -246,9 +244,8 @@ TEST(CO_DevInit, CoDevDestroy_Null) {
 
   co_dev_destroy(dev);
 }
-#endif
-
 ///@}
+#endif
 
 TEST_GROUP(CO_Dev) {
   co_dev_t* dev = nullptr;
@@ -1052,7 +1049,7 @@ TEST(CO_Dev, CoDevSetProductName_Empty) {
 /// \When co_dev_set_order_code() is called with a pointer to an order code
 ///
 /// \Then 0 is returned and the order code is set
-TEST(CO_Dev, CoDevSetOrderCode) {
+TEST(CO_Dev, CoDevSetOrderCode_Nominal) {
   const char* order_code = "OrderCode";
   const auto ret = co_dev_set_order_code(dev, order_code);
 
@@ -1102,7 +1099,7 @@ TEST(CO_Dev, CoDevSetOrderCode_Empty) {
 /// \When co_dev_set_vendor_id() is called with a valid ID
 ///
 /// \Then the requested ID is set
-TEST(CO_Dev, CoDevSetVendorId) {
+TEST(CO_Dev, CoDevSetVendorId_Nominal) {
   co_dev_set_vendor_id(dev, 0x12345678);
 
   CHECK_EQUAL(0x12345678, co_dev_get_vendor_id(dev));
@@ -1118,7 +1115,7 @@ TEST(CO_Dev, CoDevSetVendorId) {
 /// \When co_dev_set_product_code() is called with a valid number
 ///
 /// \Then the requested product code is set
-TEST(CO_Dev, CoDevSetProductCode) {
+TEST(CO_Dev, CoDevSetProductCode_Nominal) {
   co_dev_set_product_code(dev, 0x12345678);
 
   CHECK_EQUAL(0x12345678, co_dev_get_product_code(dev));
@@ -1134,7 +1131,7 @@ TEST(CO_Dev, CoDevSetProductCode) {
 /// \When co_dev_set_revision() is called with a valid number
 ///
 /// \Then the requested revision is set
-TEST(CO_Dev, CoDevSetRevision) {
+TEST(CO_Dev, CoDevSetRevision_Nominal) {
   co_dev_set_revision(dev, 0x12345678);
 
   CHECK_EQUAL(0x12345678, co_dev_get_revision(dev));
@@ -1150,7 +1147,7 @@ TEST(CO_Dev, CoDevSetRevision) {
 /// \When co_dev_set_baud() is called with valid flags
 ///
 /// \Then the requested flags are set
-TEST(CO_Dev, CoDevSetBaud) {
+TEST(CO_Dev, CoDevSetBaud_Nominal) {
   co_dev_set_baud(dev, CO_BAUD_50 | CO_BAUD_1000);
 
   CHECK_EQUAL(CO_BAUD_50 | CO_BAUD_1000, co_dev_get_baud(dev));
@@ -1166,7 +1163,7 @@ TEST(CO_Dev, CoDevSetBaud) {
 /// \When co_dev_set_rate() is called with valid flags
 ///
 /// \Then the requested baudrate is set
-TEST(CO_Dev, CoDevSetRate) {
+TEST(CO_Dev, CoDevSetRate_Nominal) {
   co_dev_set_rate(dev, 500);
 
   CHECK_EQUAL(500, co_dev_get_rate(dev));
@@ -1182,7 +1179,7 @@ TEST(CO_Dev, CoDevSetRate) {
 /// \When co_dev_set_lss() is called with valid flags
 ///
 /// \Then the LSS support flag is set
-TEST(CO_Dev, CoDevSetLSS) {
+TEST(CO_Dev, CoDevSetLSS_Nominal) {
   co_dev_set_lss(dev, 123);
 
   CHECK_EQUAL(true, co_dev_get_lss(dev));
@@ -1198,7 +1195,7 @@ TEST(CO_Dev, CoDevSetLSS) {
 /// \When co_dev_set_dummy() is called with valid flags
 ///
 /// \Then the LSS support flag is set
-TEST(CO_Dev, CoDevSetDummy) {
+TEST(CO_Dev, CoDevSetDummy_Nominal) {
   co_dev_set_dummy(dev, 0x00010001);
 
   CHECK_EQUAL(0x00010001, co_dev_get_dummy(dev));
@@ -1214,7 +1211,7 @@ TEST(CO_Dev, CoDevSetDummy) {
 /// \When co_dev_get_val() is called with the index and sub-index of the sub-object
 ///
 /// \Then a pointer to the sub-object's value is returned
-TEST(CO_Dev, CoDevGetVal) {
+TEST(CO_Dev, CoDevGetVal_Nominal) {
   CoObjTHolder obj_holder(0x1234);
   CoSubTHolder sub_holder(0xab, CO_DEFTYPE_INTEGER16);
   co_sub_t* const sub = obj_holder.InsertSub(sub_holder);
@@ -1264,7 +1261,7 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 /// \When co_dev_set_val() is called with the index and sub-index of the sub-object
 ///
 /// \Then the length of the value is returned, the requested value is set
-TEST(CO_Dev, CoDevSetVal) {
+TEST(CO_Dev, CoDevSetVal_Nominal) {
   co_unsigned16_t val = 0x0987;
 
   CoObjTHolder obj_holder(0x1234);
@@ -1885,7 +1882,7 @@ TEST(CO_DevDCF, CoDevReadDcf_Nominal) {
 ///
 /// \When co_dev_read_dcf() is called with no memory area to store the minimum object index and the maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
-/// \Then a buffer size is returned, the requested entry is set to the requested values
+/// \Then a buffer size is returned, the requested entry is set to the requested value
 TEST(CO_DevDCF, CoDevReadDcf_NullMinMax) {
   const auto ret = co_dev_read_dcf(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 

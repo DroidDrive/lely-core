@@ -107,9 +107,9 @@ TEST(CO_DevInit, CoDevAllocFree_Nominal) {
 
 /// \Given a pointer to the unintialized device (co_dev_t)
 ///
-/// \When co_dev_init() is called with a valid id
+/// \When co_dev_init() is called with a valid ID
 ///
-/// \Then device is initialized with the default values and the requested id
+/// \Then the device is initialized with the default values and the requested ID
 TEST(CO_DevInit, CoDevInit_Nominal) {
   auto* const dev = AcquireCoDevT();
 
@@ -154,7 +154,7 @@ TEST(CO_DevInit, CoDevInit_Nominal) {
 ///
 /// \When co_dev_init() is called with 0xff
 ///
-/// \Then device is initialized with the default values and the requested id
+/// \Then the device is initialized with the default values and the requested ID
 TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
   auto* const dev = AcquireCoDevT();
 
@@ -193,7 +193,7 @@ TEST(CO_DevInit, CoDevInit_ZeroId) {
 
 /// \Given a pointer to the unintialized device (co_dev_t)
 ///
-/// \When co_dev_init() is called with an invalid id
+/// \When co_dev_init() is called with an invalid ID
 ///
 /// \Then a null pointer is returned
 TEST(CO_DevInit, CoDevInit_InvalidId) {
@@ -590,7 +590,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
 ///
 /// \When co_dev_get_idx() is called with a memory area to store the results
 ///
-/// \Then number of objects inserted is returned, the memory area contains indices of the objects
+/// \Then a number of inserted objects is returned, the memory area contains indices of the objects
 TEST(CO_Dev, CoDevGetIdx_ManyObj) {
   CoObjTHolder obj1(0x0000);
   CoObjTHolder obj2(0x1234);

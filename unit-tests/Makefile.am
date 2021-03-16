@@ -50,12 +50,11 @@ endif
 # Override library (lely-util)
 
 LELY_OVERRIDE_UTIL_MEMBUF_LIB =
-lib_LTLIBRARIES =
 
 if !PLATFORM_WIN32
 if ENABLE_SHARED
 liblelyutil_membuf_override_src =
-liblelyutil_membuf_src += override/lelyutil-membuf.cpp
+liblelyutil_membuf_override_src += override/lelyutil-membuf.cpp
 
 lib_LTLIBRARIES += liblelyutil_membuf_override.la
 
@@ -68,8 +67,8 @@ liblelyutil_membuf_override_la_CPPFLAGS = -I$(top_srcdir)/include -DLELY_ENABLE_
 liblelyutil_membuf_override_la_SOURCES = $(liblelyutil_membuf_override_src)
 
 LELY_OVERRIDE_UTIL_MEMBUF_LIB += liblelyutil_membuf_override.la
-endif
-endif
+endif # ENABLE_SHARED
+endif # !PLATFORM_WIN32
 
 # Utilities library tests
 
@@ -156,6 +155,7 @@ src_co_tests += lely-unit-test.cpp
 if !PLATFORM_WIN32
 if !ENABLE_SHARED
 src_co_tests += override/lelyco-val.cpp
+src_co_tests += override/lelyutil-membuf.cpp
 endif
 endif
 

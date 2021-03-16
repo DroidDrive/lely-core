@@ -114,10 +114,10 @@ TEST(CO_DevInit, CoDevInit_Nominal) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
-  POINTERS_EQUAL(dev, co_dev_init(dev, 0x01));
+  POINTERS_EQUAL(dev, co_dev_init(dev, 0x01u));
 
   CHECK_EQUAL(0, co_dev_get_netid(dev));
-  CHECK_EQUAL(0x01, co_dev_get_id(dev));
+  CHECK_EQUAL(0x01u, co_dev_get_id(dev));
 
   CHECK_EQUAL(0, co_dev_get_idx(dev, 0, nullptr));
 
@@ -159,7 +159,7 @@ TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
-  POINTERS_EQUAL(dev, co_dev_init(dev, 0xff));
+  POINTERS_EQUAL(dev, co_dev_init(dev, 0xffu));
 
   CHECK_EQUAL(0, co_dev_get_idx(dev, 0, nullptr));
 
@@ -186,7 +186,7 @@ TEST(CO_DevInit, CoDevInit_ZeroId) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
-  POINTERS_EQUAL(nullptr, co_dev_init(dev, 0x00));
+  POINTERS_EQUAL(nullptr, co_dev_init(dev, 0x00u));
 
   ReleaseCoDevT(dev);
 }
@@ -222,7 +222,7 @@ TEST(CO_DevInit, CoDevInit_InvalidId) {
 TEST(CO_DevInit, CoDevFini_Nominal) {
   auto* const dev = AcquireCoDevT();
   CHECK(dev != nullptr);
-  POINTERS_EQUAL(dev, co_dev_init(dev, 0x01));
+  POINTERS_EQUAL(dev, co_dev_init(dev, 0x01u));
 
   co_dev_fini(dev);
 
@@ -239,6 +239,8 @@ TEST(CO_DevInit, CoDevFini_Nominal) {
 /// \When co_dev_destroy() is called
 ///
 /// \Then nothing is changed
+///       \Calls co_dev_fini()
+///       \Calls co_dev_free()
 TEST(CO_DevInit, CoDevDestroy_Null) {
   co_dev_t* const dev = nullptr;
 
@@ -252,7 +254,7 @@ TEST_GROUP(CO_Dev) {
   std::unique_ptr<CoDevTHolder> dev_holder;
 
   TEST_SETUP() {
-    dev_holder.reset(new CoDevTHolder(0x01));
+    dev_holder.reset(new CoDevTHolder(0x01u));
     dev = dev_holder->Get();
 
     CHECK(dev != nullptr);
@@ -270,10 +272,10 @@ TEST_GROUP(CO_Dev) {
 ///
 /// \Then 0 is returned, the ID is set
 TEST(CO_Dev, CoDevSetNetId_Nominal) {
-  const auto ret = co_dev_set_netid(dev, 0x3d);
+  const auto ret = co_dev_set_netid(dev, 0x3du);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0x3d, co_dev_get_netid(dev));
+  CHECK_EQUAL(0x3du, co_dev_get_netid(dev));
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -282,10 +284,10 @@ TEST(CO_Dev, CoDevSetNetId_Nominal) {
 ///
 /// \Then 0 is returned, the ID is set
 TEST(CO_Dev, CoDevSetNetId_Unconfigured) {
-  const auto ret = co_dev_set_netid(dev, 0xff);
+  const auto ret = co_dev_set_netid(dev, 0xffu);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0xff, co_dev_get_netid(dev));
+  CHECK_EQUAL(0xffu, co_dev_get_netid(dev));
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -316,10 +318,10 @@ TEST(CO_Dev, CoDevSetNetId_InvalidId) {
 ///
 /// \Then 0 is returned, requested ID is set
 TEST(CO_Dev, CoDevSetId_Nominal) {
-  const auto ret = co_dev_set_id(dev, 0x3d);
+  const auto ret = co_dev_set_id(dev, 0x3du);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0x3d, co_dev_get_id(dev));
+  CHECK_EQUAL(0x3du, co_dev_get_id(dev));
 }
 
 /// \Given a pointer to the device (co_dev_t) with objects and sub-objects inserted
@@ -328,23 +330,23 @@ TEST(CO_Dev, CoDevSetId_Nominal) {
 ///
 /// \Then 0 is returned, requested ID is set
 TEST(CO_Dev, CoDevSetId_CheckObj) {
-  CoObjTHolder obj_holder(0x0000);
+  CoObjTHolder obj_holder(0x0000u);
 #if !LELY_NO_CO_OBJ_LIMITS
-  CoObjTHolder obj1_holder(0x0001);
-  CoObjTHolder obj2_holder(0x1234);
+  CoObjTHolder obj1_holder(0x0001u);
+  CoObjTHolder obj2_holder(0x1234u);
 #endif
 #if !LELY_NO_CO_OBJ_DEFAULT
-  CoObjTHolder obj3_holder(0xffff);
+  CoObjTHolder obj3_holder(0xffffu);
 #endif
 #if !LELY_NO_CO_OBJ_LIMITS
-  CoSubTHolder sub_min1_holder(0x00, CO_DEFTYPE_INTEGER16);
-  CoSubTHolder sub_min2_holder(0x01, CO_DEFTYPE_INTEGER16);
-  CoSubTHolder sub_max1_holder(0x00, CO_DEFTYPE_INTEGER16);
-  CoSubTHolder sub_max2_holder(0x01, CO_DEFTYPE_INTEGER16);
+  CoSubTHolder sub_min1_holder(0x00u, CO_DEFTYPE_INTEGER16);
+  CoSubTHolder sub_min2_holder(0x01u, CO_DEFTYPE_INTEGER16);
+  CoSubTHolder sub_max1_holder(0x00u, CO_DEFTYPE_INTEGER16);
+  CoSubTHolder sub_max2_holder(0x01u, CO_DEFTYPE_INTEGER16);
 #endif
 #if !LELY_NO_CO_OBJ_DEFAULT
-  CoSubTHolder sub_def1_holder(0x00, CO_DEFTYPE_INTEGER16);
-  CoSubTHolder sub_def2_holder(0x01, CO_DEFTYPE_INTEGER16);
+  CoSubTHolder sub_def1_holder(0x00u, CO_DEFTYPE_INTEGER16);
+  CoSubTHolder sub_def2_holder(0x01u, CO_DEFTYPE_INTEGER16);
 #endif
 
 #if !LELY_NO_CO_OBJ_LIMITS
@@ -407,14 +409,14 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
                                 co_sub_get_min(co_obj_last_sub(out_obj))));
 
   out_obj = co_obj_next(out_obj);
-  CHECK_EQUAL(0x3f00, *static_cast<const co_integer16_t*>(
+  CHECK_EQUAL(0x3f00u, *static_cast<const co_integer16_t*>(
                           co_sub_get_max(co_obj_first_sub(out_obj))));
   CHECK_EQUAL(0x3f00 + new_id, *static_cast<const co_integer16_t*>(
                                    co_sub_get_max(co_obj_last_sub(out_obj))));
 #endif
 #if !LELY_NO_CO_OBJ_DEFAULT
   out_obj = co_obj_next(out_obj);
-  CHECK_EQUAL(0x1234, *static_cast<const co_integer16_t*>(
+  CHECK_EQUAL(0x1234u, *static_cast<const co_integer16_t*>(
                           co_sub_get_def(co_obj_first_sub(out_obj))));
   CHECK_EQUAL(0x1234 + new_id, *static_cast<const co_integer16_t*>(
                                    co_sub_get_def(co_obj_last_sub(out_obj))));
@@ -432,11 +434,11 @@ TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
 
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
   { \
-    dev_holder.reset(new CoDevTHolder(0x01)); \
+    dev_holder.reset(new CoDevTHolder(0x01u)); \
     dev = dev_holder->Get(); \
 \
-    CoObjTHolder obj_holder(0x1234); \
-    CoSubTHolder sub_holder(0xab, CO_DEFTYPE_##a); \
+    CoObjTHolder obj_holder(0x1234u); \
+    CoSubTHolder sub_holder(0xabu, CO_DEFTYPE_##a); \
     co_sub_t* const sub = obj_holder.InsertSub(sub_holder); \
     CHECK(sub != nullptr); \
     co_obj_t* const obj = obj_holder.Take(); \
@@ -465,8 +467,8 @@ TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
 ///
 /// \Then 0 is returned and the requested ID is set
 TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
-  CoObjTHolder obj_holder(0x1234);
-  CoSubTHolder sub_holder(0x01, CO_DEFTYPE_TIME_OF_DAY);
+  CoObjTHolder obj_holder(0x1234u);
+  CoSubTHolder sub_holder(0x01u, CO_DEFTYPE_TIME_OF_DAY);
   co_sub_t* const sub = obj_holder.InsertSub(sub_holder);
   CHECK(sub != nullptr);
   co_obj_t* const obj = obj_holder.Take();
@@ -492,10 +494,10 @@ TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
 ///
 /// \Then 0 is returned and the required ID is set
 TEST(CO_Dev, CoDevSetId_Unconfigured) {
-  const auto ret = co_dev_set_id(dev, 0xff);
+  const auto ret = co_dev_set_id(dev, 0xffu);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0xff, co_dev_get_id(dev));
+  CHECK_EQUAL(0xffu, co_dev_get_id(dev));
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -504,10 +506,10 @@ TEST(CO_Dev, CoDevSetId_Unconfigured) {
 ///
 /// \Then 0 is returned and the required ID is set
 TEST(CO_Dev, CoDevSetId_ZeroId) {
-  const auto ret = co_dev_set_id(dev, 0x00);
+  const auto ret = co_dev_set_id(dev, 0x00u);
 
   CHECK_EQUAL(-1, ret);
-  CHECK_EQUAL(0x01, co_dev_get_id(dev));
+  CHECK_EQUAL(0x01u, co_dev_get_id(dev));
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -519,12 +521,12 @@ TEST(CO_Dev, CoDevSetId_InvalidId) {
   const auto ret1 = co_dev_set_id(dev, CO_NUM_NETWORKS + 1);
 
   CHECK_EQUAL(-1, ret1);
-  CHECK_EQUAL(0x01, co_dev_get_id(dev));
+  CHECK_EQUAL(0x01u, co_dev_get_id(dev));
 
   const auto ret2 = co_dev_set_id(dev, 0xff - 1);
 
   CHECK_EQUAL(-1, ret2);
-  CHECK_EQUAL(0x01, co_dev_get_id(dev));
+  CHECK_EQUAL(0x01u, co_dev_get_id(dev));
 }
 
 ///@}
@@ -543,7 +545,7 @@ TEST(CO_Dev, CoDevGetIdx_Empty) {
   const auto ret = co_dev_get_idx(dev, 1, &out_idx);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0x0000, out_idx);
+  CHECK_EQUAL(0x0000u, out_idx);
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -563,7 +565,7 @@ TEST(CO_Dev, CoDevGetIdx_EmptyNull) {
 ///
 /// \Then 1 is returned
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
-  CoObjTHolder obj(0x0000);
+  CoObjTHolder obj(0x0000u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const auto ret = co_dev_get_idx(dev, 0, nullptr);
@@ -577,13 +579,13 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
 ///
 /// \Then 1 is returned, area contains the index
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
   co_unsigned16_t out_idx = 0x0000;
   const auto ret = co_dev_get_idx(dev, 1, &out_idx);
 
   CHECK_EQUAL(1, ret);
-  CHECK_EQUAL(0x1234, out_idx);
+  CHECK_EQUAL(0x1234u, out_idx);
 }
 
 /// \Given a pointer to the device (co_dev_t) with many objects inserted
@@ -592,22 +594,22 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
 ///
 /// \Then a number of inserted objects is returned, the memory area contains indices of the objects
 TEST(CO_Dev, CoDevGetIdx_ManyObj) {
-  CoObjTHolder obj1(0x0000);
-  CoObjTHolder obj2(0x1234);
-  CoObjTHolder obj3(0xffff);
+  CoObjTHolder obj1(0x0000u);
+  CoObjTHolder obj2(0x1234u);
+  CoObjTHolder obj3(0xffffu);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1.Take()));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj2.Take()));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj3.Take()));
 
-  co_unsigned16_t out_idx[5] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000};
+  co_unsigned16_t out_idx[5] = {0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000};
   const auto ret = co_dev_get_idx(dev, 5, out_idx);
 
   CHECK_EQUAL(3, ret);
-  CHECK_EQUAL(0x0000, out_idx[0]);
-  CHECK_EQUAL(0x1234, out_idx[1]);
-  CHECK_EQUAL(0xffff, out_idx[2]);
-  CHECK_EQUAL(0x0000, out_idx[3]);
-  CHECK_EQUAL(0x0000, out_idx[4]);
+  CHECK_EQUAL(0x0000u, out_idx[0]);
+  CHECK_EQUAL(0x1234u, out_idx[1]);
+  CHECK_EQUAL(0xffffu, out_idx[2]);
+  CHECK_EQUAL(0x0000u, out_idx[3]);
+  CHECK_EQUAL(0x0000u, out_idx[4]);
 }
 
 /// \Given a pointer to the device (co_dev_t) with many objects inserted
@@ -616,26 +618,26 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj) {
 ///
 /// \Then a number of the inserted objects is returned, indices of object's up to the maximum are stored in the memory area
 TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
-  CoObjTHolder obj1(0x0000);
-  CoObjTHolder obj2(0x1234);
-  CoObjTHolder obj3(0xffff);
-  CoObjTHolder obj4(0xabcd);
-  CoObjTHolder obj5(0x1010);
+  CoObjTHolder obj1(0x0000u);
+  CoObjTHolder obj2(0x1234u);
+  CoObjTHolder obj3(0xffffu);
+  CoObjTHolder obj4(0xabcdu);
+  CoObjTHolder obj5(0x1010u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1.Take()));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj2.Take()));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj3.Take()));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj4.Take()));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj5.Take()));
 
-  co_unsigned16_t out_idx[5] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000};
+  co_unsigned16_t out_idx[5] = {0x0000u, 0x0000u, 0x0000u, 0x0000u, 0x0000};
   const auto ret = co_dev_get_idx(dev, 3, out_idx);
 
   CHECK_EQUAL(5, ret);
-  CHECK_EQUAL(0x0000, out_idx[0]);
-  CHECK_EQUAL(0x1010, out_idx[1]);
-  CHECK_EQUAL(0x1234, out_idx[2]);
-  CHECK_EQUAL(0x0000, out_idx[3]);
-  CHECK_EQUAL(0x0000, out_idx[4]);
+  CHECK_EQUAL(0x0000u, out_idx[0]);
+  CHECK_EQUAL(0x1010u, out_idx[1]);
+  CHECK_EQUAL(0x1234u, out_idx[2]);
+  CHECK_EQUAL(0x0000u, out_idx[3]);
+  CHECK_EQUAL(0x0000u, out_idx[4]);
 }
 
 ///@}
@@ -649,7 +651,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
 ///
 /// \Then 0 is returned, the object is inserted into the device
 TEST(CO_Dev, CoDevInsertObj) {
-  CoObjTHolder obj_holder(0x1234);
+  CoObjTHolder obj_holder(0x1234u);
   co_obj_t* const obj = obj_holder.Take();
 
   const auto ret = co_dev_insert_obj(dev, obj);
@@ -658,7 +660,7 @@ TEST(CO_Dev, CoDevInsertObj) {
   POINTERS_EQUAL(obj, co_dev_first_obj(dev));
   co_unsigned16_t out_idx = 0x0000;
   CHECK_EQUAL(1, co_dev_get_idx(dev, 1, &out_idx));
-  CHECK_EQUAL(0x1234, out_idx);
+  CHECK_EQUAL(0x1234u, out_idx);
   CHECK_EQUAL(dev, co_obj_get_dev(obj));
 }
 
@@ -669,8 +671,8 @@ TEST(CO_Dev, CoDevInsertObj) {
 ///
 /// \Then -1 is returned, the object is still inserted into other device
 TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
-  CoDevTHolder other_dev_holder(0x02);
-  CoObjTHolder obj_holder(0x0001);
+  CoDevTHolder other_dev_holder(0x02u);
+  CoObjTHolder obj_holder(0x0001u);
   co_dev_t* const other_dev = other_dev_holder.Get();
   co_obj_t* const obj = obj_holder.Take();
   CHECK_EQUAL(0, co_dev_insert_obj(other_dev, obj));
@@ -678,8 +680,8 @@ TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
   const auto ret = co_dev_insert_obj(dev, obj);
 
   CHECK_EQUAL(-1, ret);
-  POINTERS_EQUAL(obj, co_dev_find_obj(other_dev, 0x0001));
-  POINTERS_EQUAL(nullptr, co_dev_find_obj(dev, 0x0001));
+  POINTERS_EQUAL(obj, co_dev_find_obj(other_dev, 0x0001u));
+  POINTERS_EQUAL(nullptr, co_dev_find_obj(dev, 0x0001u));
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object inserted
@@ -696,7 +698,7 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
   const auto ret = co_dev_insert_obj(dev, obj);
 
   CHECK_EQUAL(0, ret);
-  POINTERS_EQUAL(obj, co_dev_find_obj(dev, 0x0001));
+  POINTERS_EQUAL(obj, co_dev_find_obj(dev, 0x0001u));
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object inserted
@@ -707,15 +709,15 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
 ///
 /// \Then -1 is returned, the initial object is still inserted into the device
 TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
-  CoObjTHolder obj1_holder(0x0001);
-  CoObjTHolder obj2_holder(0x0001);
+  CoObjTHolder obj1_holder(0x0001u);
+  CoObjTHolder obj2_holder(0x0001u);
   co_obj_t* const obj1 = obj1_holder.Take();
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1));
 
   const auto ret = co_dev_insert_obj(dev, obj2_holder.Get());
 
   CHECK_EQUAL(-1, ret);
-  POINTERS_EQUAL(obj1, co_dev_find_obj(dev, 0x0001));
+  POINTERS_EQUAL(obj1, co_dev_find_obj(dev, 0x0001u));
 }
 
 ///@}
@@ -729,7 +731,7 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
 ///
 /// \Then 0 is returned, the object is not present in the device
 TEST(CO_Dev, CoDevRemoveObj) {
-  CoObjTHolder obj_holder(0x1234);
+  CoObjTHolder obj_holder(0x1234u);
   co_obj_t* const obj = obj_holder.Get();
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj));
 
@@ -746,7 +748,7 @@ TEST(CO_Dev, CoDevRemoveObj) {
 ///
 /// \Then -1 is returned, nothing is changed
 TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
 
   const auto ret = co_dev_remove_obj(dev, obj.Get());
 
@@ -764,11 +766,11 @@ TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
 ///
 /// \Then a pointer to the object is returned
 TEST(CO_Dev, CoDevFindObj) {
-  CoObjTHolder obj_holder(0x1234);
+  CoObjTHolder obj_holder(0x1234u);
   co_obj_t* const obj = obj_holder.Take();
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj));
 
-  const auto* const ret = co_dev_find_obj(dev, 0x1234);
+  const auto* const ret = co_dev_find_obj(dev, 0x1234u);
 
   POINTERS_EQUAL(obj, ret);
 }
@@ -779,7 +781,7 @@ TEST(CO_Dev, CoDevFindObj) {
 ///
 /// \Then a null pointer is returned
 TEST(CO_Dev, CoDevFindObj_NotFound) {
-  const auto* const ret = co_dev_find_obj(dev, 0x1234);
+  const auto* const ret = co_dev_find_obj(dev, 0x1234u);
 
   POINTERS_EQUAL(nullptr, ret);
 }
@@ -794,14 +796,15 @@ TEST(CO_Dev, CoDevFindObj_NotFound) {
 /// \When co_dev_find_sub() is called with the index and the sub-index of the sub-object
 ///
 /// \Then a pointer to the sub-object is returned
-TEST(CO_Dev, CoDevFindSub) {
-  CoObjTHolder obj_holder(0x1234);
-  CoSubTHolder sub_holder(0xab, CO_DEFTYPE_INTEGER16);
+///       \Calls co_dev_find_obj()
+TEST(CO_Dev, CoDevFindSub_Nominal) {
+  CoObjTHolder obj_holder(0x1234u);
+  CoSubTHolder sub_holder(0xabu, CO_DEFTYPE_INTEGER16);
   co_sub_t* const sub = obj_holder.InsertSub(sub_holder);
   CHECK(sub != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj_holder.Take()));
 
-  const auto* const ret = co_dev_find_sub(dev, 0x1234, 0xab);
+  const auto* const ret = co_dev_find_sub(dev, 0x1234u, 0xabu);
 
   POINTERS_EQUAL(sub, ret);
 }
@@ -812,7 +815,7 @@ TEST(CO_Dev, CoDevFindSub) {
 ///
 /// \Then a pointer to the sub-object is returned
 TEST(CO_Dev, CoDevFindSub_NoObj) {
-  const auto* const ret = co_dev_find_sub(dev, 0x1234, 0x00);
+  const auto* const ret = co_dev_find_sub(dev, 0x1234u, 0x00u);
 
   POINTERS_EQUAL(nullptr, ret);
 }
@@ -823,10 +826,10 @@ TEST(CO_Dev, CoDevFindSub_NoObj) {
 ///
 /// \Then a null pointer is returned
 TEST(CO_Dev, CoDevFindSub_NoSub) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const auto* const ret = co_dev_find_sub(dev, 0x1234, 0x00);
+  const auto* const ret = co_dev_find_sub(dev, 0x1234u, 0x00u);
 
   POINTERS_EQUAL(nullptr, ret);
 }
@@ -842,7 +845,7 @@ TEST(CO_Dev, CoDevFindSub_NoSub) {
 ///
 /// \Then a pointer to the inserted object is returned
 TEST(CO_Dev, CoDevFirstObj) {
-  CoObjTHolder obj_holder(0x1234);
+  CoObjTHolder obj_holder(0x1234u);
   const auto obj = obj_holder.Take();
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj));
 
@@ -873,7 +876,7 @@ TEST(CO_Dev, CoDevFirstObj_Empty) {
 ///
 /// \Then a pointer to the object is returned
 TEST(CO_Dev, CoDevLastObj) {
-  CoObjTHolder obj_holder(0x1234);
+  CoObjTHolder obj_holder(0x1234u);
   const auto obj = obj_holder.Take();
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj));
 
@@ -1100,9 +1103,9 @@ TEST(CO_Dev, CoDevSetOrderCode_Empty) {
 ///
 /// \Then the requested ID is set
 TEST(CO_Dev, CoDevSetVendorId_Nominal) {
-  co_dev_set_vendor_id(dev, 0x12345678);
+  co_dev_set_vendor_id(dev, 0x12345678u);
 
-  CHECK_EQUAL(0x12345678, co_dev_get_vendor_id(dev));
+  CHECK_EQUAL(0x12345678u, co_dev_get_vendor_id(dev));
 }
 
 ///@}
@@ -1116,9 +1119,9 @@ TEST(CO_Dev, CoDevSetVendorId_Nominal) {
 ///
 /// \Then the requested product code is set
 TEST(CO_Dev, CoDevSetProductCode_Nominal) {
-  co_dev_set_product_code(dev, 0x12345678);
+  co_dev_set_product_code(dev, 0x12345678u);
 
-  CHECK_EQUAL(0x12345678, co_dev_get_product_code(dev));
+  CHECK_EQUAL(0x12345678u, co_dev_get_product_code(dev));
 }
 
 ///@}
@@ -1132,9 +1135,9 @@ TEST(CO_Dev, CoDevSetProductCode_Nominal) {
 ///
 /// \Then the requested revision is set
 TEST(CO_Dev, CoDevSetRevision_Nominal) {
-  co_dev_set_revision(dev, 0x12345678);
+  co_dev_set_revision(dev, 0x12345678u);
 
-  CHECK_EQUAL(0x12345678, co_dev_get_revision(dev));
+  CHECK_EQUAL(0x12345678u, co_dev_get_revision(dev));
 }
 
 ///@}
@@ -1164,9 +1167,9 @@ TEST(CO_Dev, CoDevSetBaud_Nominal) {
 ///
 /// \Then the requested baudrate is set
 TEST(CO_Dev, CoDevSetRate_Nominal) {
-  co_dev_set_rate(dev, 500);
+  co_dev_set_rate(dev, 500u);
 
-  CHECK_EQUAL(500, co_dev_get_rate(dev));
+  CHECK_EQUAL(500u, co_dev_get_rate(dev));
 }
 
 ///@}
@@ -1196,9 +1199,9 @@ TEST(CO_Dev, CoDevSetLSS_Nominal) {
 ///
 /// \Then the LSS support flag is set
 TEST(CO_Dev, CoDevSetDummy_Nominal) {
-  co_dev_set_dummy(dev, 0x00010001);
+  co_dev_set_dummy(dev, 0x00010001u);
 
-  CHECK_EQUAL(0x00010001, co_dev_get_dummy(dev));
+  CHECK_EQUAL(0x00010001u, co_dev_get_dummy(dev));
 }
 
 ///@}
@@ -1212,19 +1215,19 @@ TEST(CO_Dev, CoDevSetDummy_Nominal) {
 ///
 /// \Then a pointer to the sub-object's value is returned
 TEST(CO_Dev, CoDevGetVal_Nominal) {
-  CoObjTHolder obj_holder(0x1234);
-  CoSubTHolder sub_holder(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj_holder(0x1234u);
+  CoSubTHolder sub_holder(0xabu, CO_DEFTYPE_INTEGER16);
   co_sub_t* const sub = obj_holder.InsertSub(sub_holder);
   CHECK(sub != nullptr);
   CHECK_EQUAL(co_type_sizeof(CO_DEFTYPE_INTEGER16),
-              co_sub_set_val_i16(sub, 0x0987));
+              co_sub_set_val_i16(sub, 0x0987u));
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj_holder.Take()));
 
   const auto* ret =
-      static_cast<const co_integer16_t*>(co_dev_get_val(dev, 0x1234, 0xab));
+      static_cast<const co_integer16_t*>(co_dev_get_val(dev, 0x1234u, 0xabu));
 
   CHECK(ret != nullptr);
-  CHECK_EQUAL(0x0987, *ret);
+  CHECK_EQUAL(0x0987u, *ret);
 }
 
 /// \Given a null pointer to the device (co_dev_t)
@@ -1235,7 +1238,7 @@ TEST(CO_Dev, CoDevGetVal_Nominal) {
 TEST(CO_Dev, CoDevGetVal_NullDev) {
   co_dev_t* const dev = nullptr;
 
-  const auto ret = co_dev_get_val(dev, 0x0000, 0x00);
+  const auto ret = co_dev_get_val(dev, 0x0000u, 0x00u);
 
   POINTERS_EQUAL(nullptr, ret);
 }
@@ -1246,7 +1249,7 @@ TEST(CO_Dev, CoDevGetVal_NullDev) {
 ///
 /// \Then a null pointer is returned
 TEST(CO_Dev, CoDevGetVal_NotFound) {
-  const auto ret = co_dev_get_val(dev, 0x0000, 0x00);
+  const auto ret = co_dev_get_val(dev, 0x0000u, 0x00u);
 
   POINTERS_EQUAL(nullptr, ret);
 }
@@ -1264,15 +1267,15 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 TEST(CO_Dev, CoDevSetVal_Nominal) {
   co_unsigned16_t val = 0x0987;
 
-  CoObjTHolder obj_holder(0x1234);
-  CoSubTHolder sub_holder(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj_holder(0x1234u);
+  CoSubTHolder sub_holder(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj_holder.InsertSub(sub_holder) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj_holder.Take()));
 
-  const auto ret = co_dev_set_val(dev, 0x1234, 0xab, &val, 2);
+  const auto ret = co_dev_set_val(dev, 0x1234u, 0xabu, &val, 2);
 
   CHECK_EQUAL(2, ret);
-  CHECK_EQUAL(val, co_dev_get_val_i16(dev, 0x1234, 0xab));
+  CHECK_EQUAL(val, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -1281,7 +1284,7 @@ TEST(CO_Dev, CoDevSetVal_Nominal) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevSetVal_NotFound) {
-  const auto ret = co_dev_set_val(dev, 0x0000, 0x00, nullptr, 0);
+  const auto ret = co_dev_set_val(dev, 0x0000u, 0x00u, nullptr, 0);
 
   CHECK_EQUAL(0, ret);
   CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
@@ -1298,21 +1301,21 @@ TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
 
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
   { \
-    dev_holder.reset(new CoDevTHolder(0x01)); \
+    dev_holder.reset(new CoDevTHolder(0x01u)); \
     dev = dev_holder->Get(); \
 \
-    CoObjTHolder obj(0x1234); \
-    CoSubTHolder sub(0xab, CO_DEFTYPE_##a); \
+    CoObjTHolder obj(0x1234u); \
+    CoSubTHolder sub(0xabu, CO_DEFTYPE_##a); \
     CHECK(obj.InsertSub(sub) != nullptr); \
     CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take())); \
 \
-    const auto set_ret = co_dev_set_val_##c(dev, 0x1234, 0xab, 0x42); \
+    const auto set_ret = co_dev_set_val_##c(dev, 0x1234u, 0xabu, 0x42u); \
 \
     CHECK_EQUAL(co_type_sizeof(CO_DEFTYPE_##a), set_ret); \
 \
-    const co_##b##_t get_ret = co_dev_get_val_##c(dev, 0x1234, 0xab); \
+    const co_##b##_t get_ret = co_dev_get_val_##c(dev, 0x1234u, 0xabu); \
 \
-    CHECK_EQUAL(get_ret, static_cast<co_##b##_t>(0x42)); \
+    CHECK_EQUAL(get_ret, static_cast<co_##b##_t>(0x42u)); \
   }
   // add teardown fix to prevent .Take() fail
 #include <lely/co/def/basic.def>  // NOLINT(build/include)
@@ -1330,23 +1333,23 @@ TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
 ///
 /// \Then a size of the concise DCF buffer is returned, the index and the sub-index are stored in the memory and the requested value is set
 TEST(CO_Dev, CoDevReadSub_Nominal) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
   co_unsigned16_t idx = 0x0000;
   co_unsigned8_t subidx = 0x00;
 
   const auto ret = co_dev_read_sub(dev, &idx, &subidx, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  CHECK_EQUAL(0x1234, idx);
-  CHECK_EQUAL(0xab, subidx);
-  CHECK_EQUAL(0x0987, co_dev_get_val_i16(dev, idx, subidx));
+  CHECK_EQUAL(0x1234u, idx);
+  CHECK_EQUAL(0xabu, subidx);
+  CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, idx, subidx));
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
@@ -1355,19 +1358,19 @@ TEST(CO_Dev, CoDevReadSub_Nominal) {
 ///
 /// \Then the requested value is set
 TEST(CO_Dev, CoDevReadSub_NoIdx) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  CHECK_EQUAL(0x0987, co_dev_get_val_i16(dev, 0x1234, 0xab));
+  CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
@@ -1376,12 +1379,12 @@ TEST(CO_Dev, CoDevReadSub_NoIdx) {
 ///
 /// \Then a size of the concise DCF buffer is returned
 TEST(CO_Dev, CoDevReadSub_NoSub) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
@@ -1394,12 +1397,12 @@ TEST(CO_Dev, CoDevReadSub_NoSub) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_NoBegin) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   const auto ret =
       co_dev_read_sub(dev, nullptr, nullptr, nullptr, buf + BUF_SIZE);
@@ -1413,12 +1416,12 @@ TEST(CO_Dev, CoDevReadSub_NoBegin) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_NoEnd) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, nullptr);
 
@@ -1431,11 +1434,11 @@ TEST(CO_Dev, CoDevReadSub_NoEnd) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_TooSmallBuffer) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 6;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x01, 0x00, 0x00};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x01u, 0x00u, 0x00};
 
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
@@ -1448,12 +1451,12 @@ TEST(CO_Dev, CoDevReadSub_TooSmallBuffer) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_TooSmallForType) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 8;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02,
-                                 0x00, 0x00, 0x00, 0x87};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u,
+                                 0x00u, 0x00u, 0x00u, 0x87};
 
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
@@ -1467,12 +1470,12 @@ TEST(CO_Dev, CoDevReadSub_TooSmallForType) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_ReadIdxFailed) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   LelyOverride::co_val_read(Override::NoneCallsValid);
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
@@ -1486,12 +1489,12 @@ TEST(CO_Dev, CoDevReadSub_ReadIdxFailed) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_ReadSubidxFailed) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   LelyOverride::co_val_read(1);
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
@@ -1505,12 +1508,12 @@ TEST(CO_Dev, CoDevReadSub_ReadSubidxFailed) {
 ///
 /// \Then 0 is returned
 TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                                 0x00, 0x00, 0x87, 0x09};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09};
 
   LelyOverride::co_val_read(2);
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
@@ -1525,21 +1528,21 @@ TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
 ///
 /// \Then a size of the buffer is returned, the index and the sub-index are stored in the memory area, the requested value is set
 TEST(CO_Dev, CoDevReadSub_ArrayType) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_OCTET_STRING);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_OCTET_STRING);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  uint_least8_t buf[] = {0x34, 0x12, 0xab, 0x04, 0x00, 0x00,
-                         0x00, 'a',  'b',  'c',  'd'};
+  uint_least8_t buf[] = {0x34u, 0x12u, 0xabu, 0x04u, 0x00u, 0x00u,
+                         0x00u, 'a',  'b',  'c',  'd'};
   co_unsigned16_t idx = 0x0000;
   co_unsigned8_t subidx = 0x00;
 
   const auto ret = co_dev_read_sub(dev, &idx, &subidx, buf, buf + sizeof(buf));
 
   CHECK_EQUAL(sizeof(buf), ret);
-  CHECK_EQUAL(0x1234, idx);
-  CHECK_EQUAL(0xab, subidx);
+  CHECK_EQUAL(0x1234u, idx);
+  CHECK_EQUAL(0xabu, subidx);
   STRCMP_EQUAL("abcd", *reinterpret_cast<char* const*>(
                            co_dev_get_val(dev, idx, subidx)));
 }
@@ -1553,20 +1556,20 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
 ///
 /// \Then a size of the buffer is returned, the value is not changed
 TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x1a1a));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x1a1au));
 
   const size_t BUF_SIZE = 10u;
-  uint_least8_t buf[BUF_SIZE] = {0x34, 0x12, 0xab, 0x03, 0x00,
-                                 0x00, 0x00, 0x87, 0x09, 0x00};
+  uint_least8_t buf[BUF_SIZE] = {0x34u, 0x12u, 0xabu, 0x03u, 0x00u,
+                                 0x00u, 0x00u, 0x87u, 0x09u, 0x00};
 
   const auto ret = co_dev_read_sub(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  CHECK_EQUAL(0x1a1a, co_dev_get_val_i16(dev, 0x1234, 0xab));
+  CHECK_EQUAL(0x1a1au, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
 ///@}
@@ -1580,20 +1583,20 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
 ///
 /// \Then a size of the buffer is returned, the concise DCF contains the expected values
 TEST(CO_Dev, CoDevWriteSub_Nominal) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  uint_least8_t test_buf[] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                              0x00, 0x00, 0x87, 0x09};
+  uint_least8_t test_buf[] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                              0x00u, 0x00u, 0x87u, 0x09};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
@@ -1603,13 +1606,13 @@ TEST(CO_Dev, CoDevWriteSub_Nominal) {
 ///
 /// \Then a size of the buffer is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_NoSub) {
-  CoObjTHolder obj(0x1234);
+  CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
   const uint_least8_t expected[BUF_SIZE] = {0};
@@ -1623,8 +1626,8 @@ TEST(CO_Dev, CoDevWriteSub_NoSub) {
 ///
 /// \Then a size of the buffer is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
@@ -1632,7 +1635,7 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
   uint_least8_t buf[BUF_SIZE] = {0};
 
   LelyOverride::co_val_write(Override::NoneCallsValid);
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
   const uint_least8_t expected[BUF_SIZE] = {0};
@@ -1646,18 +1649,18 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
 ///
 /// \Then a size of the buffer is returned, the concise DCF contains the expected values
 TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_DOMAIN);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_DOMAIN);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 7;
   uint_least8_t buf[BUF_SIZE] = {0};
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(7, ret);
-  uint_least8_t test_buf[] = {0x34, 0x12, 0xab, 0x00, 0x00, 0x00, 0x00};
+  uint_least8_t test_buf[] = {0x34u, 0x12u, 0xabu, 0x00u, 0x00u, 0x00u, 0x00};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
@@ -1667,12 +1670,12 @@ TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
 ///
 /// \Then a size of the buffer is returned
 TEST(CO_Dev, CoDevWriteSub_NoBegin) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, nullptr, nullptr);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, nullptr, nullptr);
 
   CHECK_EQUAL(9, ret);
 }
@@ -1683,20 +1686,20 @@ TEST(CO_Dev, CoDevWriteSub_NoBegin) {
 ///
 /// \Then a size of the buffer is returned, the concise DCF contains the expected values
 TEST(CO_Dev, CoDevWriteSub_NoEnd) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, nullptr);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, nullptr);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  uint_least8_t test_buf[] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                              0x00, 0x00, 0x87, 0x09};
+  uint_least8_t test_buf[] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                              0x00u, 0x00u, 0x87u, 0x09};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
@@ -1706,15 +1709,15 @@ TEST(CO_Dev, CoDevWriteSub_NoEnd) {
 ///
 /// \Then a size of the buffer is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   const size_t BUF_SIZE = 8;
   uint_least8_t buf[BUF_SIZE] = {0};
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(9, ret);
   uint_least8_t test_buf[BUF_SIZE] = {0};
@@ -1728,17 +1731,17 @@ TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
 ///
 /// \Then 0 is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(1);
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
   uint_least8_t test_buf[BUF_SIZE] = {0};
@@ -1751,21 +1754,21 @@ TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
 ///
 /// \Then 0 is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(2);
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
-  uint_least8_t test_buf[] = {0x34, 0x12, 0x00, 0x00, 0x00,
-                              0x00, 0x00, 0x00, 0x00};
+  uint_least8_t test_buf[] = {0x34u, 0x12u, 0x00u, 0x00u, 0x00u,
+                              0x00u, 0x00u, 0x00u, 0x00};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
@@ -1775,21 +1778,21 @@ TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
 ///
 /// \Then 0 is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(3);
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
-  uint_least8_t test_buf[] = {0x34, 0x12, 0xab, 0x00, 0x00,
-                              0x00, 0x00, 0x00, 0x00};
+  uint_least8_t test_buf[] = {0x34u, 0x12u, 0xabu, 0x00u, 0x00u,
+                              0x00u, 0x00u, 0x00u, 0x00};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
@@ -1799,21 +1802,21 @@ TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
 ///
 /// \Then 0 is returned, the concise DCF was not written
 TEST(CO_Dev, CoDevWriteSub_ValWriteFailed) {
-  CoObjTHolder obj(0x1234);
-  CoSubTHolder sub(0xab, CO_DEFTYPE_INTEGER16);
+  CoObjTHolder obj(0x1234u);
+  CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
   CHECK(obj.InsertSub(sub) != nullptr);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
-  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987));
+  CHECK_EQUAL(2, co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u));
 
   const size_t BUF_SIZE = 9u;
   uint_least8_t buf[BUF_SIZE] = {0};
   LelyOverride::co_val_write(4);
 
-  const auto ret = co_dev_write_sub(dev, 0x1234, 0xab, buf, buf + BUF_SIZE);
+  const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(0, ret);
-  uint_least8_t test_buf[] = {0x34, 0x12, 0xab, 0x02, 0x00,
-                              0x00, 0x00, 0x00, 0x00};
+  uint_least8_t test_buf[] = {0x34u, 0x12u, 0xabu, 0x02u, 0x00u,
+                              0x00u, 0x00u, 0x00u, 0x00};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 #endif
@@ -1829,22 +1832,22 @@ TEST_GROUP(CO_DevDCF) {
 
   static const size_t BUF_SIZE = 13u;
   const uint_least8_t buf[BUF_SIZE] = {
-      0x01, 0x00, 0x00, 0x00,  // number of sub-indexes
+      0x01u, 0x00u, 0x00u, 0x00u,  // number of sub-indexes
       // value 1
-      0x34, 0x12,              // index
-      0xab,                    // sub-index
-      0x02, 0x00, 0x00, 0x00,  // size
-      0x87, 0x09               // value
+      0x34u, 0x12u,              // index
+      0xabu,                    // sub-index
+      0x02u, 0x00u, 0x00u, 0x00u,  // size
+      0x87u, 0x09               // value
   };
   static const size_t MIN_RW_SIZE = 4u;
 
   TEST_SETUP() {
-    dev_holder.reset(new CoDevTHolder(0x01));
+    dev_holder.reset(new CoDevTHolder(0x01u));
     dev = dev_holder->Get();
     CHECK(dev != nullptr);
 
-    obj_holder.reset(new CoObjTHolder(0x1234));
-    sub_holder.reset(new CoSubTHolder(0xab, CO_DEFTYPE_INTEGER16));
+    obj_holder.reset(new CoObjTHolder(0x1234u));
+    sub_holder.reset(new CoSubTHolder(0xabu, CO_DEFTYPE_INTEGER16));
 
     obj_holder->InsertSub(*sub_holder);
     CHECK_EQUAL(0, co_dev_insert_obj(dev, obj_holder->Take()));
@@ -1873,9 +1876,9 @@ TEST(CO_DevDCF, CoDevReadDcf_Nominal) {
   const auto ret = co_dev_read_dcf(dev, &pmin, &pmax, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  CHECK_EQUAL(0x0987, co_dev_get_val_i16(dev, 0x1234, 0xab));
-  CHECK_EQUAL(0x1234, pmin);
-  CHECK_EQUAL(0x1234, pmax);
+  CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
+  CHECK_EQUAL(0x1234u, pmin);
+  CHECK_EQUAL(0x1234u, pmax);
 }
 
 /// \Given a concise DCF buffer
@@ -1887,7 +1890,7 @@ TEST(CO_DevDCF, CoDevReadDcf_NullMinMax) {
   const auto ret = co_dev_read_dcf(dev, nullptr, nullptr, buf, buf + BUF_SIZE);
 
   CHECK_EQUAL(BUF_SIZE, ret);
-  CHECK_EQUAL(0x0987, co_dev_get_val_i16(dev, 0x1234, 0xab));
+  CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
 /// \Given an empty concise DCF buffer
@@ -1902,7 +1905,7 @@ TEST(CO_DevDCF, CoDevReadDcf_InvalidNumberOfSubIndexes) {
       co_dev_read_dcf(dev, nullptr, nullptr, empty, empty + BUF_SIZE);
 
   CHECK_EQUAL(MIN_RW_SIZE, ret);
-  CHECK_EQUAL(0x0000, co_dev_get_val_i16(dev, 0x1234, 0xab));
+  CHECK_EQUAL(0x0000u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
 /// \Given a concise DCF buffer with no sub-object value
@@ -1914,7 +1917,7 @@ TEST(CO_DevDCF, CoDevReadDcf_NoSub) {
   const auto ret = co_dev_read_dcf(dev, nullptr, nullptr, buf, buf + 7u);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0x0000, co_dev_get_val_i16(dev, 0x1234, 0xab));
+  CHECK_EQUAL(0x0000u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
 #if HAVE_LELY_OVERRIDE
@@ -1943,7 +1946,7 @@ TEST(CO_DevDCF, CoDevReadDcf_FailedToReadNumberOfSubIndexes) {
 ///
 /// \Then a buffer size is returned, the concise DCF was written correctly
 TEST(CO_DevDCF, CoDevWriteDcf_Nominal) {
-  co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987);
+  co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
   uint_least8_t tmp[BUF_SIZE] = {0};
 
   const auto ret = co_dev_write_dcf(dev, CO_UNSIGNED16_MIN, CO_UNSIGNED16_MAX,
@@ -1962,7 +1965,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
   uint_least8_t tmp[BUF_SIZE] = {0};
 
   const auto ret =
-      co_dev_write_dcf(dev, 0x1235, CO_UNSIGNED16_MAX, tmp, tmp + BUF_SIZE);
+      co_dev_write_dcf(dev, 0x1235u, CO_UNSIGNED16_MAX, tmp, tmp + BUF_SIZE);
 
   CHECK_EQUAL(MIN_RW_SIZE, ret);
   for (size_t i = 0; i < BUF_SIZE; i++) CHECK_EQUAL(0, tmp[i]);
@@ -1977,7 +1980,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
   uint_least8_t tmp[BUF_SIZE] = {0};
 
   const auto ret =
-      co_dev_write_dcf(dev, CO_UNSIGNED16_MIN, 0x1233, tmp, tmp + BUF_SIZE);
+      co_dev_write_dcf(dev, CO_UNSIGNED16_MIN, 0x1233u, tmp, tmp + BUF_SIZE);
 
   CHECK_EQUAL(MIN_RW_SIZE, ret);
   for (size_t i = 0; i < BUF_SIZE; i++) CHECK_EQUAL(0, tmp[i]);
@@ -1990,7 +1993,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
 ///
 /// \Then a number of bytes that would have been written had the buffer been sufficiently large is returned
 TEST(CO_DevDCF, CoDevWriteDcf_Null) {
-  co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987);
+  co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
 
   const auto ret = co_dev_write_dcf(dev, CO_UNSIGNED16_MIN, CO_UNSIGNED16_MAX,
                                     nullptr, nullptr);
@@ -2006,7 +2009,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Null) {
 ///
 /// \Then 0 is returned, the concise DCF was not written to the supplied buffer
 TEST(CO_DevDCF, CoDevWriteDcf_FailedToWriteSubObject) {
-  co_dev_set_val_i16(dev, 0x1234, 0xab, 0x0987);
+  co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
   uint_least8_t buf[BUF_SIZE] = {0};
 
   LelyOverride::co_val_write(Override::NoneCallsValid);
@@ -2178,7 +2181,7 @@ TEST_GROUP_BASE(CO_DevTpdoEvent, CO_DevTpdoBase) {
 ///
 /// \Then nothing is changed
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
-  co_dev_tpdo_event(dev, 0x0000, 0x00);
+  co_dev_tpdo_event(dev, 0x0000u, 0x00u);
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping disabled inserted

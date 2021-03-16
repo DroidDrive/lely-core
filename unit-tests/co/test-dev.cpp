@@ -410,14 +410,14 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 
   out_obj = co_obj_next(out_obj);
   CHECK_EQUAL(0x3f00u, *static_cast<const co_integer16_t*>(
-                          co_sub_get_max(co_obj_first_sub(out_obj))));
+                           co_sub_get_max(co_obj_first_sub(out_obj))));
   CHECK_EQUAL(0x3f00 + new_id, *static_cast<const co_integer16_t*>(
                                    co_sub_get_max(co_obj_last_sub(out_obj))));
 #endif
 #if !LELY_NO_CO_OBJ_DEFAULT
   out_obj = co_obj_next(out_obj);
   CHECK_EQUAL(0x1234u, *static_cast<const co_integer16_t*>(
-                          co_sub_get_def(co_obj_first_sub(out_obj))));
+                           co_sub_get_def(co_obj_first_sub(out_obj))));
   CHECK_EQUAL(0x1234 + new_id, *static_cast<const co_integer16_t*>(
                                    co_sub_get_def(co_obj_last_sub(out_obj))));
 #endif
@@ -1332,6 +1332,7 @@ TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
 /// \When co_dev_read_sub() is called with pointers to memory area for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
 ///
 /// \Then a size of the concise DCF buffer is returned, the index and the sub-index are stored in the memory and the requested value is set
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevReadSub_Nominal) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1415,6 +1416,7 @@ TEST(CO_Dev, CoDevReadSub_NoBegin) {
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
 /// \Then 0 is returned
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevReadSub_NoEnd) {
   CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -1527,6 +1529,7 @@ TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the index and the sub-index are stored in the memory area, the requested value is set
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevReadSub_ArrayType) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_OCTET_STRING);
@@ -1534,7 +1537,7 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
 
   uint_least8_t buf[] = {0x34u, 0x12u, 0xabu, 0x04u, 0x00u, 0x00u,
-                         0x00u, 'a',  'b',  'c',  'd'};
+                         0x00u, 'a',   'b',   'c',   'd'};
   co_unsigned16_t idx = 0x0000;
   co_unsigned8_t subidx = 0x00;
 
@@ -1555,6 +1558,7 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer with invalid data size declared and a pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the value is not changed
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1582,6 +1586,7 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the concise DCF contains the expected values
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_Nominal) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1605,6 +1610,7 @@ TEST(CO_Dev, CoDevWriteSub_Nominal) {
 /// \When co_dev_write_sub() is called with the index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_NoSub) {
   CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -1625,6 +1631,7 @@ TEST(CO_Dev, CoDevWriteSub_NoSub) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but the co_val_write() fails
 ///
 /// \Then a size of the buffer is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1648,6 +1655,7 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the concise DCF contains the expected values
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_DOMAIN);
@@ -1669,6 +1677,7 @@ TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, null pointers to the concise DCF buffer
 ///
 /// \Then a size of the buffer is returned
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_NoBegin) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1685,6 +1694,7 @@ TEST(CO_Dev, CoDevWriteSub_NoBegin) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a non-null pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the concise DCF contains the expected values
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_NoEnd) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1708,6 +1718,7 @@ TEST(CO_Dev, CoDevWriteSub_NoEnd) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a size of the buffer is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1730,6 +1741,7 @@ TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the second call
 ///
 /// \Then 0 is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1753,6 +1765,7 @@ TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the third call
 ///
 /// \Then 0 is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1777,6 +1790,7 @@ TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the fourth call
 ///
 /// \Then 0 is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1801,6 +1815,7 @@ TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the fifth call
 ///
 /// \Then 0 is returned, the concise DCF was not written
+///       \Calls co_dev_find_sub()
 TEST(CO_Dev, CoDevWriteSub_ValWriteFailed) {
   CoObjTHolder obj(0x1234u);
   CoSubTHolder sub(0xabu, CO_DEFTYPE_INTEGER16);
@@ -1834,10 +1849,10 @@ TEST_GROUP(CO_DevDCF) {
   const uint_least8_t buf[BUF_SIZE] = {
       0x01u, 0x00u, 0x00u, 0x00u,  // number of sub-indexes
       // value 1
-      0x34u, 0x12u,              // index
-      0xabu,                    // sub-index
+      0x34u, 0x12u,                // index
+      0xabu,                       // sub-index
       0x02u, 0x00u, 0x00u, 0x00u,  // size
-      0x87u, 0x09               // value
+      0x87u, 0x09                  // value
   };
   static const size_t MIN_RW_SIZE = 4u;
 
@@ -1945,6 +1960,8 @@ TEST(CO_DevDCF, CoDevReadDcf_FailedToReadNumberOfSubIndexes) {
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a buffer size is returned, the concise DCF was written correctly
+///       \Calls co_dev_first_obj()
+///       \Calls co_dev_write_sub()
 TEST(CO_DevDCF, CoDevWriteDcf_Nominal) {
   co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
   uint_least8_t tmp[BUF_SIZE] = {0};
@@ -1961,6 +1978,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Nominal) {
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, minimum object index is greater than the index of the inserted object, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a minimum buffer size is returned, the concise DCF was not written to the supplied buffer
+///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
   uint_least8_t tmp[BUF_SIZE] = {0};
 
@@ -1976,6 +1994,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, maximum object index is lower than the index of the inserted object, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
 /// \Then a minimum buffer size is returned, the concise DCF was not written to the supplied buffer
+///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
   uint_least8_t tmp[BUF_SIZE] = {0};
 
@@ -1992,6 +2011,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index and no concise DCF buffer
 ///
 /// \Then a number of bytes that would have been written had the buffer been sufficiently large is returned
+///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_Null) {
   co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
 
@@ -2008,6 +2028,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Null) {
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails
 ///
 /// \Then 0 is returned, the concise DCF was not written to the supplied buffer
+///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_FailedToWriteSubObject) {
   co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
   uint_least8_t buf[BUF_SIZE] = {0};
@@ -2180,6 +2201,7 @@ TEST_GROUP_BASE(CO_DevTpdoEvent, CO_DevTpdoBase) {
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the entry which is not present in a device
 ///
 /// \Then nothing is changed
+///       \Calls co_dev_find_sub()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
   co_dev_tpdo_event(dev, 0x0000u, 0x00u);
 }
@@ -2189,6 +2211,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_OnlySubNoMapping) {
   co_sub_set_pdo_mapping(sub, 0);
 
@@ -2202,6 +2225,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_OnlySubNoMapping) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_MappingPossibleButNoMapping) {
   co_dev_tpdo_event(dev, OBJ_IDX, SUB_IDX);
 
@@ -2213,6 +2238,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_MappingPossibleButNoMapping) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoMaxSubIndex) {
   CoObjTHolder obj1800(0x1800u);
   obj1800.InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
@@ -2229,6 +2256,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoMaxSubIndex) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoCobId) {
   CreateTpdoCommObject(DEV_ID | CO_PDO_COBID_VALID, 0x00u);
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX, SUB_SIZE));
@@ -2243,6 +2272,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoCobId) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ReservedTransmissionType) {
   CreateTpdoCommObject(DEV_ID, 0xf1u);
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX, SUB_SIZE));
@@ -2257,6 +2288,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ReservedTransmissionType) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoTpdoMapping) {
   CreateAcyclicTpdoCommObject();
 
@@ -2270,6 +2303,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoTpdoMapping) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentObjectIndexInMapping) {
   CreateAcyclicTpdoCommObject();
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX - 0x100, SUB_IDX, SUB_SIZE));
@@ -2284,6 +2319,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentObjectIndexInMapping) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentSubIndexInMapping) {
   CreateAcyclicTpdoCommObject();
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX + 10, SUB_SIZE));
@@ -2298,6 +2335,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentSubIndexInMapping) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was not called
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoIndicationFunction) {
   CreateAcyclicTpdoCommObject();
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX, SUB_SIZE));
@@ -2313,6 +2352,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoIndicationFunction) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was called once
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidAcyclicTpdo) {
   CreateAcyclicTpdoCommObject();
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX, SUB_SIZE));
@@ -2327,6 +2368,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidAcyclicTpdo) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
 /// \Then TPDO event indication function was called once
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidEventDrivenTpdo) {
   CreateTpdoCommObject(DEV_ID, 0xfeu);
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX, SUB_SIZE));
@@ -2341,6 +2384,8 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidEventDrivenTpdo) {
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of two sub-objects
 ///
 /// \Then TPDO event indication function was called twice, second time with a PDO number 30
+///       \Calls co_dev_find_sub()
+///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdEvent_CallsIndicationFunction_ForMatchedTpdos) {
   CreateAcyclicTpdoCommObject(10);
   CreateAcyclicTpdoCommObject(20);

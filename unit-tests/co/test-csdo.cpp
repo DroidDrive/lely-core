@@ -1144,14 +1144,14 @@ TEST(CO_Csdo, CoDevDnDcfReq_Nominal) {
 /// @name co_dev_up_req()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object
-///        inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with no read access inserted
 ///
 /// \When co_dev_up_req() is called with an index and a subindex of the sub-object, a pointer to the memory buffer and no confirmation function
 ///
-/// \Then 0 is returned, memory buffer is not empty and contains the requested value
-TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
+/// \Then 0 is returned, memory buffer is empty and does not contain the requested value
+TEST(CO_Csdo, CoDevUpReq_NoReadAccess_NoConfirmationFunction) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_sub_set_access(obj2020->GetLastSub(), CO_ACCESS_WO);
   const size_t BUFSIZE = 10u;
   char buffer[BUFSIZE] = {0};
   membuf mbuf = MEMBUF_INIT;
@@ -1164,9 +1164,9 @@ TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
   CHECK(mbuf.cur != nullptr);
   CHECK(mbuf.end != nullptr);
   CHECK(mbuf.begin != mbuf.end);
-  POINTERS_EQUAL(mbuf.cur, (mbuf.begin + sizeof(sub_type)));
-  CHECK_EQUAL(0x34u, static_cast<int_least8_t>(mbuf.begin[0]));
-  CHECK_EQUAL(0x12u, static_cast<int_least8_t>(mbuf.begin[1]));
+  POINTERS_EQUAL(mbuf.cur, mbuf.begin);
+  CHECK_EQUAL(0x00u, static_cast<int_least8_t>(mbuf.begin[0]));
+  CHECK_EQUAL(0x00u, static_cast<int_least8_t>(mbuf.begin[1]));
 }
 
 /// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted

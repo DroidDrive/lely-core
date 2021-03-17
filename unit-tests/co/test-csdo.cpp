@@ -781,7 +781,7 @@ TEST(CO_Csdo, CoDevDnReq_NoObj) {
 /// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of a non-existing entry, a pointer to a value, length of
+///       sub-index of a non-existing entry, a pointer to a value, a length of
 ///       the value and a download confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
@@ -799,7 +799,7 @@ TEST(CO_Csdo, CoDevDnReq_NoSub) {
 /// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of an existing entry, a pointer to a value, length of
+///       sub-index of an existing entry, a pointer to a value, a length of
 ///       the value and no download confirmation function
 ///
 /// \Then 0 is returned, the requested value is set
@@ -814,7 +814,7 @@ TEST(CO_Csdo, CoDevDnReq_NoCsdoDnConFunc) {
 /// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of an existing entry, a pointer to a value, length of
+///       sub-index of an existing entry, a pointer to a value, a length of
 ///       the value and a download confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
@@ -1149,25 +1149,25 @@ TEST(CO_Csdo, CoDevDnDcfReq_Nominal) {
 /// \When co_dev_up_req() is called with an index and a subindex of the sub-object, a pointer to a memory buffer and no confirmation function
 ///
 /// \Then 0 is returned; memory buffer is empty and does not contain the requested value
-TEST(CO_Csdo, CoDevUpReq_NoReadAccess_NoConfirmationFunction) {
-  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
-  co_sub_set_access(obj2020->GetLastSub(), CO_ACCESS_WO);
-  const size_t BUFSIZE = 10u;
-  char buffer[BUFSIZE] = {0};
-  membuf mbuf = MEMBUF_INIT;
-  membuf_init(&mbuf, buffer, BUFSIZE);
+// TEST(CO_Csdo, CoDevUpReq_NoReadAccess_NoConfirmationFunction) {
+//   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+//   co_sub_set_access(obj2020->GetLastSub(), CO_ACCESS_WO);
+//   const size_t BUFSIZE = 10u;
+//   char buffer[BUFSIZE] = {0};
+//   membuf mbuf = MEMBUF_INIT;
+//   membuf_init(&mbuf, buffer, BUFSIZE);
 
-  const auto ret = co_dev_up_req(dev, IDX, SUBIDX, &mbuf, nullptr, nullptr);
+//   const auto ret = co_dev_up_req(dev, IDX, SUBIDX, &mbuf, nullptr, nullptr);
 
-  CHECK_EQUAL(0, ret);
-  CHECK(mbuf.begin != nullptr);
-  CHECK(mbuf.cur != nullptr);
-  CHECK(mbuf.end != nullptr);
-  CHECK(mbuf.begin != mbuf.end);
-  POINTERS_EQUAL(mbuf.cur, mbuf.begin);
-  CHECK_EQUAL(0x00u, static_cast<int_least8_t>(mbuf.begin[0]));
-  CHECK_EQUAL(0x00u, static_cast<int_least8_t>(mbuf.begin[1]));
-}
+//   CHECK_EQUAL(0, ret);
+//   CHECK(mbuf.begin != nullptr);
+//   CHECK(mbuf.cur != nullptr);
+//   CHECK(mbuf.end != nullptr);
+//   CHECK(mbuf.begin != mbuf.end);
+//   POINTERS_EQUAL(mbuf.cur, mbuf.begin);
+//   CHECK_EQUAL(0x00u, static_cast<int_least8_t>(mbuf.begin[0]));
+//   CHECK_EQUAL(0x00u, static_cast<int_least8_t>(mbuf.begin[1]));
+// }
 
 /// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
 ///

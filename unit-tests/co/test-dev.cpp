@@ -2198,7 +2198,7 @@ TEST_GROUP_BASE(CO_DevTpdoEvent, CO_DevTpdoBase) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_tpdo_event() is called with an index and a sub-index of the entry which is not present in a device
+/// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object which is not present in a device
 ///
 /// \Then nothing is changed
 ///       \Calls co_dev_find_sub()
@@ -2220,7 +2220,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_OnlySubNoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted, the mapping entry is missing
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2251,7 +2251,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoMaxSubIndex) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and invalid COB-ID inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and invalid COB-ID inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2267,7 +2267,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoCobId) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and reserved transmission type inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and reserved transmission type inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2283,7 +2283,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ReservedTransmissionType) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and no TPDO mapping inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and no TPDO mapping entry inserted
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2298,7 +2298,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoTpdoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and a different object index in mapping inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted; different object index is present in a mapping entry
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2314,7 +2314,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentObjectIndexInMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and a different sub-index in mapping inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted, a different sub-index is present in a mapping entry
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2330,7 +2330,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentSubIndexInMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted and no indication function set
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted and no indication function set; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2347,7 +2347,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoIndicationFunction) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with a valid acyclic TPDO object with a sub-object with a PDO mapping enabled inserted
+/// \Given a pointer to the device (co_dev_t) with a valid acyclic TPDO object with a sub-object with a PDO mapping enabled inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2363,7 +2363,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidAcyclicTpdo) {
   CHECK_EQUAL(1, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with a valid event-driven TPDO object with a sub-object with a PDO mapping enabled inserted
+/// \Given a pointer to the device (co_dev_t) with a valid event-driven TPDO object with a sub-object with a PDO mapping enabled inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2379,7 +2379,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidEventDrivenTpdo) {
   CHECK_EQUAL(1, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with valid acyclic TPDO comm objects with sub-objects with a PDO mapping enabled inserted and single entry mappings
+/// \Given a pointer to the device (co_dev_t) with valid acyclic TPDO comm objects with sub-objects with PDO mapping enabled inserted and sub-object mapping entries present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of two sub-objects
 ///

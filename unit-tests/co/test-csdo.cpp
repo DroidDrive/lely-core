@@ -1444,7 +1444,7 @@ TEST(CO_Csdo, CoDevUpReq_DiffUpMembuf) {
   CHECK_EQUAL(0x12, static_cast<int_least8_t>(mbuf.begin[1]));
 }
 
-namespace not_last_no_mem {
+namespace co_dev_up_req_supplied_buffer_too_small {
 membuf mbuf = MEMBUF_INIT;
 
 co_unsigned32_t
@@ -1460,7 +1460,7 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
   return 0;
 }
-}  // namespace not_last_no_mem
+}  // namespace co_dev_up_req_supplied_buffer_too_small
 
 /// \Given a pointer to the device (co_dev_t) with an object inserted with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
 ///
@@ -1468,26 +1468,28 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null pointer to the user-specified data; if LELY_NO_MALLOC: the supplied buffer remains empty; else the memory buffer is not empty and contains the requested value
 TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
-  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
-  co_obj_set_up_ind(obj2020->Get(), not_last_no_mem::req_up_ind, nullptr);
+  using namespace co_dev_up_req_supplied_buffer_too_small;
 
-  const auto ret = co_dev_up_req(dev, IDX, SUBIDX, &not_last_no_mem::mbuf,
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_obj_set_up_ind(obj2020->Get(), req_up_ind, nullptr);
+
+  const auto ret = co_dev_up_req(dev, IDX, SUBIDX, &mbuf,
                                  CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
                      nullptr);
 #if LELY_NO_MALLOC
-  POINTERS_EQUAL(nullptr, not_last_no_mem::mbuf.begin);
-  POINTERS_EQUAL(nullptr, not_last_no_mem::mbuf.cur);
-  POINTERS_EQUAL(nullptr, not_last_no_mem::mbuf.end);
+  POINTERS_EQUAL(nullptr, mbuf.begin);
+  POINTERS_EQUAL(nullptr, mbuf.cur);
+  POINTERS_EQUAL(nullptr, mbuf.end);
 #else
-  CHECK(not_last_no_mem::mbuf.begin != nullptr);
-  CHECK(not_last_no_mem::mbuf.cur != nullptr);
-  CHECK(not_last_no_mem::mbuf.end != nullptr);
-  CHECK(not_last_no_mem::mbuf.begin != not_last_no_mem::mbuf.end);
-  CHECK_EQUAL(0x34, static_cast<int_least8_t>(not_last_no_mem::mbuf.begin[0]));
-  CHECK_EQUAL(0x12, static_cast<int_least8_t>(not_last_no_mem::mbuf.begin[1]));
+  CHECK(mbuf.begin != nullptr);
+  CHECK(mbuf.cur != nullptr);
+  CHECK(mbuf.end != nullptr);
+  CHECK(mbuf.begin != mbuf.end);
+  CHECK_EQUAL(0x34, static_cast<int_least8_t>(mbuf.begin[0]));
+  CHECK_EQUAL(0x12, static_cast<int_least8_t>(mbuf.begin[1]));
 #endif
 }
 

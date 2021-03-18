@@ -24,6 +24,10 @@
 
 #ifdef HAVE_LELY_OVERRIDE
 
+#include <type_traits>
+
+#include <dlfcn.h>
+
 #include <lely/util/membuf.h>
 
 #include "override-test-plugin.hpp"

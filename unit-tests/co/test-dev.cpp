@@ -577,7 +577,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
 ///
 /// \When co_dev_get_idx() is called with a memory area to store the results
 ///
-/// \Then 1 is returned, area contains the index
+/// \Then 1 is returned, the memory area contains the index
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -616,7 +616,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj) {
 ///
 /// \When co_dev_get_idx() is called with maximum index lower than the object's number, a memory area to store the results
 ///
-/// \Then a number of the inserted objects is returned, indices of object's up to the maximum are stored in the memory area
+/// \Then a number of the inserted objects is returned, indices of objects up to the maximum are stored in the memory area
 TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
   CoObjTHolder obj1(0x0000u);
   CoObjTHolder obj2(0x1234u);

@@ -1373,12 +1373,12 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 /// \When co_dev_up_req() is called with an index and a subindex of the object, a memory buffer to store the requested value and a confirmation function but realloc() fails
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_MEM, a null pointer to the memory buffer, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
-IGNORE_TEST(CO_Csdo, CoDevUpReq_NoMemory) {
+TEST(CO_Csdo, CoDevUpReq_NoMemory) {
   using namespace NoMemory;
 
   membuf mbuf = MEMBUF_INIT;
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
-  co_obj_set_up_ind(obj2020->Get(), req_up_ind, nullptr);
+  co_obj_set_up_ind(obj2020->Get(), NoMemory::req_up_ind, nullptr);
 
   LelyOverride::membuf_reserve(0);
   const auto ret =

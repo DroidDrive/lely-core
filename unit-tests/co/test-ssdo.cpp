@@ -699,6 +699,11 @@ TEST_GROUP_BASE(CoSsdoUpdate, CO_Ssdo){};
 /// @name update of the SSDO parameters
 ///@{
 
+/// \Given a pointer to the SSDO service (co_ssdo_t) with a valid request COB-ID and an invalid response COB-ID set
+///
+/// \When co_ssdo_start() is called
+///
+/// \Then 0 is returned, the request COB-ID is not updated and the response COB-ID is updated
 TEST(CoSsdoUpdate, ReqCobidValid_ResCobidInvalid) {
   const co_unsigned32_t new_cobid_res = CAN_ID | CO_SDO_COBID_VALID;
   SetSrv02CobidRes(new_cobid_res);
@@ -710,6 +715,11 @@ TEST(CoSsdoUpdate, ReqCobidValid_ResCobidInvalid) {
   CHECK_EQUAL(new_cobid_res, GetSrv02CobidRes());
 }
 
+/// \Given a pointer to the SSDO service (co_ssdo_t) with an invalid request COB-ID and a valid response COB-ID set
+///
+/// \When co_ssdo_start() is called
+///
+/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is not updated
 TEST(CoSsdoUpdate, ReqCobidInvalid_ResCobidValid) {
   const co_unsigned32_t new_cobid_req = CAN_ID | CO_SDO_COBID_VALID;
   SetSrv01CobidReq(new_cobid_req);
@@ -721,6 +731,11 @@ TEST(CoSsdoUpdate, ReqCobidInvalid_ResCobidValid) {
   CHECK_EQUAL(0x580u + DEV_ID, GetSrv02CobidRes());
 }
 
+/// \Given a pointer to the SSDO service (co_ssdo_t) with an invalid request COB-ID and an invalid response COB-ID set
+///
+/// \When co_ssdo_start() is called
+///
+/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is updated
 TEST(CoSsdoUpdate, ReqResCobidsInvalid) {
   const co_unsigned32_t new_cobid_req = CAN_ID | CO_SDO_COBID_VALID;
   const co_unsigned32_t new_cobid_res = CAN_ID | CO_SDO_COBID_VALID;
@@ -734,6 +749,11 @@ TEST(CoSsdoUpdate, ReqResCobidsInvalid) {
   CHECK_EQUAL(new_cobid_res, GetSrv02CobidRes());
 }
 
+/// \Given a pointer to the SSDO service (co_ssdo_t) with a valid request COB-ID with CO_SDO_COBID_FRAME and a valid response COB-ID set
+///
+/// \When co_ssdo_start() is called
+///
+/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is updated
 TEST(CoSsdoUpdate, ReqResCobidsValid_CobidFrameSet) {
   const co_unsigned32_t new_cobid_req = CAN_ID | CO_SDO_COBID_FRAME;
   const co_unsigned32_t new_cobid_res = CAN_ID;
@@ -754,6 +774,11 @@ TEST_GROUP_BASE(CoSsdoTimer, CO_Ssdo){};
 /// @name SSDO timer
 ///@{
 
+/// \Given a pointer to the SSDO service (co_ssdo_t) with a valid request COB-ID with CO_SDO_COBID_FRAME and a valid response COB-ID set
+///
+/// \When co_ssdo_start() is called
+///
+/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is updated
 TEST(CoSsdoTimer, Timeout) {
   co_ssdo_set_timeout(ssdo, 1u);  // 1 ms
   StartSSDO();

@@ -1,7 +1,7 @@
-/**
+/**@file
  * This file is part of the CANopen Library Unit Test Suite.
  *
- * @copyright 2020 N7 Space Sp. z o.o.
+ * @copyright 2020-2021 N7 Space Sp. z o.o.
  *
  * Unit Test Suite was developed under a programme of,
  * and funded by, the European Space Agency.
@@ -25,6 +25,44 @@
 
 #include <lely/util/sllist.h>
 
+TEST_GROUP(Util_SllistInit){};
+
+/// @name sllist_init()
+///@{
+
+/// \Given a default-initialized instance of a singly linked list
+///
+/// \When sllist_init() is called with a pointer to the singly linked list
+///
+/// \Then pointers to first and last element are null
+TEST(Util_SllistInit, SllistInit_Nominal) {
+  sllist list;  // default-initialized (indeterminate value)
+
+  sllist_init(&list);
+
+  POINTERS_EQUAL(nullptr, sllist_first(&list));
+  POINTERS_EQUAL(nullptr, sllist_last(&list));
+}
+
+///@}
+
+/// @name slnode_init()
+
+/// \Given a default-initialized instance of a node in a singly linked list
+///
+/// \When slnode_init() is called with a pointer to the node
+///
+/// \Then pointer to the next node is null
+TEST(Util_SllistInit, SlnodeInit_Nominal) {
+  slnode node;  // default-initialized (indeterminate value)
+
+  slnode_init(&node);
+
+  POINTERS_EQUAL(nullptr, node.next);
+}
+
+///@}
+
 TEST_GROUP(Util_Sllist) {
   static const size_t NODES_NUM = 10;
   sllist list;
@@ -44,83 +82,160 @@ TEST_GROUP(Util_Sllist) {
   }
 };
 
-TEST(Util_Sllist, SllistInit) {
-  POINTERS_EQUAL(nullptr, sllist_first(&list));
-  POINTERS_EQUAL(nullptr, sllist_last(&list));
-}
+/// @name sllist_empty()
+///@{
 
-TEST(Util_Sllist, SlnodeInit) {
-  POINTERS_EQUAL(nullptr, nodes[0].next);
-  POINTERS_EQUAL(nullptr, nodes[1].next);
-  POINTERS_EQUAL(nullptr, nodes[NODES_NUM - 1].next);
-}
-
+/// \Given an instance of a singly linked list without any node inserted
+///
+/// \When sllist_empty() is called with a pointer to the list
+///
+/// \Then 1 is returned
 TEST(Util_Sllist, SllistEmpty_AfterCreation) {
   CHECK_EQUAL(1, sllist_empty(&list));
 }
 
+/// \Given an instance of a singly linked list with one node inserted
+///
+/// \When sllist_empty() is called with a pointer to the list
+///
+/// \Then 0 is returned
 TEST(Util_Sllist, SllistEmpty_NotEmptyWhenElementAdded) {
   sllist_push_front(&list, &nodes[0]);
 
   CHECK_EQUAL(0, sllist_empty(&list));
 }
 
+/// \Given an instance of a singly linked list with multiple nodes inserted
+///
+/// \When sllist_empty() is called with a pointer to the list
+///
+/// \Then 0 is returned
 TEST(Util_Sllist, SllistEmpty_NotEmptyWhenManyElementsAdded) {
   FillList(&list, 3);
 
   CHECK_EQUAL(0, sllist_empty(&list));
 }
 
+///@}
+
+/// @name sllist_size()
+///@{
+
+/// \Given an instance of a singly linked list without any node inserted
+///
+/// \When sllist_size() is called with a pointer to the list
+///
+/// \Then 0 is returned
 TEST(Util_Sllist, SllistSize_ZeroWhenCreated) {
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with a single node inserted
+///
+/// \When sllist_size() is called with a pointer to the list
+///
+/// \Then 1 is returned
 TEST(Util_Sllist, SllistSize_OneElementAdded) {
   sllist_push_front(&list, &nodes[0]);
 
   CHECK_EQUAL(1, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with many nodes inserted
+///
+/// \When sllist_size() is called with a pointer to the list
+///
+/// \Then a size of the list is returned
 TEST(Util_Sllist, SllistSize_ManyAdded) {
   FillList(&list, 4);
 
   CHECK_EQUAL(4, sllist_size(&list));
 }
 
-TEST(Util_Sllist, SllistPushFront_WhenEmpty) {
+///@}
+
+/// @name sllist_push_front()
+///@{
+
+/// \Given an instance of a singly linked list without any node inserted
+///
+/// \When sllist_push_front() is called with a pointer to the list and a pointer to the node
+///
+/// \Then a size of the list is 1, the node is the first of the list
+TEST(Util_Sllist, SllistPushFront_Empty) {
   sllist_push_front(&list, &nodes[0]);
 
+  CHECK_EQUAL(1, sllist_size(&list));
   POINTERS_EQUAL(&nodes[0], sllist_first(&list));
 }
 
-TEST(Util_Sllist, SllistPushFront_AddMany) {
+/// \Given an instance of a singly linked list with a node inserted
+///
+/// \When sllist_push_front() is called with a pointer to the list and a pointer to the node
+///
+/// \Then a size of the list is 2, first node inserted is the last of the list, last node inserted is the first of the list
+TEST(Util_Sllist, SllistPushFront_OneAdded) {
   sllist_push_front(&list, &nodes[0]);
+
   sllist_push_front(&list, &nodes[1]);
 
+  CHECK_EQUAL(2u, sllist_size(&list));
   POINTERS_EQUAL(&nodes[1], sllist_first(&list));
+  POINTERS_EQUAL(&nodes[0], sllist_last(&list));
 }
 
-TEST(Util_Sllist, SllistPushBack_WhenEmpty) {
+///@}
+
+/// @name sllist_push_back()
+///@{
+
+/// \Given an instance of a singly linked list without any node inserted
+///
+/// \When sllist_push_back() is called with a pointer to the list and a pointer to the node
+///
+/// \Then a size of the list is 1, the node is the first of the list
+TEST(Util_Sllist, SllistPushBack_Empty) {
   sllist_push_back(&list, &nodes[0]);
 
   POINTERS_EQUAL(&nodes[0], sllist_first(&list));
   CHECK_EQUAL(1, sllist_size(&list));
 }
 
-TEST(Util_Sllist, SllistPushBack_AddMany) {
+/// \Given an instance of a singly linked list with a single node inserted
+///
+/// \When sllist_push_back() is called with a pointer to the list and a pointer to the node
+///
+/// \Then a size of the list is 2, first node inserted is the first of the list, last node inserted is the last of the list
+TEST(Util_Sllist, SllistPushBack_OneAdded) {
   sllist_push_back(&list, &nodes[0]);
+
   sllist_push_back(&list, &nodes[1]);
 
+  CHECK_EQUAL(2u, sllist_size(&list));
   POINTERS_EQUAL(&nodes[0], sllist_first(&list));
-  POINTERS_EQUAL(&nodes[1], sllist_pop_back(&list));
-  CHECK_EQUAL(1, sllist_size(&list));
+  POINTERS_EQUAL(&nodes[1], sllist_last(&list));
 }
 
+///@}
+
+/// @name sllist_pop_front()
+///@{
+
+/// \Given an instance of a singly linked list without any node inserted
+///
+/// \When sllist_pop_front() is called with a pointer to the list
+///
+/// \Then a null pointer is returned and a size of the list is 0
 TEST(Util_Sllist, SllistPopFront_WhenEmpty) {
   POINTERS_EQUAL(nullptr, sllist_pop_front(&list));
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with a node inserted
+///
+/// \When sllist_pop_front() is called with a pointer to the list
+///
+/// \Then a pointer to the inserted node is returned and a size of the list is 0
 TEST(Util_Sllist, SllistPopFront_OneAdded) {
   FillList(&list, 1);
 
@@ -128,6 +243,11 @@ TEST(Util_Sllist, SllistPopFront_OneAdded) {
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with many nodes inserted
+///
+/// \When sllist_pop_front() is called with a pointer to the list
+///
+/// \Then a pointer to the inserted node is returned and a size of the list is decreased
 TEST(Util_Sllist, SllistPopFront_ManyAdded) {
   FillList(&list, NODES_NUM);
 
@@ -136,11 +256,26 @@ TEST(Util_Sllist, SllistPopFront_ManyAdded) {
   CHECK_EQUAL(NODES_NUM - 2, sllist_size(&list));
 }
 
+///@}
+
+/// @name sllist_pop_back()
+///@{
+
+/// \Given an instance of a singly linked list without any node inserted
+///
+/// \When sllist_pop_back() is called with a pointer to the list
+///
+/// \Then a null pointer is returned and a size of the list is 0
 TEST(Util_Sllist, SllistPopBack_WhenEmpty) {
   POINTERS_EQUAL(nullptr, sllist_pop_back(&list));
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with a node inserted
+///
+/// \When sllist_pop_back() is called with a pointer to the list
+///
+/// \Then a pointer to the inserted node is returned and a size of the list is 0
 TEST(Util_Sllist, SllistPopBack_OneAdded) {
   FillList(&list, 1);
 
@@ -148,6 +283,11 @@ TEST(Util_Sllist, SllistPopBack_OneAdded) {
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with many nodes inserted
+///
+/// \When sllist_pop_back() is called with a pointer to the list
+///
+/// \Then a pointer to the last inserted node is returned and a size of the list is decreased
 TEST(Util_Sllist, SllistPopBack_ManyAdded) {
   FillList(&list, 8);
 
@@ -156,16 +296,36 @@ TEST(Util_Sllist, SllistPopBack_ManyAdded) {
   CHECK_EQUAL(6, sllist_size(&list));
 }
 
+///@}
+
+/// @name sllist_remove()
+///@{
+
+/// \Given an instance of a singly linked list
+///
+/// \When sllist_remove() is called with a pointer to the list and a null pointer
+///
+/// \Then a null pointer is returned and a size of the list is 0
 TEST(Util_Sllist, SllistRemove_Nullptr) {
   POINTERS_EQUAL(nullptr, sllist_remove(&list, nullptr));
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list
+///
+/// \When sllist_remove() is called with a pointer to the list and a pointer to the node which is not present in the list
+///
+/// \Then a null pointer is returned and a size of the list is 0
 TEST(Util_Sllist, SllistRemove_Empty) {
   POINTERS_EQUAL(nullptr, sllist_remove(&list, &nodes[0]));
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with a node inserted
+///
+/// \When sllist_remove() is called with a pointer to the list and a pointer to the node
+///
+/// \Then a pointer to the node is returned and a size of the list is 0
 TEST(Util_Sllist, SllistRemove_OneAdded) {
   FillList(&list, 1);
 
@@ -173,9 +333,13 @@ TEST(Util_Sllist, SllistRemove_OneAdded) {
   CHECK_EQUAL(0, sllist_size(&list));
 }
 
+/// \Given an instance of a singly linked list with a node inserted and then removed
+///
+/// \When sllist_remove() is called with a pointer to the list and a pointer to the node which is no longer present in the list
+///
+/// \Then a null pointer is returned and a size of the list is 0
 TEST(Util_Sllist, SllistRemove_OneAddedRemovedTwice) {
   FillList(&list, 1);
-
   sllist_remove(&list, &nodes[0]);
 
   POINTERS_EQUAL(nullptr, sllist_remove(&list, &nodes[0]));
@@ -196,6 +360,11 @@ TEST(Util_Sllist, SllistRemove_ManyAdded) {
   POINTERS_EQUAL(&nodes[1], sllist_remove(&list, &nodes[1]));
   CHECK_EQUAL(0, sllist_size(&list));
 }
+
+///@}
+
+/// @name sllist_append()
+///@{
 
 TEST(Util_Sllist, SllistAppend_BothEmpty) {
   sllist source_list;
@@ -247,6 +416,11 @@ TEST(Util_Sllist, SllistAppend_SrcManyDstMany) {
   CHECK_EQUAL(4, sllist_size(&list));
 }
 
+///@}
+
+/// @name sllist_first()
+///@{
+
 TEST(Util_Sllist, SllistFirst_Empty) {
   POINTERS_EQUAL(nullptr, sllist_first(&list));
 }
@@ -263,6 +437,11 @@ TEST(Util_Sllist, SllistFirst_ManyAdded) {
   POINTERS_EQUAL(&nodes[0], sllist_first(&list));
 }
 
+///@}
+
+/// @name sllist_last()
+///@{
+
 TEST(Util_Sllist, SllistLast_Empty) {
   POINTERS_EQUAL(nullptr, sllist_last(&list));
 }
@@ -278,6 +457,11 @@ TEST(Util_Sllist, SllistLast_ManyAdded) {
 
   POINTERS_EQUAL(&nodes[1], sllist_last(&list));
 }
+
+///@}
+
+/// @name sllist_foreach()
+///@{
 
 TEST(Util_Sllist, SllistForeach_Empty) {
   bool visited = false;
@@ -332,3 +516,5 @@ TEST(Util_Sllist, SllistForeach_MultiElementsRemoveCurrent) {
   CHECK_EQUAL(NODES_NUM, visited_nodes_counter);
   CHECK_EQUAL(NODES_NUM - 1, visited_nodes.size());
 }
+
+///@}

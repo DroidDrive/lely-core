@@ -774,11 +774,11 @@ TEST_GROUP_BASE(CoSsdoTimer, CO_Ssdo){};
 /// @name SSDO timer
 ///@{
 
-/// \Given a pointer to the SSDO service (co_ssdo_t) with a valid request COB-ID with CO_SDO_COBID_FRAME and a valid response COB-ID set
+/// \Given a pointer to the SSDO service (co_ssdo_t) in download segment state with a timeout set
 ///
-/// \When co_ssdo_start() is called
+/// \When can_net_set_time() is called with a timeout value
 ///
-/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is updated
+/// \Then CAN message is sent to `0x581` CAN-ID, with no flags set and a length of CO_SDO_MSG_SIZE, containing CO_SDO_CS_ABORT, the index, the subindex and CO_SDO_AC_TIMEOUT
 TEST(CoSsdoTimer, Timeout) {
   co_ssdo_set_timeout(ssdo, 1u);  // 1 ms
   StartSSDO();

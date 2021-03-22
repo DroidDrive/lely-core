@@ -778,7 +778,7 @@ TEST_GROUP_BASE(CoSsdoTimer, CO_Ssdo){};
 ///
 /// \When can_net_set_time() is called with a timeout value
 ///
-/// \Then CAN message is sent to `0x581` CAN-ID, with no flags set and a length of CO_SDO_MSG_SIZE, containing CO_SDO_CS_ABORT, the index, the subindex and CO_SDO_AC_TIMEOUT
++/// \Then CAN message is sent to `0x580 + DEV_ID` CAN-ID, with no flags set and a length of CO_SDO_MSG_SIZE, containing CO_SDO_CS_ABORT, the index, the subindex and CO_SDO_AC_TIMEOUT
 TEST(CoSsdoTimer, Timeout) {
   co_ssdo_set_timeout(ssdo, 1u);  // 1 ms
   StartSSDO();

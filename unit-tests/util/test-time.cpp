@@ -1,7 +1,7 @@
 /**@file
  * This file is part of the CANopen Library Unit Test Suite.
  *
- * @copyright 2020 N7 Space Sp. z o.o.
+ * @copyright 2020-2021 N7 Space Sp. z o.o.
  *
  * Unit Test Suite was developed under a programme of,
  * and funded by, the European Space Agency.
@@ -38,6 +38,9 @@ TEST_GROUP(Util_Time) {
   }
 };
 
+/// @name timespec_add_sec()
+///@{
+
 TEST(Util_Time, TimespecAddSec) {
   timespec_add_sec(&ts, 0L);
   CHECK_EQUAL(0L, ts.tv_sec);
@@ -51,6 +54,11 @@ TEST(Util_Time, TimespecAddSec) {
   CHECK_EQUAL(3L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
+
+///@}
+
+/// @name timespec_add_msec()
+///@{
 
 TEST(Util_Time, TimespecAddMSec) {
   timespec_add_msec(&ts, 0L);
@@ -66,6 +74,11 @@ TEST(Util_Time, TimespecAddMSec) {
   CHECK_EQUAL(3000000L, ts.tv_nsec);
 }
 
+///@}
+
+/// @name timespec_add_usec()
+///@{
+
 TEST(Util_Time, TimespecAddUSec) {
   timespec_add_usec(&ts, 0L);
   CHECK_EQUAL(0L, ts.tv_sec);
@@ -79,6 +92,11 @@ TEST(Util_Time, TimespecAddUSec) {
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(3000L, ts.tv_nsec);
 }
+
+///@}
+
+/// @name timespec_add_nsec()
+///@{
 
 TEST(Util_Time, TimespecAddNsec) {
   timespec_add_nsec(&ts, 0L);
@@ -97,6 +115,11 @@ TEST(Util_Time, TimespecAddNsec) {
   CHECK_EQUAL(1L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
+
+///@}
+
+/// @name timespec_sub()
+///@{
 
 TEST(Util_Time, TimespecSub_Zero) {
   timespec dec = {0L, 0L};
@@ -124,6 +147,11 @@ TEST(Util_Time, TimespecSub_OneSecOneNsec) {
   CHECK_EQUAL(999999999L, ts.tv_nsec);
 }
 
+///@}
+
+/// @name timespec_sub_sec()
+///@{
+
 TEST(Util_Time, TimespecSubSec) {
   timespec_add_sec(&ts, 2L);
 
@@ -135,6 +163,11 @@ TEST(Util_Time, TimespecSubSec) {
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
+
+///@}
+
+/// @name timespec_sub_msec()
+///@{
 
 TEST(Util_Time, TimespecSubMsec) {
   timespec_add_sec(&ts, 2L);
@@ -152,6 +185,11 @@ TEST(Util_Time, TimespecSubMsec) {
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
 
+///@}
+
+/// @name timespec_sub_usec()
+///@{
+
 TEST(Util_Time, TimespecSubUsec) {
   timespec_add_sec(&ts, 2L);
 
@@ -168,6 +206,11 @@ TEST(Util_Time, TimespecSubUsec) {
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
 
+///@}
+
+/// @name timespec_sub_nsec()
+///@{
+
 TEST(Util_Time, TimespecSubNsec) {
   timespec_add_sec(&ts, 2L);
 
@@ -183,6 +226,11 @@ TEST(Util_Time, TimespecSubNsec) {
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
+
+///@}
+
+/// @name timespec_diff_sec()
+///@{
 
 TEST(Util_Time, TimespecDiffSec_Seconds) {
   CHECK_EQUAL(0L, timespec_diff_sec(&ts, &ts2));
@@ -203,6 +251,11 @@ TEST(Util_Time, TimespecDiffSec_Nanoseconds) {
   ts2 = {0L, 999999999L};
   CHECK_EQUAL(0L, timespec_diff_sec(&ts, &ts2));
 }
+
+///@}
+
+/// @name timespec_diff_msec()
+///@{
 
 TEST(Util_Time, TimespecDiffMsec_Seconds) {
   ts2 = {0L, 0L};
@@ -232,6 +285,11 @@ TEST(Util_Time, TimespecDiffMsec_Nanoseconds) {
   CHECK_EQUAL(2100L, timespec_diff_msec(&ts, &ts2));
 }
 
+///@}
+
+/// @name timespec_diff_usec()
+///@{
+
 TEST(Util_Time, TimespecDiffUsec_Seconds) {
   ts2 = {0L, 0L};
   CHECK_EQUAL(0L, timespec_diff_usec(&ts, &ts2));
@@ -259,6 +317,11 @@ TEST(Util_Time, TimespecDiffUsec_Nanoseconds) {
   ts2 = {2L, 1000000L};
   CHECK_EQUAL(2199000L, timespec_diff_usec(&ts, &ts2));
 }
+
+///@}
+
+/// @name timespec_diff_nsec()
+///@{
 
 TEST(Util_Time, TimespecDiffNsec_Seconds) {
   ts2 = {0L, 0L};
@@ -288,6 +351,11 @@ TEST(Util_Time, TimespecDiffNsec_Nanoseconds) {
   CHECK_EQUAL(2000000190L, timespec_diff_nsec(&ts, &ts2));
 }
 
+///@}
+
+/// @name timespec_cmp()
+///@{
+
 TEST(Util_Time, TimespecCmp) {
   ts = {2L, 100L};
   ts2 = ts;
@@ -302,3 +370,5 @@ TEST(Util_Time, TimespecCmp) {
   ts2 = {2 * ts.tv_sec, 2 * ts.tv_nsec};
   CHECK_EQUAL(-1, timespec_cmp(&ts, &ts2));
 }
+
+///@}

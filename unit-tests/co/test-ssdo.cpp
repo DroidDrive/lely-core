@@ -33,7 +33,6 @@
 #include <lely/co/csdo.h>
 #include <lely/co/sdo.h>
 #include <lely/co/ssdo.h>
-#include <lely/util/endian.h>
 
 #include "allocators/default.hpp"
 #include "allocators/limited.hpp"
@@ -83,12 +82,6 @@
 #define CO_SDO_INI_SIZE_MASK 0x0fu
 
 #define CO_SDO_MAX_SEQNO 127u
-
-#define CHECK_CMD_CAN_MSG(res, msg) CHECK_EQUAL((res), (msg)[0])
-#define CHECK_IDX_CAN_MSG(idx, msg) CHECK_EQUAL((idx), ldle_u16((msg) + 1u))
-#define CHECK_SUBIDX_CAN_MSG(subidx, msg) CHECK_EQUAL((subidx), (msg)[3u])
-#define CHECK_AC_CAN_MSG(ac, msg) CHECK_EQUAL((ac), ldle_u32((msg) + 4u))
-#define CHECK_VAL_CAN_MSG(val, msg) CHECK_EQUAL((val), ldle_u32((msg) + 4u))
 
 #define CO_SDO_MSG_SIZE 8u
 #define CO_SDO_INI_DATA_SIZE 4u
@@ -699,72 +692,82 @@ TEST_GROUP_BASE(CoSsdoUpdate, CO_Ssdo){};
 /// @name update of the SSDO parameters
 ///@{
 
-/// \Given a pointer to the SSDO service (co_ssdo_t) with a valid request COB-ID and an invalid response COB-ID set
+/// \Given a pointer to the started SSDO service (co_ssdo_t) with a valid request COB-ID and an invalid response COB-ID set
 ///
-/// \When co_ssdo_start() is called
+/// \When a CAN message is received
 ///
-/// \Then 0 is returned, the request COB-ID is not updated and the response COB-ID is updated
+/// \Then CAN response is not send
 TEST(CoSsdoUpdate, ReqCobidValid_ResCobidInvalid) {
   const co_unsigned32_t new_cobid_res = CAN_ID | CO_SDO_COBID_VALID;
   SetSrv02CobidRes(new_cobid_res);
+  CHECK_EQUAL(0, co_ssdo_start(ssdo));
 
-  const auto ret = co_ssdo_start(ssdo);
+  can_msg msg = CAN_MSG_INIT;
+  msg.id = CAN_ID;
+  msg.data[0] = CO_SDO_CCS_BLK_DN_REQ;
+  CHECK_EQUAL(0, can_net_recv(net, &msg));
 
-  CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(0x600u + DEV_ID, GetSrv01CobidReq());
-  CHECK_EQUAL(new_cobid_res, GetSrv02CobidRes());
+  CHECK_EQUAL(0, CanSend::num_called);
 }
 
-/// \Given a pointer to the SSDO service (co_ssdo_t) with an invalid request COB-ID and a valid response COB-ID set
+/// \Given a pointer to the started SSDO service (co_ssdo_t) with an invalid request COB-ID and a valid response COB-ID set
 ///
-/// \When co_ssdo_start() is called
+/// \When a CAN message is received
 ///
-/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is not updated
+/// \Then CAN response is not send
 TEST(CoSsdoUpdate, ReqCobidInvalid_ResCobidValid) {
   const co_unsigned32_t new_cobid_req = CAN_ID | CO_SDO_COBID_VALID;
   SetSrv01CobidReq(new_cobid_req);
+  CHECK_EQUAL(0, co_ssdo_start(ssdo));
 
-  const auto ret = co_ssdo_start(ssdo);
+  can_msg msg = CAN_MSG_INIT;
+  msg.id = CAN_ID;
+  msg.data[0] = CO_SDO_CCS_BLK_DN_REQ;
+  CHECK_EQUAL(0, can_net_recv(net, &msg));
 
-  CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(new_cobid_req, GetSrv01CobidReq());
-  CHECK_EQUAL(0x580u + DEV_ID, GetSrv02CobidRes());
+  CHECK_EQUAL(0, CanSend::num_called);
 }
 
-/// \Given a pointer to the SSDO service (co_ssdo_t) with an invalid request COB-ID and an invalid response COB-ID set
+/// \Given a pointer to the started SSDO service (co_ssdo_t) with an invalid request COB-ID and an invalid response COB-ID set
 ///
-/// \When co_ssdo_start() is called
+/// \When a CAN message is received
 ///
-/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is updated
+/// \Then CAN response is not send
 TEST(CoSsdoUpdate, ReqResCobidsInvalid) {
   const co_unsigned32_t new_cobid_req = CAN_ID | CO_SDO_COBID_VALID;
   const co_unsigned32_t new_cobid_res = CAN_ID | CO_SDO_COBID_VALID;
   SetSrv01CobidReq(new_cobid_req);
   SetSrv02CobidRes(new_cobid_res);
+  CHECK_EQUAL(0, co_ssdo_start(ssdo));
 
-  const auto ret = co_ssdo_start(ssdo);
+  can_msg msg = CAN_MSG_INIT;
+  msg.id = CAN_ID;
+  msg.data[0] = CO_SDO_CCS_BLK_DN_REQ;
+  CHECK_EQUAL(0, can_net_recv(net, &msg));
 
-  CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(new_cobid_req, GetSrv01CobidReq());
-  CHECK_EQUAL(new_cobid_res, GetSrv02CobidRes());
+  CHECK_EQUAL(0, CanSend::num_called);
 }
 
-/// \Given a pointer to the SSDO service (co_ssdo_t) with a valid request COB-ID with CO_SDO_COBID_FRAME and a valid response COB-ID set
+/// \Given a pointer to the started SSDO service (co_ssdo_t) with a valid request COB-ID with CO_SDO_COBID_FRAME and a valid response COB-ID set
 ///
-/// \When co_ssdo_start() is called
+/// \When a CAN message with CAN_FLAG_EID set is received
 ///
-/// \Then 0 is returned, the request COB-ID is updated and the response COB-ID is updated
+/// \Then CAN message of CO_SDO_MSG_SIZE length is sent to the CAN ID
 TEST(CoSsdoUpdate, ReqResCobidsValid_CobidFrameSet) {
   const co_unsigned32_t new_cobid_req = CAN_ID | CO_SDO_COBID_FRAME;
   const co_unsigned32_t new_cobid_res = CAN_ID;
   SetSrv01CobidReq(new_cobid_req);
   SetSrv02CobidRes(new_cobid_res);
+  CHECK_EQUAL(0, co_ssdo_start(ssdo));
 
-  const auto ret = co_ssdo_start(ssdo);
+  can_msg msg = CAN_MSG_INIT;
+  msg.id = CAN_ID;
+  msg.flags = CAN_FLAG_IDE;
+  msg.data[0] = CO_SDO_CCS_BLK_DN_REQ;
+  CHECK_EQUAL(0, can_net_recv(net, &msg));
 
-  CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(new_cobid_req, GetSrv01CobidReq());
-  CHECK_EQUAL(new_cobid_res, GetSrv02CobidRes());
+  CanSend::CheckLastMsg(1u, CAN_ID, 0, CO_SDO_MSG_SIZE, CO_SDO_CS_ABORT,
+                        0x0000u, 0x00u, CO_SDO_AC_NO_CS);
 }
 
 ///@}
@@ -778,7 +781,7 @@ TEST_GROUP_BASE(CoSsdoTimer, CO_Ssdo){};
 ///
 /// \When can_net_set_time() is called with a timeout value
 ///
-+/// \Then CAN message is sent to `0x580 + DEV_ID` CAN-ID, with no flags set and a length of CO_SDO_MSG_SIZE, containing CO_SDO_CS_ABORT, the index, the subindex and CO_SDO_AC_TIMEOUT
+/// \Then CAN message is sent to `0x580 + DEV_ID` CAN-ID, with no flags set and a length of CO_SDO_MSG_SIZE, containing CO_SDO_CS_ABORT, the index, the subindex and CO_SDO_AC_TIMEOUT
 TEST(CoSsdoTimer, Timeout) {
   co_ssdo_set_timeout(ssdo, 1u);  // 1 ms
   StartSSDO();

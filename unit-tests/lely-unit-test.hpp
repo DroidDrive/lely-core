@@ -31,8 +31,15 @@
 #include <lely/can/msg.h>
 #include <lely/co/type.h>
 #include <lely/util/diag.h>
+#include <lely/util/endian.h>
 
 #include <cassert>
+
+#define CHECK_CMD_CAN_MSG(res, msg) CHECK_EQUAL((res), (msg)[0])
+#define CHECK_IDX_CAN_MSG(idx, msg) CHECK_EQUAL((idx), ldle_u16((msg) + 1u))
+#define CHECK_SUBIDX_CAN_MSG(subidx, msg) CHECK_EQUAL((subidx), (msg)[3u])
+#define CHECK_AC_CAN_MSG(ac, msg) CHECK_EQUAL((ac), ldle_u32((msg) + 4u))
+#define CHECK_VAL_CAN_MSG(val, msg) CHECK_EQUAL((val), ldle_u32((msg) + 4u))
 
 namespace LelyUnitTest {
 /**
@@ -130,6 +137,22 @@ struct CanSend {
   static inline bool
   called() {
     return num_called > 0;
+  }
+
+  // func(const can_msg* msg_, void* data_) {
+  static inline void
+  CheckLastMsg(const size_t num_called_, const co_unsigned32_t id_,
+               const co_unsigned32_t flags_, const uint_least8_t len_,
+               const co_unsigned8_t cs_, const co_unsigned16_t idx_,
+               const co_unsigned8_t subidx_, const co_unsigned32_t ac_) {
+    CHECK_EQUAL(num_called_, CanSend::num_called);
+    CHECK_EQUAL(id_, CanSend::msg.id);
+    CHECK_EQUAL(flags_, CanSend::msg.flags);
+    CHECK_EQUAL(len_, CanSend::msg.len);
+    CHECK_CMD_CAN_MSG(cs_, CanSend::msg.data);
+    CHECK_IDX_CAN_MSG(idx_, CanSend::msg.data);
+    CHECK_SUBIDX_CAN_MSG(subidx_, CanSend::msg.data);
+    CHECK_AC_CAN_MSG(ac_, CanSend::msg.data);
   }
 
   static inline void

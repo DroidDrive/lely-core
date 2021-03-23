@@ -41,7 +41,12 @@ TEST_GROUP(Util_Time) {
 /// @name timespec_add_sec()
 ///@{
 
-TEST(Util_Time, TimespecAddSec) {
+/// \Given N/A
+///
+/// \When timespec_add_sec() is called with a number of seconds to add
+///
+/// \Then an initial number of seconds is increased by the requested number, a number of nanoseconds is not changed
+TEST(Util_Time, TimespecAddSec_Nominal) {
   timespec_add_sec(&ts, 0L);
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
@@ -60,7 +65,12 @@ TEST(Util_Time, TimespecAddSec) {
 /// @name timespec_add_msec()
 ///@{
 
-TEST(Util_Time, TimespecAddMSec) {
+/// \Given N/A
+///
+/// \When timespec_add_msec() is called with a number of miliseconds to add
+///
+/// \Then an initial number of seconds is not changed, a number of nanoseconds is increased by the number if miliseconds multiplied by `1 000 000`
+TEST(Util_Time, TimespecAddMSec_Nominal) {
   timespec_add_msec(&ts, 0L);
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
@@ -79,7 +89,12 @@ TEST(Util_Time, TimespecAddMSec) {
 /// @name timespec_add_usec()
 ///@{
 
-TEST(Util_Time, TimespecAddUSec) {
+/// \Given N/A
+///
+/// \When timespec_add_usec() is called with a number of microseconds to add
+///
+/// \Then an initial number of seconds is not changed, a number of nanoseconds is increased by the number if microseconds multiplied by `1 000`
+TEST(Util_Time, TimespecAddUSec_Nominal) {
   timespec_add_usec(&ts, 0L);
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
@@ -98,7 +113,12 @@ TEST(Util_Time, TimespecAddUSec) {
 /// @name timespec_add_nsec()
 ///@{
 
-TEST(Util_Time, TimespecAddNsec) {
+/// \Given N/A
+///
+/// \When timespec_add_nsec() is called with a number of nanoseconds to add
+///
+/// \Then an initial number of seconds is not changed, a number of nanoseconds is increased by the given number
+TEST(Util_Time, TimespecAddNsec_Nominal) {
   timespec_add_nsec(&ts, 0L);
   CHECK_EQUAL(0L, ts.tv_sec);
   CHECK_EQUAL(0L, ts.tv_nsec);
@@ -121,6 +141,11 @@ TEST(Util_Time, TimespecAddNsec) {
 /// @name timespec_sub()
 ///@{
 
+/// \Given N/A
+///
+/// \When timespec_sub() is called with a time interval equal zero
+///
+/// \Then an initial time interval value is not changed
 TEST(Util_Time, TimespecSub_Zero) {
   timespec dec = {0L, 0L};
 
@@ -129,6 +154,11 @@ TEST(Util_Time, TimespecSub_Zero) {
   CHECK_EQUAL(0L, ts.tv_nsec);
 }
 
+/// \Given N/A
+///
+/// \When timespec_sub() is called with a one nanosecond time interval
+///
+/// \Then an initial time interval value is decreased by the requested value
 TEST(Util_Time, TimespecSub_OneNsec) {
   timespec_add_sec(&ts, 2L);
   timespec dec = {0L, 1L};
@@ -138,6 +168,11 @@ TEST(Util_Time, TimespecSub_OneNsec) {
   CHECK_EQUAL(999999999L, ts.tv_nsec);
 }
 
+/// \Given N/A
+///
+/// \When timespec_sub() is called with one second and one nanosecond time interval
+///
+/// \Then an initial time interval value is decreased by the requested value
 TEST(Util_Time, TimespecSub_OneSecOneNsec) {
   timespec_add_sec(&ts, 2L);
   timespec dec = {1L, 1L};
@@ -152,7 +187,12 @@ TEST(Util_Time, TimespecSub_OneSecOneNsec) {
 /// @name timespec_sub_sec()
 ///@{
 
-TEST(Util_Time, TimespecSubSec) {
+/// \Given N/A
+///
+/// \When timespec_sub_sec() is called with a time interval
+///
+/// \Then an initial time interval value is decreased by the requested value
+TEST(Util_Time, TimespecSubSec_Nominal) {
   timespec_add_sec(&ts, 2L);
 
   timespec_sub_sec(&ts, 1L);
@@ -169,7 +209,12 @@ TEST(Util_Time, TimespecSubSec) {
 /// @name timespec_sub_msec()
 ///@{
 
-TEST(Util_Time, TimespecSubMsec) {
+/// \Given N/A
+///
+/// \When timespec_sub_msec() is called with a time interval
+///
+/// \Then an initial time interval value is decreased by the requested value
+TEST(Util_Time, TimespecSubMsec_Nominal) {
   timespec_add_sec(&ts, 2L);
 
   timespec_sub_msec(&ts, 0L);
@@ -190,7 +235,12 @@ TEST(Util_Time, TimespecSubMsec) {
 /// @name timespec_sub_usec()
 ///@{
 
-TEST(Util_Time, TimespecSubUsec) {
+/// \Given N/A
+///
+/// \When timespec_sub_usec() is called with a time interval
+///
+/// \Then an initial time interval value is decreased by the requested value
+TEST(Util_Time, TimespecSubUsec_Nominal) {
   timespec_add_sec(&ts, 2L);
 
   timespec_sub_usec(&ts, 0L);
@@ -211,7 +261,12 @@ TEST(Util_Time, TimespecSubUsec) {
 /// @name timespec_sub_nsec()
 ///@{
 
-TEST(Util_Time, TimespecSubNsec) {
+/// \Given N/A
+///
+/// \When timespec_sub_nsec() is called with a time interval
+///
+/// \Then an initial time interval value is decreased by the requested value
+TEST(Util_Time, TimespecSubNsec_Nominal) {
   timespec_add_sec(&ts, 2L);
 
   timespec_sub_nsec(&ts, 0L);
@@ -232,6 +287,11 @@ TEST(Util_Time, TimespecSubNsec) {
 /// @name timespec_diff_sec()
 ///@{
 
+/// \Given N/A
+///
+/// \When timespec_diff_sec() is called with pointers to different time intervals with a one second difference
+///
+/// \Then a difference between the time intervals is returned
 TEST(Util_Time, TimespecDiffSec_Seconds) {
   CHECK_EQUAL(0L, timespec_diff_sec(&ts, &ts2));
 
@@ -244,6 +304,11 @@ TEST(Util_Time, TimespecDiffSec_Seconds) {
   CHECK_EQUAL(0L, timespec_diff_sec(&ts, &ts2));
 }
 
+/// \Given N/A
+///
+/// \When timespec_diff_sec() is called with pointers to different time intervals with nanosecond difference
+///
+/// \Then 0 is returned
 TEST(Util_Time, TimespecDiffSec_Nanoseconds) {
   ts2 = {0L, 1000L};
   CHECK_EQUAL(0L, timespec_diff_sec(&ts, &ts2));
@@ -257,6 +322,11 @@ TEST(Util_Time, TimespecDiffSec_Nanoseconds) {
 /// @name timespec_diff_msec()
 ///@{
 
+/// \Given N/A
+///
+/// \When timespec_diff_msec() is called with pointers to different time intervals with seconds difference
+///
+/// \Then difference in seconds multiplied by `1000` is returned
 TEST(Util_Time, TimespecDiffMsec_Seconds) {
   ts2 = {0L, 0L};
   CHECK_EQUAL(0L, timespec_diff_msec(&ts, &ts2));
@@ -271,6 +341,11 @@ TEST(Util_Time, TimespecDiffMsec_Seconds) {
   CHECK_EQUAL(2000L, timespec_diff_msec(&ts, &ts2));
 }
 
+/// \Given N/A
+///
+/// \When timespec_diff_msec() is called with pointers to different time intervals with nanosecond difference
+///
+/// \Then difference in nanoseconds divided by `1'000'000` is returned
 TEST(Util_Time, TimespecDiffMsec_Nanoseconds) {
   ts = {0L, 2000000L};
   ts2 = {0L, 1000000L};
@@ -290,6 +365,11 @@ TEST(Util_Time, TimespecDiffMsec_Nanoseconds) {
 /// @name timespec_diff_usec()
 ///@{
 
+/// \Given N/A
+///
+/// \When timespec_diff_usec() is called with pointers to different time intervals with seconds difference
+///
+/// \Then difference in seconds multiplied by `1'000'000` is returned
 TEST(Util_Time, TimespecDiffUsec_Seconds) {
   ts2 = {0L, 0L};
   CHECK_EQUAL(0L, timespec_diff_usec(&ts, &ts2));
@@ -304,6 +384,11 @@ TEST(Util_Time, TimespecDiffUsec_Seconds) {
   CHECK_EQUAL(2000000L, timespec_diff_usec(&ts, &ts2));
 }
 
+/// \Given N/A
+///
+/// \When timespec_diff_usec() is called with pointers to different time intervals with nanosecond difference
+///
+/// \Then difference in nanoseconds divided by `1'000` is returned
 TEST(Util_Time, TimespecDiffUsec_Nanoseconds) {
   ts = {0L, 2000000L};
   ts2 = {0L, 1000000L};
@@ -323,6 +408,11 @@ TEST(Util_Time, TimespecDiffUsec_Nanoseconds) {
 /// @name timespec_diff_nsec()
 ///@{
 
+/// \Given N/A
+///
+/// \When timespec_diff_nsec() is called with pointers to different time intervals with seconds difference
+///
+/// \Then difference in seconds multiplied by `1'000'000` is returned
 TEST(Util_Time, TimespecDiffNsec_Seconds) {
   ts2 = {0L, 0L};
   CHECK_EQUAL(0L, timespec_diff_nsec(&ts, &ts2));
@@ -337,6 +427,11 @@ TEST(Util_Time, TimespecDiffNsec_Seconds) {
   CHECK_EQUAL(2000000000L, timespec_diff_nsec(&ts, &ts2));
 }
 
+/// \Given N/A
+///
+/// \When timespec_diff_nsec() is called with pointers to different time intervals with nanosecond difference
+///
+/// \Then the difference is returned
 TEST(Util_Time, TimespecDiffNsec_Nanoseconds) {
   ts = {0L, 2000000L};
   ts2 = {0L, 1000000L};
@@ -356,19 +451,26 @@ TEST(Util_Time, TimespecDiffNsec_Nanoseconds) {
 /// @name timespec_cmp()
 ///@{
 
-TEST(Util_Time, TimespecCmp) {
+/// \Given N/A
+///
+/// \When timespec_cmp() is called with pointers to different time intervals
+///
+/// \Then if the first pointer is equal to the second one: 0 is returned; else if first pointer is null and the second is not null: value less than 0 is returned; else if the first pointer is not null and the second pointer is null: value greater than 0 is returned; else if the first time interval is equal to the second one: 0 is returned;
+/// when the first value is greater than the second one: value greater than 0 is returned;
+/// when the second value is less than the second one: value less than 0 is returned
+TEST(Util_Time, TimespecCmp_Nominal) {
   ts = {2L, 100L};
   ts2 = ts;
 
   CHECK_EQUAL(0L, timespec_cmp(&ts, &ts));
-  CHECK_EQUAL(-1L, timespec_cmp(nullptr, &ts));
-  CHECK_EQUAL(1L, timespec_cmp(&ts, nullptr));
+  CHECK_COMPARE(0, >, timespec_cmp(nullptr, &ts));
+  CHECK_COMPARE(0, <, timespec_cmp(&ts, nullptr));
   CHECK_EQUAL(0, timespec_cmp(&ts, &ts2));
 
   ts2 = {ts.tv_sec / 2, ts.tv_nsec / 2};
-  CHECK_EQUAL(1, timespec_cmp(&ts, &ts2));
+  CHECK_COMPARE(0, <, timespec_cmp(&ts, &ts2));
   ts2 = {2 * ts.tv_sec, 2 * ts.tv_nsec};
-  CHECK_EQUAL(-1, timespec_cmp(&ts, &ts2));
+  CHECK_COMPARE(0, >, timespec_cmp(&ts, &ts2));
 }
 
 ///@}

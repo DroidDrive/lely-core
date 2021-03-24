@@ -810,7 +810,7 @@ TEST(CO_Csdo, CoDevDnReq_NoCsdoDnConFunc) {
 /// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of an existing entry, a pointer to a value, a length of
+///       sub-index of an existing entry, a pointer to a value, the length of
 ///       the value and a download confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
@@ -1140,7 +1140,7 @@ TEST(CO_Csdo, CoDevDnDcfReq_Nominal) {
 /// @name co_dev_up_req()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with no read access inserted
+/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted, the sub-object has no read access
 ///
 /// \When co_dev_up_req() is called with an index and a subindex of the sub-object, a pointer to a memory buffer and no confirmation function
 ///

@@ -35,18 +35,14 @@
 
 #include <libtest/allocators/default.hpp>
 #include <libtest/allocators/limited.hpp>
+#include <libtest/override/lelyco-val.hpp>
+#include <libtest/override/lelyutil-membuf.hpp>
 #include <libtest/tools/lely-unit-test.hpp>
 #include <libtest/tools/lely-cpputest-ext.hpp>
 
 #include "holder/dev.hpp"
 #include "holder/obj.hpp"
 #include "holder/array-init.hpp"
-
-#include "../libtest/tools/lely-unit-test.hpp"
-#include "../libtest/tools/lely-cpputest-ext.hpp"
-#include "../libtest/override/lelyco-val.hpp"
-// #include "../libtest/override/libc-stdlib.hpp"
-#include "../libtest/override/lelyutil-membuf.hpp"
 
 TEST_GROUP(CO_CsdoInit) {
   const co_unsigned8_t CSDO_NUM = 0x01u;

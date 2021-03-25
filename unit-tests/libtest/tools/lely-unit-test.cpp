@@ -37,6 +37,7 @@ const void* CoCsdoUpCon::ptr = nullptr;
 size_t CoCsdoUpCon::n = 0;
 void* CoCsdoUpCon::data = nullptr;
 unsigned int CoCsdoUpCon::num_called = 0;
+uint_least8_t CoCsdoUpCon::buf[CoCsdoUpCon::BUFSIZE] = {0};
 
 int CanSend::ret = 0;
 void* CanSend::data = nullptr;

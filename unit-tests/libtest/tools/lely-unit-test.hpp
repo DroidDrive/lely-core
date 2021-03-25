@@ -34,6 +34,8 @@
 
 #include <cassert>
 
+#define TYPE_MAX_LEN 8
+
 namespace LelyUnitTest {
 /**
  * Set empty handlers for all diagnostic messages from lely-core library.
@@ -109,6 +111,8 @@ struct CoCsdoUpCon {
   static size_t n;
   static void* data;
   static unsigned int num_called;
+  static constexpr size_t BUFSIZE = 2u;
+  static uint_least8_t buf[BUFSIZE];
 
   static inline void
   func(co_csdo_t* sdo_, co_unsigned16_t idx_, co_unsigned8_t subidx_,
@@ -120,6 +124,8 @@ struct CoCsdoUpCon {
     ptr = ptr_;
     n = n_;
     data = data_;
+    if (ptr_ != nullptr)
+      memcpy(buf, static_cast<const uint_least8_t*>(ptr_), BUFSIZE);
     num_called++;
   }
 

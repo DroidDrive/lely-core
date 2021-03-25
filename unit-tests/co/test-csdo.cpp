@@ -1157,13 +1157,12 @@ TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
       co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_READ, nullptr, 0,
+                     nullptr);
   POINTERS_EQUAL(buffer, membuf_begin(&mbuf));
   CHECK_EQUAL(BUFSIZE, membuf_capacity(&mbuf));
   CHECK_EQUAL(0, membuf_size(&mbuf));
-  CHECK_EQUAL(0x00u, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x00u, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
-  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_READ, nullptr, 0,
-                     nullptr);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a sub-object inserted, the sub-object has no read access
@@ -1181,12 +1180,10 @@ TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
   const auto ret = co_dev_up_req(dev, IDX, SUBIDX, &mbuf, nullptr, nullptr);
 
   CHECK_EQUAL(0, ret);
-  // CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, &mbuf, 0, nullptr);
   POINTERS_EQUAL(buffer, membuf_begin(&mbuf));
   CHECK_EQUAL(BUFSIZE - sizeof(sub_type), membuf_capacity(&mbuf));
   CHECK_EQUAL(sizeof(sub_type), membuf_size(&mbuf));
-  CHECK_EQUAL(0x34u, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x12u, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a sub-object inserted
@@ -1205,11 +1202,9 @@ TEST(CO_Csdo, CoDevUpReq_NoBufPtr) {
   CHECK_EQUAL(SUBIDX, CoCsdoUpCon::subidx);
   CHECK_EQUAL(0, CoCsdoUpCon::ac);
   CHECK(CoCsdoUpCon::ptr != nullptr);
-  // CHECK_EQUAL(0x10u, *static_cast<const uint_least8_t*>(CoCsdoUpCon::ptr));
-  // CHECK_EQUAL(0x10u,
-  //             *(static_cast<const uint_least8_t*>(CoCsdoUpCon::ptr) + 1u));
   CHECK_EQUAL(sizeof(sub_type), CoCsdoUpCon::n);
   POINTERS_EQUAL(nullptr, CoCsdoUpCon::data);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -1255,7 +1250,7 @@ TEST(CO_Csdo, CoDevUpReq_NoSub) {
 /// \When co_dev_up_req() is called with an index and a subindex of the first element of the array, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
-TEST(CO_Csdo, CoDevUpReq_ObjIsAnArray_NoData) {
+TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
   membuf mbuf = MEMBUF_INIT;
   co_obj_set_code(obj2020->Get(), CO_OBJECT_ARRAY);
@@ -1280,7 +1275,7 @@ TEST(CO_Csdo, CoDevUpReq_ObjIsAnArray_NoData) {
 /// \When co_dev_up_req() is called with an index and a subindex of the first element of the array, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
-TEST(CO_Csdo, CoDevUpReq_ObjIsAnArray_DataPresent) {
+TEST(CO_Csdo, CoDevUpReq_ArrayObject_DataPresent) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
 
   const size_t BUFSIZE = 10u;
@@ -1302,8 +1297,7 @@ TEST(CO_Csdo, CoDevUpReq_ObjIsAnArray_DataPresent) {
   POINTERS_EQUAL(buffer, membuf_begin(&mbuf));
   CHECK_EQUAL(BUFSIZE - sizeof(sub_type), membuf_capacity(&mbuf));
   CHECK_EQUAL(sizeof(sub_type), membuf_size(&mbuf));
-  CHECK_EQUAL(0x34u, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x12u, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 namespace ReqZero {
@@ -1334,7 +1328,13 @@ TEST(CO_Csdo, CoDevUpReq_ReqZero) {
       co_dev_up_req(dev, IDX, SUBIDX, nullptr, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
+  POINTERS_EQUAL(nullptr, CoCsdoUpCon::sdo);
+  CHECK_EQUAL(IDX, CoCsdoUpCon::idx);
+  CHECK_EQUAL(SUBIDX, CoCsdoUpCon::subidx);
   CHECK_EQUAL(0, CoCsdoUpCon::ac);
+  CHECK(CoCsdoUpCon::ptr != nullptr);
+  CHECK_EQUAL(sizeof(sub_type), CoCsdoUpCon::n);
+  POINTERS_EQUAL(nullptr, CoCsdoUpCon::data);
 }
 
 namespace IndBufIsReqBuf {
@@ -1373,8 +1373,7 @@ TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
                      sizeof(sub_type), nullptr);
   CHECK_EQUAL(BUFSIZE - sizeof(sub_type), membuf_capacity(&mbuf));
   CHECK_EQUAL(sizeof(sub_type), membuf_size(&mbuf));
-  CHECK_EQUAL(0x34, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x12, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 #if HAVE_LELY_OVERRIDE
@@ -1462,8 +1461,7 @@ TEST(CO_Csdo, CoDevUpReq_DiffUpMembuf) {
   POINTERS_EQUAL(buffer, membuf_begin(&mbuf));
   CHECK_EQUAL(BUFSIZE - REQ_SIZE, membuf_capacity(&mbuf));
   CHECK_EQUAL(REQ_SIZE, membuf_size(&mbuf));
-  CHECK_EQUAL(0x34, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x12, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 namespace SuppliedBufferTooSmall {
@@ -1509,8 +1507,7 @@ TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
   POINTERS_EQUAL(buffer, membuf_begin(&mbuf));
   CHECK_EQUAL(BUFSIZE - sizeof(sub_type), membuf_capacity(&mbuf));
   CHECK_EQUAL(sizeof(sub_type), membuf_size(&mbuf));
-  CHECK_EQUAL(0x34, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x12, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 #endif
 }
 
@@ -1535,8 +1532,7 @@ TEST(CO_Csdo, CoDevUpReq_Nominal) {
   POINTERS_EQUAL(buffer, membuf_begin(&mbuf));
   CHECK_EQUAL(BUFSIZE - sizeof(sub_type), membuf_capacity(&mbuf));
   CHECK_EQUAL(sizeof(sub_type), membuf_size(&mbuf));
-  CHECK_EQUAL(0x34, static_cast<int_least8_t*>(membuf_begin(&mbuf))[0]);
-  CHECK_EQUAL(0x12, static_cast<int_least8_t*>(membuf_begin(&mbuf))[1]);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 ///@}

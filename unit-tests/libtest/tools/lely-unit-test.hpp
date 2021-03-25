@@ -138,6 +138,7 @@ struct CoCsdoUpCon {
     ptr = nullptr;
     n = 0;
     data = nullptr;
+    memset(buf, 0, BUFSIZE);
 
     num_called = 0;
   }

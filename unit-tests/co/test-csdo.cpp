@@ -243,7 +243,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_TimerCreateFail) {
 /// @name co_csdo_destroy()
 ///@{
 
-/// \Given a null pointer to the CSDO service (co_csdo_t)
+/// \Given a null CSDO service pointer (co_csdo_t)
 ///
 /// \When co_csdo_destroy() is called
 ///
@@ -596,8 +596,7 @@ TEST(CoCsdoSetGet, CoCsdoSetDnInd_Nominal) {
 
 /// \Given a pointer to the CSDO service (co_csdo_t)
 ///
-/// \When co_csdo_get_up_ind() is called with a memory area to store
-///       the results
+/// \When co_csdo_get_up_ind() is called with a memory area to store the results
 ///
 /// \Then null pointers are returned
 TEST(CoCsdoSetGet, CoCsdoGetUpInd_Nominal) {
@@ -772,8 +771,8 @@ TEST_GROUP_BASE(CO_Csdo, CO_Csdo_Base) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_req() is called with an index and a sub-index of
-///       a non-existing entry, a pointer to a value, the length of the value
+/// \When co_dev_dn_req() is called with an index of the existing object and a sub-index of
+///       a non-existing sub-object, a pointer to a value, the length of the value
 ///       and a pointer to a download confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
@@ -792,7 +791,7 @@ TEST(CO_Csdo, CoDevDnReq_NoObj) {
 /// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of a non-existing entry, a pointer to a value, the length of
+///       a sub-index of a non-existing sub-object, a pointer to a value, the length of
 ///       the value and a download confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
@@ -809,9 +808,9 @@ TEST(CO_Csdo, CoDevDnReq_NoSub) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of an existing entry, a pointer to a value, the length of
-///       the value and no download confirmation function
+/// \When co_dev_dn_req() is called with an index and a sub-index of an existing
+///       entry, a pointer to a value, the length of the value and no download
+///       confirmation function
 ///
 /// \Then 0 is returned, the requested value is set
 TEST(CO_Csdo, CoDevDnReq_NoCsdoDnConFunc) {
@@ -824,9 +823,9 @@ TEST(CO_Csdo, CoDevDnReq_NoCsdoDnConFunc) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of an existing entry, a pointer to a value, the length of
-///       the value and a download confirmation function
+/// \When co_dev_dn_req() is called with an index and a sub-index of an existing
+///       entry, a pointer to a value, the length of the value and a download
+///       confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
 ///       pointer, an index, a sub-index, 0 as the abort code and a null pointer
@@ -848,7 +847,7 @@ TEST(CO_Csdo, CoDevDnReq_Nominal) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_val_req() is called with an index and sub-index of
+/// \When co_dev_dn_val_req() is called with an index and a sub-index of
 ///       a non-existing entry, a pointer to a value, a type of the value,
 ///       no memory buffer and a download confirmation function
 ///
@@ -868,8 +867,8 @@ TEST(CO_Csdo, CoDevDnValReq_NoObj) {
 /// \Given a pointer to the device (co_dev_t)
 ///
 /// \When co_dev_dn_req() is called with an index of the existing object and
-///       sub-index of a non-existing entry, a pointer to a value, a type of the
-///       value, no memory buffer and a download confirmation function
+///       a sub-index of a non-existing sub-object, a pointer to a value, a type
+///       of the value, no memory buffer and a download confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called once with a null
 ///       pointer, an index, invalid sub-index, CO_SDO_AC_NO_SUB and
@@ -886,7 +885,7 @@ TEST(CO_Csdo, CoDevDnValReq_NoSub) {
 #if LELY_NO_MALLOC
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_req() is called with an index and sub-index of an existing
+/// \When co_dev_dn_req() is called with an index and a sub-index of an existing
 ///       entry, a pointer to a value, 64-bit type, no memory buffer and
 ///       a download confirmation function
 ///
@@ -909,7 +908,7 @@ TEST(CO_Csdo, CoDevDnValReq_DnTooLong) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_req() is called with an index and sub-index of an existing
+/// \When co_dev_dn_req() is called with an index and a sub-index of an existing
 ///       entry, a pointer to a value, a type of the value, no memory buffer and
 ///       no download confirmation function
 ///
@@ -924,7 +923,7 @@ TEST(CO_Csdo, CoDevDnValReq_NoCsdoDnConFunc) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_dn_req() is called with an index and sub-index of an existing
+/// \When co_dev_dn_req() is called with an index and a sub-index of an existing
 ///       entry, a pointer to a value, a type of the value, no memory buffer and
 ///       a download confirmation function
 ///
@@ -1157,9 +1156,19 @@ TEST(CO_Csdo, CoDevDnDcfReq_Nominal) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a sub-object inserted, the sub-object has no read access
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the sub-object, a pointer to a memory buffer and no confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of an existing entry, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned; memory buffer is empty and does not contain the requested value
+/// \Then 0 is returned; confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_READ, no memory buffer and a null user-specified data pointer, the supplied memory buffer is empty and does not contain the requested value
+///       \Calls get_errc()
+///       if LELY_NO_MALLOC: \Calls membuf_init()
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   co_sub_set_access(obj2020->GetLastSub(), CO_ACCESS_WO);
@@ -1180,9 +1189,9 @@ TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a sub-object inserted, the sub-object has no read access
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the sub-object, a pointer to a memory buffer and no confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of an existing entry, a memory buffer to store the requested value and no confirmation function
 ///
-/// \Then 0 is returned; memory buffer is empty and does not contain the requested value
+/// \Then 0 is returned; memory buffer is not empty and contains the requested value
 TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   const size_t BUFSIZE = 10u;
@@ -1200,9 +1209,9 @@ TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a sub-object inserted
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the sub-object, no memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of an existing entry, no memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a non-null pointer to the uploaded bytes, a size of the value and a null pointer to the user-specified data
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a non-null uploaded bytes pointer, pointing to the requested value, a size of the value and a null user-specified data pointer
 TEST(CO_Csdo, CoDevUpReq_NoBufPtr) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   const auto ret =
@@ -1221,9 +1230,9 @@ TEST(CO_Csdo, CoDevUpReq_NoBufPtr) {
 
 /// \Given a pointer to the device (co_dev_t)
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the sub-object which is not present in the device, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of an existing entry which is not present in the device, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_OBJ, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_OBJ, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
 TEST(CO_Csdo, CoDevUpReq_NoObj) {
   membuf mbuf = MEMBUF_INIT;
 
@@ -1238,9 +1247,9 @@ TEST(CO_Csdo, CoDevUpReq_NoObj) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted
 ///
-/// \When co_dev_up_req() is called with an index of the object and a subindex of the sub-object which is not present in the object, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index of the existing object and a sub-index of a non-existing sub-object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_SUB, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_SUB, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
 TEST(CO_Csdo, CoDevUpReq_NoSub) {
   membuf mbuf = MEMBUF_INIT;
 
@@ -1255,9 +1264,9 @@ TEST(CO_Csdo, CoDevUpReq_NoSub) {
 
 /// \Given a pointer to the device (co_dev_t) containing an array object, a size of the array is declared as too small
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the first element of the array, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the first element of the array, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
 TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
   membuf mbuf = MEMBUF_INIT;
@@ -1278,9 +1287,9 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
 
 /// \Given a pointer to the device (co_dev_t) containing an array object, a size of the array is declared correctly
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the first element of the array, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the first element of the array, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
 TEST(CO_Csdo, CoDevUpReq_ArrayObject_DataPresent) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
 
@@ -1320,9 +1329,9 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets 0 as the requested size
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the object, no memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, no memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null pointer to the uploaded bytes, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
 TEST(CO_Csdo, CoDevUpReq_ReqZero) {
   using namespace ReqZero;
 
@@ -1360,9 +1369,9 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets a memory buffer as a pointer to the next bytes to be uploaded
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the object, the same memory buffer as set by the indication function, to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, the same memory buffer as set by the indication function, to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the beginning of the memory buffer, a size of the value and a null pointer to the user-specified data; memory buffer contains the requested value
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the beginning of the memory buffer, a size of the value and a null user-specified data pointer; memory buffer contains the requested value
 TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
   using namespace IndBufIsReqBuf;
 
@@ -1395,9 +1404,9 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets the requested size to a non-zero value
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the object, a memory buffer to store the requested value and a confirmation function but realloc() fails
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function but realloc() fails
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_MEM, a null pointer to the memory buffer, 0 as a size of the value and a null pointer to the user-specified data; memory buffer remains empty
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_MEM, a null memory buffer pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
 TEST(CO_Csdo, CoDevUpReq_NoMemory) {
   using namespace NoMemory;
 
@@ -1438,9 +1447,9 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which decrements the requested size and increments the offset on each call
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the object, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null pointer to the user-specified data; memory buffer contains the requested value
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; memory buffer contains the requested value
 TEST(CO_Csdo, CoDevUpReq_DiffUpMembuf) {
   using namespace DiffUpMembuf;
 
@@ -1483,9 +1492,9 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the object, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null pointer to the user-specified data; if LELY_NO_MALLOC: the supplied buffer remains empty; else the memory buffer is not empty and contains the requested value
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; if LELY_NO_MALLOC: the supplied buffer remains empty; else the memory buffer is not empty and contains the requested value
 TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
   using namespace SuppliedBufferTooSmall;
 
@@ -1510,9 +1519,9 @@ TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with a default set as an upload indication function
 ///
-/// \When co_dev_up_req() is called with an index and a subindex of the object, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null pointer to the user-specified data, the memory buffer is not empty and contains the requested value
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer, the memory buffer is not empty and contains the requested value
 TEST(CO_Csdo, CoDevUpReq_Nominal) {
   membuf mbuf = MEMBUF_INIT;
   const size_t BUFSIZE = 16u;

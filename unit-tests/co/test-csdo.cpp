@@ -84,6 +84,7 @@ TEST_GROUP(CO_CsdoInit) {
 /// \When co_csdo_alignof() is called
 ///
 /// \Then if \__MINGW32__ and !__MINGW64__, 4 is returned; else 8 is returned
+///      \Calls _Alignof()
 TEST(CO_CsdoInit, CoCsdoAlignof_Nominal) {
   const auto ret = co_csdo_alignof();
 
@@ -132,10 +133,14 @@ TEST(CO_CsdoInit, CoCsdoSizeof_Nominal) {
 ///       but CSDO allocation fails
 ///
 /// \Then a null pointer is returned
+///       \Calls co_csdo_alloc()
+///       \Calls get_errc()
+///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_FailCsdoAlloc) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
+  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -144,12 +149,18 @@ TEST(CO_CsdoInit, CoCsdoCreate_FailCsdoAlloc) {
 ///       the pointer to the device and a CSDO number equal zero
 ///
 /// \Then a null pointer is returned
+///       \Calls co_csdo_alloc()
+///       \Calls co_csdo_init()
+///       \Calls get_errc()
+///       \Calls co_csdo_free()
+///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_NumZero) {
   const co_unsigned8_t CSDO_NUM = 0;
 
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
+  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -158,12 +169,18 @@ TEST(CO_CsdoInit, CoCsdoCreate_NumZero) {
 ///       the pointer to the device and a CSDO number higher than CO_NUM_SDOS
 ///
 /// \Then a null pointer is returned
+///       \Calls co_csdo_alloc()
+///       \Calls co_csdo_init()
+///       \Calls get_errc()
+///       \Calls co_csdo_free()
+///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_NumTooHigh) {
   const co_unsigned8_t CSDO_NUM = CO_NUM_SDOS + 1u;
 
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
+  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
 }
 
 /// \Given a pointer to the device (co_dev_t) containing 0x1280 object
@@ -172,6 +189,8 @@ TEST(CO_CsdoInit, CoCsdoCreate_NumTooHigh) {
 ///       the pointer to the device and a CSDO number
 ///
 /// \Then a non-null pointer is returned, default values are set
+///       \Calls co_csdo_alloc()
+///       \Calls co_csdo_init()
 TEST(CO_CsdoInit, CoCsdoCreate_WithObj1280) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -198,10 +217,16 @@ TEST(CO_CsdoInit, CoCsdoCreate_WithObj1280) {
 ///       the pointer to the device and a CSDO number
 ///
 /// \Then a null pointer is returned
+///       \Calls co_csdo_alloc()
+///       \Calls co_csdo_init()
+///       \Calls get_errc()
+///       \Calls co_csdo_free()
+///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_NoServerParameterObj) {
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
+  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
 }
 
 /// \Given a pointer to the device (co_dev_t) containing 0x1280 object
@@ -211,6 +236,11 @@ TEST(CO_CsdoInit, CoCsdoCreate_NoServerParameterObj) {
 ///       but can_recv_create() fails
 ///
 /// \Then a null pointer is returned
+///       \Calls co_csdo_alloc()
+///       \Calls co_csdo_init()
+///       \Calls get_errc()
+///       \Calls co_csdo_free()
+///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_RecvCreateFail) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -219,6 +249,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_RecvCreateFail) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
+  CHECK_EQUAL(0, get_errc());
 }
 
 /// \Given a pointer to the device (co_dev_t) containing 0x1280 object
@@ -228,6 +259,11 @@ TEST(CO_CsdoInit, CoCsdoCreate_RecvCreateFail) {
 ///       but can_timer_create() fails
 ///
 /// \Then a null pointer is returned
+///       \Calls co_csdo_alloc()
+///       \Calls co_csdo_init()
+///       \Calls get_errc()
+///       \Calls co_csdo_free()
+///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_TimerCreateFail) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -236,6 +272,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_TimerCreateFail) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
+  CHECK_EQUAL(0, get_errc());
 }
 
 ///@}
@@ -259,6 +296,8 @@ TEST(CO_CsdoInit, CoCsdoDestroy_Nullptr) {
 /// \When co_csdo_destroy() is called
 ///
 /// \Then the CSDO is destroyed
+///       \Calls co_ssdo_fini()
+///       \Calls co_ssdo_free()
 TEST(CO_CsdoInit, CoCsdoDestroy_Nominal) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -278,6 +317,9 @@ TEST(CO_CsdoInit, CoCsdoDestroy_Nominal) {
 /// \When co_csdo_start() is called
 ///
 /// \Then 0 is returned, the service is not stopped, the service is idle
+///       \Calls co_csdo_is_stopped()
+///       \Calls co_csdo_enter()
+///       \Calls co_csdo_update()
 TEST(CO_CsdoInit, CoCsdoStart_NoDev) {
   co_csdo_t* const csdo = co_csdo_create(net, nullptr, CSDO_NUM);
   CHECK(csdo != nullptr);
@@ -296,6 +338,7 @@ TEST(CO_CsdoInit, CoCsdoStart_NoDev) {
 /// \When co_csdo_start() is called
 ///
 /// \Then 0 is returned, the service is not stopped, the service is idle
+///       \Calls co_csdo_is_stopped()
 TEST(CO_CsdoInit, CoCsdoStart_AlreadyStarted) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -317,6 +360,14 @@ TEST(CO_CsdoInit, CoCsdoStart_AlreadyStarted) {
 /// \When co_csdo_start() is called
 ///
 /// \Then 0 is returned, the service is not stopped, the service is idle
+///       \Calls co_csdo_is_stopped()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_sizeof_val()
+///       \Calls memcpy()
+///       \Calls co_obj_addressof_val()
+///       \Calls co_obj_set_dn_ind()
+///       \Calls co_csdo_enter()
+///       \Calls co_csdo_update()
 TEST(CO_CsdoInit, CoCsdoStart_DefaultCSDO_WithObj1280) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -342,6 +393,7 @@ TEST(CO_CsdoInit, CoCsdoStart_DefaultCSDO_WithObj1280) {
 /// \When co_csdo_stop() is called
 ///
 /// \Then the service is stopped
+///       \Calls co_csdo_is_stopped()
 TEST(CO_CsdoInit, CoCsdoStop_OnCreated) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -361,6 +413,13 @@ TEST(CO_CsdoInit, CoCsdoStop_OnCreated) {
 /// \When co_csdo_stop() is called
 ///
 /// \Then the service is stopped
+///       \Calls co_csdo_is_stopped()
+///       \Calls co_csdo_abort_req()
+///       \Calls can_timer_stop()
+///       \Calls can_recv_stop()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_set_dn_ind()
+///       \Calls co_csdo_enter()
 TEST(CO_CsdoInit, CoCsdoStop_OnStarted) {
   std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
@@ -1160,7 +1219,7 @@ TEST(CO_Csdo, CoDevDnDcfReq_Nominal) {
 ///
 /// \Then 0 is returned; confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_READ, no memory buffer and a null user-specified data pointer, the supplied memory buffer is empty and does not contain the requested value
 ///       \Calls get_errc()
-///       if LELY_NO_MALLOC: \Calls membuf_init()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
 ///       \Calls co_sdo_req_init()
 ///       \Calls co_dev_find_obj()
 ///       \Calls co_obj_find_sub()
@@ -1192,6 +1251,18 @@ TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
 /// \When co_dev_up_req() is called with an index and a sub-index of an existing entry, a memory buffer to store the requested value and no confirmation function
 ///
 /// \Then 0 is returned; memory buffer is not empty and contains the requested value
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls membuf_reserve()
+///       \Calls membuf_size()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   const size_t BUFSIZE = 10u;
@@ -1212,6 +1283,18 @@ TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
 /// \When co_dev_up_req() is called with an index and a sub-index of an existing entry, no memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a non-null uploaded bytes pointer, pointing to the requested value, a size of the value and a null user-specified data pointer
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls membuf_reserve()
+///       \Calls membuf_size()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoBufPtr) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   const auto ret =
@@ -1233,6 +1316,13 @@ TEST(CO_Csdo, CoDevUpReq_NoBufPtr) {
 /// \When co_dev_up_req() is called with an index and a sub-index of an existing entry which is not present in the device, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_OBJ, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoObj) {
   membuf mbuf = MEMBUF_INIT;
 
@@ -1250,6 +1340,14 @@ TEST(CO_Csdo, CoDevUpReq_NoObj) {
 /// \When co_dev_up_req() is called with an index of the existing object and a sub-index of a non-existing sub-object, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_SUB, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoSub) {
   membuf mbuf = MEMBUF_INIT;
 
@@ -1267,6 +1365,16 @@ TEST(CO_Csdo, CoDevUpReq_NoSub) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the first element of the array, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_obj_get_val_u8()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
   membuf mbuf = MEMBUF_INIT;
@@ -1290,6 +1398,19 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the first element of the array, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_obj_get_val_u8()
+///       \Calls co_sub_up_ind()
+///       \Calls membuf_reserve()
+///       \Calls membuf_size()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_ArrayObject_DataPresent) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
 
@@ -1332,6 +1453,18 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, no memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_DATA, a null uploaded bytes pointer, 0 as a size of the value and a null user-specified data pointer; memory buffer remains empty
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls membuf_reserve()
+///       \Calls membuf_size()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_ReqZero) {
   using namespace ReqZero;
 
@@ -1372,6 +1505,17 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, the same memory buffer as set by the indication function, to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the beginning of the memory buffer, a size of the value and a null user-specified data pointer; memory buffer contains the requested value
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls co_sdo_req_last()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
   using namespace IndBufIsReqBuf;
 
@@ -1450,6 +1594,21 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; memory buffer contains the requested value
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls membuf_reserve()
+///       \Calls membuf_size()
+///       \Calls membuf_write()
+///       \Calls co_sdo_req_last()
+///       \Calls co_sub_up_ind()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_DiffUpMembuf) {
   using namespace DiffUpMembuf;
 
@@ -1462,8 +1621,6 @@ TEST(CO_Csdo, CoDevUpReq_DiffUpMembuf) {
 
   const auto ret =
       co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
-
-  co_obj_set_up_ind(obj2020->Get(), nullptr, nullptr);
 
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&mbuf), REQ_SIZE,
@@ -1495,6 +1652,17 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; if LELY_NO_MALLOC: the supplied buffer remains empty; else the memory buffer is not empty and contains the requested value
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls co_sdo_req_last()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
   using namespace SuppliedBufferTooSmall;
 
@@ -1521,6 +1689,18 @@ TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
 /// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer, the memory buffer is not empty and contains the requested value
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls membuf_reserve()
+///       \Calls membuf_size()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_Nominal) {
   membuf mbuf = MEMBUF_INIT;
   const size_t BUFSIZE = 16u;

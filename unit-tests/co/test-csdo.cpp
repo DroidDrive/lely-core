@@ -749,6 +749,12 @@ TEST_GROUP_BASE(CO_Csdo, CO_Csdo_Base) {
     CHECK_EQUAL(SIZE, membuf_size(MBUF));
   }
 
+  void MembufCheckNonempty(const membuf* MBUF) {
+    CHECK(membuf_begin(MBUF) != nullptr);
+    CHECK(membuf_capacity(MBUF) != 0);
+    CHECK(membuf_size(MBUF) != 0);
+  }
+
   TEST_SETUP() {
     TEST_BASE_SETUP();
 
@@ -1494,11 +1500,12 @@ TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
                      nullptr);
 #if LELY_NO_MALLOC
   MembufCheck(&mbuf, nullptr, 0, 0);
-  CHECK_EQUAL(0x0000u, ldle_u16(CoCsdoUpCon::buf));
 #else
-  MembufCheck(&mbuf, buffer, BUFSIZE - sizeof(sub_type), sizeof(sub_type));
-  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
+  MembufCheckNonempty(&mbuf);
 #endif
+  CHECK_EQUAL(0x0000u, ldle_u16(CoCsdoUpCon::buf));
+  CHECK_EQUAL(0x1234u,
+              ldle_u16(static_cast<uint_least8_t*>(membuf_begin(&mbuf))));
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with a default set as an upload indication function

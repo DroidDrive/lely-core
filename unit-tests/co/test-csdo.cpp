@@ -1511,10 +1511,9 @@ TEST(CO_Csdo, CoDevUpReq_SuppliedBufferTooSmall) {
   MembufCheck(&mbuf, nullptr, 0, 0);
 #else
   MembufCheckNonempty(&mbuf);
-#endif
-  CHECK_EQUAL(0x0000u, ldle_u16(CoCsdoUpCon::buf));
   CHECK_EQUAL(0x1234u,
               ldle_u16(static_cast<uint_least8_t*>(membuf_begin(&mbuf))));
+#endif
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object inserted with a default set as an upload indication function

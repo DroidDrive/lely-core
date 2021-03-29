@@ -41,6 +41,7 @@
 
 #include <libtest/override/lelyco-val.hpp>
 #include <libtest/tools/lely-cpputest-ext.hpp>
+#include <libtest/tools/lely-unit-test.hpp>
 
 #include "holder/dev.hpp"
 #include "holder/obj.hpp"
@@ -73,6 +74,25 @@ TEST_GROUP(CO_DevInit) {
 #endif
   }
 
+  void CheckDevAfterInit(co_dev_t* const dev) {
+    CHECK_EQUAL(0, co_dev_get_netid(dev));
+    CHECK_EQUAL(0, co_dev_get_idx(dev, 0, nullptr));
+    CHECK_EQUAL(0, co_dev_get_vendor_id(dev));
+    CHECK_EQUAL(0, co_dev_get_product_code(dev));
+    CHECK_EQUAL(0, co_dev_get_revision(dev));
+    CHECK_EQUAL(0, co_dev_get_baud(dev));
+    CHECK_EQUAL(0, co_dev_get_rate(dev));
+    CHECK_EQUAL(0, co_dev_get_lss(dev));
+    CHECK_EQUAL(0, co_dev_get_dummy(dev));
+  }
+
+  void CheckDefaultNames(co_dev_t* const dev) {
+    POINTERS_EQUAL(nullptr, co_dev_get_name(dev));
+    POINTERS_EQUAL(nullptr, co_dev_get_vendor_name(dev));
+    POINTERS_EQUAL(nullptr, co_dev_get_product_name(dev));
+    POINTERS_EQUAL(nullptr, co_dev_get_order_code(dev));
+  }
+
   void DestroyCoDevT(co_dev_t* const dev) {
     co_dev_fini(dev);
     ReleaseCoDevT(dev);
@@ -81,6 +101,8 @@ TEST_GROUP(CO_DevInit) {
 #if LELY_NO_MALLOC
   co_dev_t device;
 #endif
+
+  TEST_SETUP() { LelyUnitTest::DisableDiagnosticMessages(); }
 };
 
 #if !LELY_NO_MALLOC
@@ -91,7 +113,7 @@ TEST_GROUP(CO_DevInit) {
 ///
 /// \When co_dev_alloc() is called
 ///
-/// \Then a non-null pointer is returned
+/// \Then a pointer to a newly allocated and uninitialized device (co_dev_t) is returned
 TEST(CO_DevInit, CoDevAllocFree_Nominal) {
   void* const ptr = co_dev_alloc();
 
@@ -105,79 +127,47 @@ TEST(CO_DevInit, CoDevAllocFree_Nominal) {
 /// @name co_dev_init()
 ///@{
 
-/// \Given a pointer to the unintialized device (co_dev_t)
+/// \Given a pointer to an uninitialized device (co_dev_t)
 ///
-/// \When co_dev_init() is called with a valid ID
+/// \When co_dev_init() is called with a valid node-ID
 ///
-/// \Then the device is initialized with the default values and the requested ID
+/// \Then the device is initialized with the default values and the requested node-ID
 TEST(CO_DevInit, CoDevInit_Nominal) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
   POINTERS_EQUAL(dev, co_dev_init(dev, 0x01u));
 
-  CHECK_EQUAL(0, co_dev_get_netid(dev));
+  CheckDevAfterInit(dev);
   CHECK_EQUAL(0x01u, co_dev_get_id(dev));
-
-  CHECK_EQUAL(0, co_dev_get_idx(dev, 0, nullptr));
-
-  CHECK_EQUAL(0, co_dev_get_vendor_id(dev));
-  CHECK_EQUAL(0, co_dev_get_product_code(dev));
-  CHECK_EQUAL(0, co_dev_get_revision(dev));
-
 #if !LELY_NO_CO_OBJ_NAME
-  POINTERS_EQUAL(nullptr, co_dev_get_name(dev));
-  POINTERS_EQUAL(nullptr, co_dev_get_vendor_name(dev));
-  POINTERS_EQUAL(nullptr, co_dev_get_product_name(dev));
-  POINTERS_EQUAL(nullptr, co_dev_get_order_code(dev));
+  CheckDefaultNames(dev);
 #endif  // !LELY_NO_CO_OBJ_NAME
-
-  CHECK_EQUAL(0, co_dev_get_baud(dev));
-  CHECK_EQUAL(0, co_dev_get_rate(dev));
-
-  CHECK_EQUAL(0, co_dev_get_lss(dev));
-
-  CHECK_EQUAL(0, co_dev_get_dummy(dev));
-
-#if !LELY_NO_CO_TPDO
-  co_dev_tpdo_event_ind_t* ind_ptr = nullptr;
-  void* data_ptr = nullptr;
-  co_dev_get_tpdo_event_ind(dev, &ind_ptr, &data_ptr);
-  FUNCTIONPOINTERS_EQUAL(nullptr, ind_ptr);
-  POINTERS_EQUAL(nullptr, data_ptr);
-#endif
 
   DestroyCoDevT(dev);
 }
 
-/// \Given a pointer to the unintialized device (co_dev_t)
+/// \Given a pointer to an uninitialized device (co_dev_t)
 ///
 /// \When co_dev_init() is called with 0xff
 ///
-/// \Then the device is initialized with the default values and the requested ID
+/// \Then the device is initialized with the default values and the requested node-ID
 TEST(CO_DevInit, CoDevInit_UnconfiguredId) {
   auto* const dev = AcquireCoDevT();
 
   CHECK(dev != nullptr);
   POINTERS_EQUAL(dev, co_dev_init(dev, 0xffu));
 
-  CHECK_EQUAL(0, co_dev_get_idx(dev, 0, nullptr));
-
-  CHECK_EQUAL(0, co_dev_get_vendor_id(dev));
-  CHECK_EQUAL(0, co_dev_get_product_code(dev));
-  CHECK_EQUAL(0, co_dev_get_revision(dev));
-
+  CheckDevAfterInit(dev);
+  CHECK_EQUAL(0xffu, co_dev_get_id(dev));
 #if !LELY_NO_CO_OBJ_NAME
-  CHECK_EQUAL(0, co_dev_set_name(dev, "name"));
-  CHECK_EQUAL(0, co_dev_set_vendor_name(dev, "vendor"));
-  CHECK_EQUAL(0, co_dev_set_product_name(dev, "product name"));
-  CHECK_EQUAL(0, co_dev_set_order_code(dev, "order code"));
+  CheckDefaultNames(dev);
 #endif  // !LELY_NO_CO_OBJ_NAME
 
   DestroyCoDevT(dev);
 }
 
-/// \Given a pointer to the unintialized device (co_dev_t)
+/// \Given a pointer to an uninitialized device (co_dev_t)
 ///
 /// \When co_dev_init() is called with zero
 ///
@@ -191,11 +181,11 @@ TEST(CO_DevInit, CoDevInit_ZeroId) {
   ReleaseCoDevT(dev);
 }
 
-/// \Given a pointer to the unintialized device (co_dev_t)
+/// \Given a pointer to an uninitialized device (co_dev_t)
 ///
-/// \When co_dev_init() is called with an invalid ID
+/// \When co_dev_init() is called with an invalid node-ID
 ///
-/// \Then a null pointer is returned
+/// \Then a null pointer is returned and ERRNUM_INVAL error code is set
 TEST(CO_DevInit, CoDevInit_InvalidId) {
   auto* const dev = AcquireCoDevT();
   CHECK(dev != nullptr);
@@ -214,7 +204,7 @@ TEST(CO_DevInit, CoDevInit_InvalidId) {
 /// @name co_dev_fini()
 ///@{
 
-/// \Given a pointer to the intialized device (co_dev_t)
+/// \Given a pointer to an initialized device (co_dev_t)
 ///
 /// \When co_dev_fini() is called
 ///
@@ -234,7 +224,8 @@ TEST(CO_DevInit, CoDevFini_Nominal) {
 #if !LELY_NO_MALLOC
 /// @name co_dev_destroy()
 ///@{
-/// \Given a null pointer to the intialized device (co_dev_t)
+
+/// \Given a null pointer to an initialized device (co_dev_t)
 ///
 /// \When co_dev_destroy() is called
 ///
@@ -254,6 +245,8 @@ TEST_GROUP(CO_Dev) {
   std::unique_ptr<CoDevTHolder> dev_holder;
 
   TEST_SETUP() {
+    LelyUnitTest::DisableDiagnosticMessages();
+
     dev_holder.reset(new CoDevTHolder(0x01u));
     dev = dev_holder->Get();
 
@@ -266,11 +259,11 @@ TEST_GROUP(CO_Dev) {
 /// @name co_dev_set_net_id()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_netid() is called with a valid ID
+/// \When co_dev_set_netid() is called with a valid network-ID
 ///
-/// \Then 0 is returned, the ID is set
+/// \Then 0 is returned, the network-ID is set
 TEST(CO_Dev, CoDevSetNetId_Nominal) {
   const auto ret = co_dev_set_netid(dev, 0x3du);
 
@@ -278,11 +271,11 @@ TEST(CO_Dev, CoDevSetNetId_Nominal) {
   CHECK_EQUAL(0x3du, co_dev_get_netid(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_netid() is called with an ID of 0xff
+/// \When co_dev_set_netid() is called with an network-ID of 0xff
 ///
-/// \Then 0 is returned, the ID is set
+/// \Then 0 is returned, the network-ID is set
 TEST(CO_Dev, CoDevSetNetId_Unconfigured) {
   const auto ret = co_dev_set_netid(dev, 0xffu);
 
@@ -290,11 +283,11 @@ TEST(CO_Dev, CoDevSetNetId_Unconfigured) {
   CHECK_EQUAL(0xffu, co_dev_get_netid(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_netid() is called with an invalid ID
+/// \When co_dev_set_netid() is called with an invalid network-ID
 ///
-/// \Then -1 is returned, the ID is not set
+/// \Then -1 is returned, the network-ID is not set
 TEST(CO_Dev, CoDevSetNetId_InvalidId) {
   const auto ret1 = co_dev_set_netid(dev, CO_NUM_NETWORKS + 1);
 
@@ -312,11 +305,11 @@ TEST(CO_Dev, CoDevSetNetId_InvalidId) {
 /// @name co_dev_set_id()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_id() is called with a valid ID
+/// \When co_dev_set_id() is called with a valid node-ID
 ///
-/// \Then 0 is returned, requested ID is set
+/// \Then 0 is returned, requested node-ID is set
 TEST(CO_Dev, CoDevSetId_Nominal) {
   const auto ret = co_dev_set_id(dev, 0x3du);
 
@@ -324,11 +317,11 @@ TEST(CO_Dev, CoDevSetId_Nominal) {
   CHECK_EQUAL(0x3du, co_dev_get_id(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t) with objects and sub-objects inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
 ///
-/// \When co_dev_set_id() is called with a valid ID
+/// \When co_dev_set_id() is called with a valid node-ID
 ///
-/// \Then 0 is returned, requested ID is set
+/// \Then 0 is returned, requested node-ID is set
 TEST(CO_Dev, CoDevSetId_CheckObj) {
   CoObjTHolder obj_holder(0x0000u);
 #if !LELY_NO_CO_OBJ_LIMITS
@@ -423,14 +416,13 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 #endif
 }
 
-/// \Given a pointer to the device (co_dev_t) with objects and sub-objects of the basic type inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object of the basic type inserted
 ///
-/// \When co_dev_set_id() is called with a valid ID
+/// \When co_dev_set_id() is called with a valid node-ID
 ///
-/// \Then 0 is returned and the requested ID is set
+/// \Then 0 is returned and the requested node-ID is set, the sub-object is updated to the values of the form `$NODEID { "+" number }`.
 TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
-  int clangformat_fix = 0;
-  (void)clangformat_fix;
+  (void)0;  // clang-format fix
 
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
   { \
@@ -461,11 +453,11 @@ TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
 #undef LELY_CO_DEFINE_TYPE
 }
 
-/// \Given a pointer to the device (co_dev_t) with objects and sub-objects of the non-basic type inserted
+/// \Given a pointer to a device (co_dev_t) containing an object and a sub-object of the non-basic type inserted
 ///
-/// \When co_dev_set_id() is called with a valid ID
+/// \When co_dev_set_id() is called with a valid node-ID
 ///
-/// \Then 0 is returned and the requested ID is set
+/// \Then 0 is returned and the requested node-ID is set
 TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
   CoObjTHolder obj_holder(0x1234u);
   CoSubTHolder sub_holder(0x01u, CO_DEFTYPE_TIME_OF_DAY);
@@ -488,11 +480,11 @@ TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
   CHECK_EQUAL(value.days, val_ret->t.days);
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_id() is called with an ID of 0xff
+/// \When co_dev_set_id() is called with a node-ID of 0xff
 ///
-/// \Then 0 is returned and the required ID is set
+/// \Then 0 is returned and the required node-ID is set
 TEST(CO_Dev, CoDevSetId_Unconfigured) {
   const auto ret = co_dev_set_id(dev, 0xffu);
 
@@ -500,11 +492,11 @@ TEST(CO_Dev, CoDevSetId_Unconfigured) {
   CHECK_EQUAL(0xffu, co_dev_get_id(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_id() is called with an ID of zero
+/// \When co_dev_set_id() is called with a node-ID of zero
 ///
-/// \Then 0 is returned and the required ID is set
+/// \Then 0 is returned and the required node-ID is set
 TEST(CO_Dev, CoDevSetId_ZeroId) {
   const auto ret = co_dev_set_id(dev, 0x00u);
 
@@ -512,11 +504,11 @@ TEST(CO_Dev, CoDevSetId_ZeroId) {
   CHECK_EQUAL(0x01u, co_dev_get_id(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_id() is called with an invalid ID
+/// \When co_dev_set_id() is called with an invalid node-ID
 ///
-/// \Then -1 is returned and the required ID is not set
+/// \Then -1 is returned and the required node-ID is not set
 TEST(CO_Dev, CoDevSetId_InvalidId) {
   const auto ret1 = co_dev_set_id(dev, CO_NUM_NETWORKS + 1);
 
@@ -534,7 +526,7 @@ TEST(CO_Dev, CoDevSetId_InvalidId) {
 /// @name co_dev_get_idx()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an empty object dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty object dictionary
 ///
 /// \When co_dev_get_idx() is called with a maximum index and a memory area to
 ///       store the object indices
@@ -548,7 +540,7 @@ TEST(CO_Dev, CoDevGetIdx_Empty) {
   CHECK_EQUAL(0x0000u, out_idx);
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_get_idx() is called with no memory area to store the results
 ///
@@ -559,7 +551,7 @@ TEST(CO_Dev, CoDevGetIdx_EmptyNull) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with one object inserted
+/// \Given a pointer to a device (co_dev_t) with one object inserted
 ///
 /// \When co_dev_get_idx() is called with no memory area to store the results
 ///
@@ -573,7 +565,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
   CHECK_EQUAL(1u, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with one object inserted
+/// \Given a pointer to a device (co_dev_t) with one object inserted
 ///
 /// \When co_dev_get_idx() is called with a memory area to store the results
 ///
@@ -588,7 +580,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CHECK_EQUAL(0x1234u, out_idx);
 }
 
-/// \Given a pointer to the device (co_dev_t) with many objects inserted
+/// \Given a pointer to a device (co_dev_t) with many objects inserted
 ///
 /// \When co_dev_get_idx() is called with a memory area to store the results
 ///
@@ -612,7 +604,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj) {
   CHECK_EQUAL(0x0000u, out_idx[4]);
 }
 
-/// \Given a pointer to the device (co_dev_t) with many objects inserted
+/// \Given a pointer to a device (co_dev_t) with many objects inserted
 ///
 /// \When co_dev_get_idx() is called with maximum index lower than the object's number, a memory area to store the results
 ///
@@ -645,7 +637,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
 /// @name co_dev_insert_obj()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_insert_obj() is called with a pointer to an object (co_obj_t)
 ///
@@ -664,7 +656,7 @@ TEST(CO_Dev, CoDevInsertObj) {
   CHECK_EQUAL(dev, co_obj_get_dev(obj));
 }
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
 ///       which was inserted into other device
@@ -684,7 +676,7 @@ TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
   POINTERS_EQUAL(nullptr, co_dev_find_obj(dev, 0x0001u));
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object inserted
+/// \Given a pointer to a device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
 ///       which was already inserted into the device
@@ -701,7 +693,7 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
   POINTERS_EQUAL(obj, co_dev_find_obj(dev, 0x0001u));
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object inserted
+/// \Given a pointer to a device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_insert_obj() is called with a pointer to the another object
 ///       (co_obj_t) with an index equal to the index of the object which was
@@ -725,7 +717,7 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
 /// @name co_dev_remove_obj()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object inserted
+/// \Given a pointer to a device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_remove_obj() is called with a pointer to the object (co_obj_t)
 ///
@@ -742,7 +734,7 @@ TEST(CO_Dev, CoDevRemoveObj) {
   POINTERS_EQUAL(nullptr, co_obj_get_dev(obj));
 }
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_remove_obj() is called with a pointer to the object (co_obj_t)
 ///
@@ -760,7 +752,7 @@ TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
 /// @name co_dev_find_obj()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object inserted
+/// \Given a pointer to a device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_find_obj() is called with the object's index
 ///
@@ -775,7 +767,7 @@ TEST(CO_Dev, CoDevFindObj) {
   POINTERS_EQUAL(obj, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_find_obj() is called with an index
 ///
@@ -791,7 +783,7 @@ TEST(CO_Dev, CoDevFindObj_NotFound) {
 /// @name co_dev_find_sub()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object and a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object and a sub-object inserted
 ///
 /// \When co_dev_find_sub() is called with the index and the sub-index of the sub-object
 ///
@@ -809,7 +801,7 @@ TEST(CO_Dev, CoDevFindSub_Nominal) {
   POINTERS_EQUAL(sub, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_find_sub() is called with an index and a sub-index
 ///
@@ -820,7 +812,7 @@ TEST(CO_Dev, CoDevFindSub_NoObj) {
   POINTERS_EQUAL(nullptr, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without sub-objects inserted
+/// \Given a pointer to a device (co_dev_t) with an object without sub-objects inserted
 ///
 /// \When co_dev_find_sub() is called with the index of the object and a sub-index
 ///
@@ -839,7 +831,7 @@ TEST(CO_Dev, CoDevFindSub_NoSub) {
 /// @name co_dev_first_obj()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object inserted
+/// \Given a pointer to a device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_first_obj() is called
 ///
@@ -854,7 +846,7 @@ TEST(CO_Dev, CoDevFirstObj) {
   POINTERS_EQUAL(obj, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_first_obj() is called
 ///
@@ -870,7 +862,7 @@ TEST(CO_Dev, CoDevFirstObj_Empty) {
 /// @name co_dev_last_obj()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object inserted
+/// \Given a pointer to a device (co_dev_t) with an object inserted
 ///
 /// \When co_dev_last_obj() is called
 ///
@@ -885,7 +877,7 @@ TEST(CO_Dev, CoDevLastObj) {
   POINTERS_EQUAL(obj, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) without any object inserted
+/// \Given a pointer to a device (co_dev_t) without any object inserted
 ///
 /// \When co_dev_last_obj() is called
 ///
@@ -903,7 +895,7 @@ TEST(CO_Dev, CoDevLastObj_Empty) {
 /// @name co_dev_set_name()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_name() is called with a pointer to a name
 ///
@@ -916,7 +908,7 @@ TEST(CO_Dev, CoDevSetName_Nominal) {
   STRCMP_EQUAL(name, co_dev_get_name(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_name() is called with a null pointer
 ///
@@ -931,7 +923,7 @@ TEST(CO_Dev, CoDevSetName_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_name(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_name() is called with a pointer to an empty string
 ///
@@ -951,7 +943,7 @@ TEST(CO_Dev, CoDevSetName_Empty) {
 /// @name co_dev_set_vendor_name()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_vendor_name() is called with a pointer to a new name
 ///
@@ -964,7 +956,7 @@ TEST(CO_Dev, CoDevSetVendorName_Nominal) {
   STRCMP_EQUAL(vendor_name, co_dev_get_vendor_name(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_vendor_name() is called with a null pointer
 ///
@@ -979,7 +971,7 @@ TEST(CO_Dev, CoDevSetVendorName_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_vendor_name(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_vendor_name() is called with a pointer to the empty string
 ///
@@ -999,7 +991,7 @@ TEST(CO_Dev, CoDevSetVendorName_Empty) {
 /// @name co_dev_set_product_name()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_product_name() is called with a pointer to a name
 ///
@@ -1012,7 +1004,7 @@ TEST(CO_Dev, CoDevSetProductName_Nominal) {
   STRCMP_EQUAL(product_name, co_dev_get_product_name(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_product_name() is called with a null pointer
 ///
@@ -1027,7 +1019,7 @@ TEST(CO_Dev, CoDevSetProductName_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_product_name(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_product_name() is called with a pointer to an empty string
 ///
@@ -1047,7 +1039,7 @@ TEST(CO_Dev, CoDevSetProductName_Empty) {
 /// @name co_dev_set_order_code()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_order_code() is called with a pointer to an order code
 ///
@@ -1060,7 +1052,7 @@ TEST(CO_Dev, CoDevSetOrderCode_Nominal) {
   STRCMP_EQUAL(order_code, co_dev_get_order_code(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_order_code() is called with a null pointer
 ///
@@ -1075,7 +1067,7 @@ TEST(CO_Dev, CoDevSetOrderCode_Null) {
   POINTERS_EQUAL(nullptr, co_dev_get_order_code(dev));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_order_code() is called with a pointer to an empty string
 ///
@@ -1097,11 +1089,11 @@ TEST(CO_Dev, CoDevSetOrderCode_Empty) {
 /// @name co_dev_set_vendor_id()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_vendor_id() is called with a valid ID
+/// \When co_dev_set_vendor_id() is called with a valid vendor ID
 ///
-/// \Then the requested ID is set
+/// \Then the requested vendor ID is set
 TEST(CO_Dev, CoDevSetVendorId_Nominal) {
   co_dev_set_vendor_id(dev, 0x12345678u);
 
@@ -1113,7 +1105,7 @@ TEST(CO_Dev, CoDevSetVendorId_Nominal) {
 /// @name co_dev_set_product_code()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_product_code() is called with a valid number
 ///
@@ -1129,7 +1121,7 @@ TEST(CO_Dev, CoDevSetProductCode_Nominal) {
 /// @name co_dev_set_revision()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_revision() is called with a valid number
 ///
@@ -1145,7 +1137,7 @@ TEST(CO_Dev, CoDevSetRevision_Nominal) {
 /// @name co_dev_set_baud()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_baud() is called with valid flags
 ///
@@ -1161,7 +1153,7 @@ TEST(CO_Dev, CoDevSetBaud_Nominal) {
 /// @name co_dev_set_rate()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_rate() is called with valid flags
 ///
@@ -1177,7 +1169,7 @@ TEST(CO_Dev, CoDevSetRate_Nominal) {
 /// @name co_dev_set_lss()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_lss() is called with valid flags
 ///
@@ -1193,7 +1185,7 @@ TEST(CO_Dev, CoDevSetLSS_Nominal) {
 /// @name co_dev_set_dummy()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_dummy() is called with valid flags
 ///
@@ -1209,7 +1201,7 @@ TEST(CO_Dev, CoDevSetDummy_Nominal) {
 /// @name co_dev_get_val()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_get_val() is called with the index and sub-index of the sub-object
 ///
@@ -1230,7 +1222,7 @@ TEST(CO_Dev, CoDevGetVal_Nominal) {
   CHECK_EQUAL(0x0987u, *ret);
 }
 
-/// \Given a null pointer to the device (co_dev_t)
+/// \Given a null pointer to a device (co_dev_t)
 ///
 /// \When co_dev_get_val() is called with the index and sub-index of the sub-object
 ///
@@ -1243,7 +1235,7 @@ TEST(CO_Dev, CoDevGetVal_NullDev) {
   POINTERS_EQUAL(nullptr, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_get_val() is called with the index and sub-index of the non-existing sub-object
 ///
@@ -1259,7 +1251,7 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 /// @name co_dev_set_val()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object and sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object and sub-object inserted
 ///
 /// \When co_dev_set_val() is called with the index and sub-index of the sub-object
 ///
@@ -1278,11 +1270,11 @@ TEST(CO_Dev, CoDevSetVal_Nominal) {
   CHECK_EQUAL(val, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_val() is called with the index and sub-index of a non-existing sub-object
 ///
-/// \Then 0 is returned
+/// \Then 0 is returned and ERRNUM_INVAL error code is set
 TEST(CO_Dev, CoDevSetVal_NotFound) {
   const auto ret = co_dev_set_val(dev, 0x0000u, 0x00u, nullptr, 0);
 
@@ -1290,14 +1282,13 @@ TEST(CO_Dev, CoDevSetVal_NotFound) {
   CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
 }
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_val_<typename>() is called with the index and sub-index of the sub-object
 ///
 /// \Then co_dev_get_val_<typename>() returns the requested value
 TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
-  int clangformat_fix = 0;
-  (void)clangformat_fix;
+  (void)0;  // clang-format fix
 
 #define LELY_CO_DEFINE_TYPE(a, b, c, d) \
   { \
@@ -1327,7 +1318,7 @@ TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
 /// @name co_dev_read_sub()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with pointers to memory area for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
 ///
@@ -1353,7 +1344,7 @@ TEST(CO_Dev, CoDevReadSub_Nominal) {
   CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, idx, subidx));
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory are for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
 ///
@@ -1374,7 +1365,7 @@ TEST(CO_Dev, CoDevReadSub_NoIdx) {
   CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and the end of the buffer
 ///
@@ -1392,7 +1383,7 @@ TEST(CO_Dev, CoDevReadSub_NoSub) {
   CHECK_EQUAL(BUF_SIZE, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a null pointer to the concise DCF buffer begin and a pointer to the end of the buffer
 ///
@@ -1411,7 +1402,7 @@ TEST(CO_Dev, CoDevReadSub_NoBegin) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1430,7 +1421,7 @@ TEST(CO_Dev, CoDevReadSub_NoEnd) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to too small concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1447,7 +1438,7 @@ TEST(CO_Dev, CoDevReadSub_TooSmallBuffer) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to too small concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1466,7 +1457,7 @@ TEST(CO_Dev, CoDevReadSub_TooSmallForType) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails
 ///
@@ -1485,7 +1476,7 @@ TEST(CO_Dev, CoDevReadSub_ReadIdxFailed) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails on the second call
 ///
@@ -1504,7 +1495,7 @@ TEST(CO_Dev, CoDevReadSub_ReadSubidxFailed) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails on the third call
 ///
@@ -1524,7 +1515,7 @@ TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
 }
 
 #if LELY_NO_MALLOC
-/// \Given a pointer to the device (co_dev_t) with an object of the array type inserted
+/// \Given a pointer to a device (co_dev_t) with an object of the array type inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1553,7 +1544,7 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
 
 #endif  // HAVE_LELY_OVERRIDE
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for the index and sub-index, a pointer to the concise DCF buffer with invalid data size declared and a pointer to the end of the buffer
 ///
@@ -1581,7 +1572,7 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
 /// @name co_dev_write_sub()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1605,7 +1596,7 @@ TEST(CO_Dev, CoDevWriteSub_Nominal) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object without any sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1626,7 +1617,7 @@ TEST(CO_Dev, CoDevWriteSub_NoSub) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but the co_val_write() fails
 ///
@@ -1650,7 +1641,7 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
 }
 #endif
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object of a domain type inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object of a domain type inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1672,7 +1663,7 @@ TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, null pointers to the concise DCF buffer
 ///
@@ -1689,7 +1680,7 @@ TEST(CO_Dev, CoDevWriteSub_NoBegin) {
   CHECK_EQUAL(9, ret);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a non-null pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1713,7 +1704,7 @@ TEST(CO_Dev, CoDevWriteSub_NoEnd) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1736,7 +1727,7 @@ TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the second call
 ///
@@ -1760,7 +1751,7 @@ TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the third call
 ///
@@ -1785,7 +1776,7 @@ TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the fourth call
 ///
@@ -1810,7 +1801,7 @@ TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_sub() is called with the index and the sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the fifth call
 ///
@@ -1857,6 +1848,8 @@ TEST_GROUP(CO_DevDCF) {
   static const size_t MIN_RW_SIZE = 4u;
 
   TEST_SETUP() {
+    LelyUnitTest::DisableDiagnosticMessages();
+
     dev_holder.reset(new CoDevTHolder(0x01u));
     dev = dev_holder->Get();
     CHECK(dev != nullptr);
@@ -1955,7 +1948,7 @@ TEST(CO_DevDCF, CoDevReadDcf_FailedToReadNumberOfSubIndexes) {
 /// @name co_dev_write_dcf()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1973,7 +1966,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Nominal) {
   CheckBuffers(tmp, buf, BUF_SIZE);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, minimum object index is greater than the index of the inserted object, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1989,7 +1982,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
   for (size_t i = 0; i < BUF_SIZE; i++) CHECK_EQUAL(0, tmp[i]);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, maximum object index is lower than the index of the inserted object, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -2006,7 +1999,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
 }
 
 #if LELY_NO_MALLOC
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index and no concise DCF buffer
 ///
@@ -2023,7 +2016,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Null) {
 #endif
 
 #if HAVE_LELY_OVERRIDE
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object inserted
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails
 ///
@@ -2063,6 +2056,8 @@ TEST_BASE(CO_DevTpdoBase) {
   }
 
   TEST_SETUP() {
+    LelyUnitTest::DisableDiagnosticMessages();
+
     dev_holder.reset(new CoDevTHolder(DEV_ID));
     dev = dev_holder->Get();
     CHECK(dev != nullptr);
@@ -2079,7 +2074,7 @@ TEST_GROUP_BASE(CO_DevTpdoEventInd, CO_DevTpdoBase){};
 /// @name co_dev_get_tpdo_event_ind()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_get_tpdo_event_ind() is called with no memory area to store the results
 ///
@@ -2093,7 +2088,7 @@ TEST(CO_DevTpdoEventInd, CoDevGetTpdoEventInd_Null) {
 /// @name co_dev_set_tpdo_event_ind()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_set_tpdo_event_ind() is called with a pointer to the TPDO event indication function and a pointer to the user-specified data
 ///
@@ -2196,7 +2191,7 @@ TEST_GROUP_BASE(CO_DevTpdoEvent, CO_DevTpdoBase) {
 /// @name co_dev_tpdo_event()
 ///@{
 
-/// \Given a pointer to the device (co_dev_t)
+/// \Given a pointer to a device (co_dev_t)
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object which is not present in a device
 ///
@@ -2206,7 +2201,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
   co_dev_tpdo_event(dev, 0x0000u, 0x00u);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping disabled inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping disabled inserted
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2220,7 +2215,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_OnlySubNoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted, the mapping entry is missing
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted, the mapping entry is missing
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2233,7 +2228,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_MappingPossibleButNoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and invalid TPDO maximum sub-index inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and invalid TPDO maximum sub-index inserted
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2251,7 +2246,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoMaxSubIndex) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and invalid COB-ID inserted; mapping entry is present
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and invalid COB-ID inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2267,7 +2262,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoCobId) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and reserved transmission type inserted; mapping entry is present
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and reserved transmission type inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2283,7 +2278,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ReservedTransmissionType) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and no TPDO mapping entry inserted
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled and no TPDO mapping entry inserted
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2298,7 +2293,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoTpdoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted; different object index is present in a mapping entry
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted; different object index is present in a mapping entry
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2314,7 +2309,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentObjectIndexInMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted, a different sub-index is present in a mapping entry
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted, a different sub-index is present in a mapping entry
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2330,7 +2325,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_DifferentSubIndexInMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted and no indication function set; mapping entry is present
+/// \Given a pointer to a device (co_dev_t) with an object with a sub-object with a PDO mapping enabled inserted and no indication function set; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2347,7 +2342,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_NoIndicationFunction) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with a valid acyclic TPDO object with a sub-object with a PDO mapping enabled inserted; mapping entry is present
+/// \Given a pointer to a device (co_dev_t) with a valid acyclic TPDO object with a sub-object with a PDO mapping enabled inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2363,7 +2358,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidAcyclicTpdo) {
   CHECK_EQUAL(1, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with a valid event-driven TPDO object with a sub-object with a PDO mapping enabled inserted; mapping entry is present
+/// \Given a pointer to a device (co_dev_t) with a valid event-driven TPDO object with a sub-object with a PDO mapping enabled inserted; mapping entry is present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of the sub-object
 ///
@@ -2379,7 +2374,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidEventDrivenTpdo) {
   CHECK_EQUAL(1, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to the device (co_dev_t) with valid acyclic TPDO comm objects with sub-objects with PDO mapping enabled inserted and sub-object mapping entries present
+/// \Given a pointer to a device (co_dev_t) with valid acyclic TPDO comm objects with sub-objects with PDO mapping enabled inserted and sub-object mapping entries present
 ///
 /// \When co_dev_tpdo_event() is called with the index and the sub-index of two sub-objects
 ///

@@ -33,6 +33,7 @@
 #include <lely/util/diag.h>
 
 #include <cassert>
+#include <cstring>
 
 #define TYPE_MAX_LEN 8
 

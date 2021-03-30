@@ -140,11 +140,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_FailCsdoAlloc) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-#if LELY_NO_MALLOC
-  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
-#else
-  CHECK_EQUAL(ERRNUM_HOSTUNREACH, get_errc());
-#endif
+  CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -164,11 +160,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_NumZero) {
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-#if LELY_NO_MALLOC
-  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
-#else
-  CHECK_EQUAL(ERRNUM_HOSTUNREACH, get_errc());
-#endif
+  CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -188,11 +180,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_NumTooHigh) {
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-#if LELY_NO_MALLOC
-  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
-#else
-  CHECK_EQUAL(ERRNUM_HOSTUNREACH, get_errc());
-#endif
+  CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
 }
 
 /// \Given a pointer to the device (co_dev_t) containing 0x1280 object
@@ -238,11 +226,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_NoServerParameterObj) {
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-#if LELY_NO_MALLOC
-  CHECK_EQUAL(ERRNUM_INVAL, get_errc());
-#else
-  CHECK_EQUAL(ERRNUM_HOSTUNREACH, get_errc());
-#endif
+  CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
 }
 
 /// \Given a pointer to the device (co_dev_t) containing 0x1280 object

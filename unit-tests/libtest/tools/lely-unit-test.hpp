@@ -157,6 +157,19 @@ struct CoCsdoUpCon {
     POINTERS_EQUAL(data_, data);
   }
 
+  static inline void
+  CheckNonempty(const co_csdo_t* sdo_, const co_unsigned16_t idx_,
+        const co_unsigned8_t subidx_, const co_unsigned32_t ac_,
+        const size_t n_, const void* data_) {
+    POINTERS_EQUAL(sdo_, sdo);
+    CHECK_EQUAL(idx_, idx);
+    CHECK_EQUAL(subidx_, subidx);
+    CHECK_EQUAL(ac_, ac);
+    CHECK(ptr != nullptr);
+    CHECK_EQUAL(n_, n);
+    POINTERS_EQUAL(data_, data);
+  }
+
   static inline bool
   called() {
     return num_called > 0;

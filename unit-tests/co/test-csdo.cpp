@@ -24,6 +24,8 @@
 #include <config.h>
 #endif
 
+#include <cstdint>
+#include <cstdlib>
 #include <memory>
 
 #include <CppUTest/TestHarness.h>
@@ -807,12 +809,6 @@ TEST_GROUP_BASE(CO_Csdo, CO_CsdoBase) {
     CHECK_EQUAL(size, membuf_size(mbuf));
   }
 
-  void MembufCheckNonempty(const membuf* const mbuf) {
-    CHECK(membuf_begin(mbuf) != nullptr);
-    CHECK(membuf_capacity(mbuf) != 0);
-    CHECK(membuf_size(mbuf) != 0);
-  }
-
   TEST_SETUP() {
     TEST_BASE_SETUP();
 
@@ -1575,9 +1571,15 @@ TEST(CO_Csdo, CoDevUpReq_NoMemory) {
       co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
+#if LELY_NO_MALLOC
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
                      nullptr);
   MembufCheck(&mbuf, nullptr, 0, 0);
+#else
+  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, sizeof(sub_type),
+                             nullptr);
+  CHECK(membuf_size(&mbuf) != 0);
+#endif
 }
 
 namespace CoDevUpReq_ExternalBufferTooSmall {
@@ -1586,7 +1588,12 @@ const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
+#if LELY_NO_MALLOC
 uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
+#else
+uint_least8_t* bytes2up = nullptr;
+#endif
+
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   (void)data;
@@ -1594,6 +1601,10 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   static int flag = 1;
   if (flag != 0) {
     flag--;
+#if !LELY_NO_MALLOC
+    bytes2up = static_cast<uint_least8_t*>(malloc(SIZE_OF_SUB_TYPE));
+    if (bytes2up == nullptr) return CO_SDO_AC_ERROR;
+#endif
     const co_unsigned16_t VAL = co_sub_get_val_u16(sub);
     stle_u16(bytes2up, VAL);
   }
@@ -1633,16 +1644,26 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 
   membuf ext_mbuf = MEMBUF_INIT;
   const size_t EXT_BUFSIZE = SIZE_OF_SUB_TYPE - 1u;
+#if LELY_NO_MALLOC
   char ext_buffer[EXT_BUFSIZE] = {0};
+#else
+  char* ext_buffer = static_cast<char*>(malloc(sizeof(char) * EXT_BUFSIZE));
+#endif
   membuf_init(&ext_mbuf, ext_buffer, EXT_BUFSIZE);
 
   const auto ret =
       co_dev_up_req(dev, IDX, SUBIDX, &ext_mbuf, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
+#if LELY_NO_MALLOC
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
                      nullptr);
   MembufCheck(&ext_mbuf, ext_buffer, EXT_BUFSIZE, 0);
+#else
+  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, sizeof(sub_type),
+                             nullptr);
+  MembufCheck(&ext_mbuf, ext_buffer, 14u, sizeof(sub_type));
+#endif
 }
 
 namespace CoDevUpReq_ExternalBuffer {
@@ -1651,7 +1672,11 @@ const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
+#if LELY_NO_MALLOC
 uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
+#else
+uint_least8_t* bytes2up = nullptr;
+#endif
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
@@ -1660,6 +1685,10 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   static int flag = 1;
   if (flag != 0) {
     flag--;
+#if !LELY_NO_MALLOC
+    bytes2up = static_cast<uint_least8_t*>(malloc(SIZE_OF_SUB_TYPE));
+    if (bytes2up == nullptr) return CO_SDO_AC_ERROR;
+#endif
     const co_unsigned16_t VAL = co_sub_get_val_u16(sub);
     stle_u16(bytes2up, VAL);
   }
@@ -1702,7 +1731,11 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
 
   membuf ext_mbuf = MEMBUF_INIT;
   const size_t EXT_BUFSIZE = 2u;
+#if LELY_NO_MALLOC
   char ext_buffer[EXT_BUFSIZE] = {0};
+#else
+  char* ext_buffer = static_cast<char*>(malloc(sizeof(char) * EXT_BUFSIZE));
+#endif
   membuf_init(&ext_mbuf, ext_buffer, EXT_BUFSIZE);
 
   const auto ret =

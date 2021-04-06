@@ -420,7 +420,7 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 ///
 /// \When co_dev_set_id() is called with a valid node-ID
 ///
-/// \Then 0 is returned and the requested node-ID is set, the sub-object is updated to the values of the form `$NODEID { "+" number }`.
+/// \Then 0 is returned and the requested node-ID is set, the sub-object values are updated to the form `$NODEID { "+" number }`
 TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
   (void)0;  // clang-format fix
 
@@ -457,7 +457,7 @@ TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
 ///
 /// \When co_dev_set_id() is called with a valid node-ID
 ///
-/// \Then 0 is returned and the requested node-ID is set
+/// \Then 0 is returned and the requested node-ID is set, the sub-object values are not modified
 TEST(CO_Dev, CoDevSetId_CoType_NonBasic) {
   CoObjTHolder obj_holder(0x1234u);
   CoSubTHolder sub_holder(0x01u, CO_DEFTYPE_TIME_OF_DAY);
@@ -494,9 +494,9 @@ TEST(CO_Dev, CoDevSetId_Unconfigured) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_id() is called with a node-ID of zero
+/// \When co_dev_set_id() is called with a node-ID equal zero
 ///
-/// \Then 0 is returned and the required node-ID is set
+/// \Then -1 is returned and the required node-ID is not set
 TEST(CO_Dev, CoDevSetId_ZeroId) {
   const auto ret = co_dev_set_id(dev, 0x00u);
 
@@ -528,7 +528,7 @@ TEST(CO_Dev, CoDevSetId_InvalidId) {
 
 /// \Given a pointer to a device (co_dev_t) with an empty object dictionary
 ///
-/// \When co_dev_get_idx() is called with a maximum index and a memory area to
+/// \When co_dev_get_idx() is called with a maximum number of indices to return and a memory area to
 ///       store the object indices
 ///
 /// \Then 0 is returned and the memory area is not modified
@@ -569,7 +569,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
 ///
 /// \When co_dev_get_idx() is called with a memory area to store the results
 ///
-/// \Then 1 is returned, the memory area contains the index
+/// \Then 1 is returned, the memory area contains the index of the object
 TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CoObjTHolder obj(0x1234u);
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj.Take()));
@@ -582,7 +582,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
 
 /// \Given a pointer to a device (co_dev_t) with many objects inserted
 ///
-/// \When co_dev_get_idx() is called with a memory area to store the results
+/// \When co_dev_get_idx() is called with a maximum number of indices to return equal to the number of the objects in the dictionary, a memory area to store the results
 ///
 /// \Then a number of inserted objects is returned, the memory area contains indices of the objects
 TEST(CO_Dev, CoDevGetIdx_ManyObj) {
@@ -606,7 +606,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj) {
 
 /// \Given a pointer to a device (co_dev_t) with many objects inserted
 ///
-/// \When co_dev_get_idx() is called with maximum index lower than the object's number, a memory area to store the results
+/// \When co_dev_get_idx() is called with maximum number of indices to return lower than the number of the objects in the dictionary, a memory area to store the results
 ///
 /// \Then a number of the inserted objects is returned, indices of objects up to the maximum are stored in the memory area
 TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {

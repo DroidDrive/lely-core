@@ -33,7 +33,10 @@
 #include <lely/can/net.h>
 #include <lely/co/csdo.h>
 #include <lely/co/sdo.h>
+#include <lely/co/type.h>
+#include <lely/co/val.h>
 #include <lely/util/endian.h>
+#include <lely/util/membuf.h>
 
 #include <libtest/allocators/default.hpp>
 #include <libtest/allocators/limited.hpp>
@@ -45,8 +48,6 @@
 #include "holder/dev.hpp"
 #include "holder/obj.hpp"
 #include "holder/array-init.hpp"
-#include "lely/co/type.h"
-#include "lely/co/val.h"
 
 TEST_GROUP(CO_CsdoInit) {
   const co_unsigned8_t CSDO_NUM = 0x01u;
@@ -1546,17 +1547,26 @@ TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
 }
 
 namespace CoDevUpReq_NoMemory {
+#if !LELY_NO_MALLOC
+const size_t SIZE = 8u;
+#endif
+
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   (void)data;
 
   co_unsigned32_t ac = 0;
   req->size = 1u;
-  // req->size = 0u;
   co_sub_on_up(sub, req, &ac);
 
+  CHECK(req->membuf != nullptr);
+#if !LELY_NO_MALLOC
+  CHECK(membuf_begin(req->membuf) != nullptr);
+  CHECK_EQUAL(SIZE, membuf_size(req->membuf));
+  memset(membuf_begin(req->membuf), 0xffu, SIZE);
+#endif
+
   return 0;
-  // return ac;
 }
 }  // namespace CoDevUpReq_NoMemory
 
@@ -1571,11 +1581,13 @@ TEST(CO_Csdo, CoDevUpReq_NoMemory) {
   membuf mbuf = MEMBUF_INIT;
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   obj2020->RemoveAndDestroyLastSub();
-  uint_least8_t arr_os[10u] = {0x00, 0x01, 0x02, 0x03, 0x04,
-                               0x05, 0x06, 0x07, 0x08, 0x09};
+  const size_t STRING_SIZE = 10u;
+  uint_least8_t arr_os[STRING_SIZE] = {0x00u, 0x01u, 0x02u, 0x03u, 0x04u,
+                                       0x05u, 0x06u, 0x07u, 0x08u, 0x09u};
   CoArrays arrays;
   co_octet_string_t os = arrays.Init<co_octet_string_t>();
-  CHECK_EQUAL(10u, co_val_make(CO_DEFTYPE_OCTET_STRING, &os, arr_os, 10u));
+  CHECK_EQUAL(STRING_SIZE,
+              co_val_make(CO_DEFTYPE_OCTET_STRING, &os, arr_os, STRING_SIZE));
 
   obj2020->InsertAndSetSub(SUBIDX, CO_DEFTYPE_OCTET_STRING, os);
   co_obj_set_up_ind(obj2020->Get(), req_up_ind, nullptr);
@@ -1589,9 +1601,9 @@ TEST(CO_Csdo, CoDevUpReq_NoMemory) {
                      nullptr);
   MembufCheck(&mbuf, nullptr, 0, 0);
 #else
-  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, sizeof(sub_type),
-                             nullptr);
-  CHECK(membuf_size(&mbuf) != 0);
+  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, SIZE, nullptr);
+  for (size_t i = 0; i < SIZE; i++)
+    CHECK_EQUAL(0xffu, *(static_cast<uint_least8_t*>(membuf_begin(&mbuf)) + i));
 #endif
 }
 

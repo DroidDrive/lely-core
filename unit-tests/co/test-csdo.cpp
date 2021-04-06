@@ -359,8 +359,7 @@ TEST(CO_CsdoInit, CoCsdoStart_AlreadyStarted) {
   co_csdo_destroy(csdo);
 }
 
-/// \Given a pointer to the CSDO service (co_csdo_t) with 0x1280 object
-///        inserted
+/// \Given a pointer to the CSDO service (co_csdo_t) containing 0x1280 object
 ///
 /// \When co_csdo_start() is called
 ///
@@ -392,8 +391,7 @@ TEST(CO_CsdoInit, CoCsdoStart_DefaultCSDO_WithObj1280) {
 /// @name co_csdo_stop()
 ///@{
 
-/// \Given a pointer to the CSDO service (co_csdo_t) with 0x1280 object
-///        inserted
+/// \Given a pointer to the CSDO service (co_csdo_t) containing 0x1280 object
 ///
 /// \When co_csdo_stop() is called
 ///
@@ -412,8 +410,7 @@ TEST(CO_CsdoInit, CoCsdoStop_OnCreated) {
   co_csdo_destroy(csdo);
 }
 
-/// \Given a pointer to the started CSDO service (co_csdo_t) with 0x1280 object
-///        inserted
+/// \Given a pointer to the started CSDO service (co_csdo_t) containing 0x1280 object
 ///
 /// \When co_csdo_stop() is called
 ///
@@ -806,9 +803,8 @@ TEST_GROUP_BASE(CO_Csdo, CO_CsdoBase) {
   }
 
   void MembufCheck(const membuf* const mbuf, const char* const begin,
-                   const size_t capacity, const size_t size) {
+                   const size_t size) {
     POINTERS_EQUAL(begin, membuf_begin(mbuf));
-    CHECK_EQUAL(capacity, membuf_capacity(mbuf));
     CHECK_EQUAL(size, membuf_size(mbuf));
   }
 
@@ -1230,6 +1226,7 @@ TEST(CO_Csdo, CoDevDnDcfReq_Nominal) {
 TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   co_sub_set_access(obj2020->GetLastSub(), CO_ACCESS_WO);
+
   const size_t BUFSIZE = sizeof(sub_type);
   char buffer[BUFSIZE] = {0};
   membuf mbuf = MEMBUF_INIT;
@@ -1241,8 +1238,7 @@ TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_READ, nullptr, 0,
                      nullptr);
-  MembufCheck(&mbuf, buffer, BUFSIZE, 0);
-  CHECK_EQUAL(0x0000u, ldle_u16(CoCsdoUpCon::buf));
+  MembufCheck(&mbuf, buffer, 0);
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a sub-object inserted, the sub-object has no read access
@@ -1264,6 +1260,7 @@ TEST(CO_Csdo, CoDevUpReq_NoReadAccess) {
 ///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+
   const size_t BUFSIZE = sizeof(sub_type);
   char buffer[BUFSIZE] = {0};
   membuf mbuf = MEMBUF_INIT;
@@ -1272,7 +1269,7 @@ TEST(CO_Csdo, CoDevUpReq_NoConfirmationFunction) {
   const auto ret = co_dev_up_req(dev, IDX, SUBIDX, &mbuf, nullptr, nullptr);
 
   CHECK_EQUAL(0, ret);
-  MembufCheck(&mbuf, buffer, BUFSIZE - sizeof(sub_type), sizeof(sub_type));
+  MembufCheck(&mbuf, buffer, sizeof(sub_type));
   CHECK_EQUAL(0x1234u,
               ldle_u16(static_cast<uint_least8_t*>(membuf_begin(&mbuf))));
 }
@@ -1323,7 +1320,10 @@ TEST(CO_Csdo, CoDevUpReq_NoBufPtr) {
 ///       \Calls membuf_fini()
 ///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoObj) {
+  const size_t BUFSIZE = sizeof(sub_type);
+  char buffer[BUFSIZE] = {0};
   membuf mbuf = MEMBUF_INIT;
+  membuf_init(&mbuf, buffer, BUFSIZE);
 
   const auto ret = co_dev_up_req(dev, INVALID_IDX, INVALID_SUBIDX, &mbuf,
                                  CoCsdoUpCon::func, nullptr);
@@ -1331,10 +1331,10 @@ TEST(CO_Csdo, CoDevUpReq_NoObj) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, INVALID_IDX, INVALID_SUBIDX, CO_SDO_AC_NO_OBJ,
                      nullptr, 0, nullptr);
-  MembufCheck(&mbuf, nullptr, 0, 0);
+  MembufCheck(&mbuf, buffer, 0);
 }
 
-/// \Given a pointer to the device (co_dev_t) containing an object inserted
+/// \Given a pointer to the device (co_dev_t) containing an object
 ///
 /// \When co_dev_up_req() is called with an index of the existing object and a sub-index of a non-existing sub-object, a memory buffer to store the requested value and a confirmation function
 ///
@@ -1348,7 +1348,10 @@ TEST(CO_Csdo, CoDevUpReq_NoObj) {
 ///       \Calls membuf_fini()
 ///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_NoSub) {
+  const size_t BUFSIZE = sizeof(sub_type);
+  char buffer[BUFSIZE] = {0};
   membuf mbuf = MEMBUF_INIT;
+  membuf_init(&mbuf, buffer, BUFSIZE);
 
   const auto ret = co_dev_up_req(dev, IDX, INVALID_SUBIDX, &mbuf,
                                  CoCsdoUpCon::func, nullptr);
@@ -1356,7 +1359,7 @@ TEST(CO_Csdo, CoDevUpReq_NoSub) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, INVALID_SUBIDX, CO_SDO_AC_NO_SUB, nullptr, 0,
                      nullptr);
-  MembufCheck(&mbuf, nullptr, 0, 0);
+  MembufCheck(&mbuf, buffer, 0);
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an array object, a size of the array is declared as too small
@@ -1376,20 +1379,26 @@ TEST(CO_Csdo, CoDevUpReq_NoSub) {
 ///       \Calls set_errc()
 TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   const co_unsigned8_t ELEMENT_SUBIDX = 0x01u;
+
+  const size_t BUFSIZE = sizeof(sub_type);
+  char buffer[BUFSIZE] = {0};
   membuf mbuf = MEMBUF_INIT;
-  co_obj_set_code(obj2020->Get(), CO_OBJECT_ARRAY);
-  obj2020->RemoveAndDestroyLastSub();
-  obj2020->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
-  obj2020->InsertAndSetSub(ELEMENT_SUBIDX, CO_DEFTYPE_UNSIGNED8,
+  membuf_init(&mbuf, buffer, BUFSIZE);
+
+  std::unique_ptr<CoObjTHolder> obj2021;
+  CreateObjInDev(obj2021, IDX + 1u);
+  co_obj_set_code(obj2021->Get(), CO_OBJECT_ARRAY);
+  obj2021->InsertAndSetSub(SUBIDX, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
+  obj2021->InsertAndSetSub(ELEMENT_SUBIDX, CO_DEFTYPE_UNSIGNED8,
                            co_unsigned8_t(0));
 
-  const auto ret = co_dev_up_req(dev, IDX, ELEMENT_SUBIDX, &mbuf,
+  const auto ret = co_dev_up_req(dev, IDX + 1u, ELEMENT_SUBIDX, &mbuf,
                                  CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
-  CoCsdoUpCon::Check(nullptr, IDX, ELEMENT_SUBIDX, CO_SDO_AC_NO_DATA, nullptr,
-                     0, nullptr);
-  MembufCheck(&mbuf, nullptr, 0, 0);
+  CoCsdoUpCon::Check(nullptr, IDX + 1u, ELEMENT_SUBIDX, CO_SDO_AC_NO_DATA,
+                     nullptr, 0, nullptr);
+  MembufCheck(&mbuf, buffer, 0);
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an array object, a size of the array is declared correctly
@@ -1418,18 +1427,19 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_DataPresent) {
   membuf mbuf = MEMBUF_INIT;
   membuf_init(&mbuf, buffer, BUFSIZE);
 
-  co_obj_set_code(obj2020->Get(), CO_OBJECT_ARRAY);
-  obj2020->RemoveAndDestroyLastSub();
-  obj2020->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8, ELEMENT_SUBIDX);
-  obj2020->InsertAndSetSub(ELEMENT_SUBIDX, SUB_TYPE, sub_type(0x1234u));
+  std::unique_ptr<CoObjTHolder> obj2021;
+  CreateObjInDev(obj2021, IDX + 1u);
+  co_obj_set_code(obj2021->Get(), CO_OBJECT_ARRAY);
+  obj2021->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8, ELEMENT_SUBIDX);
+  obj2021->InsertAndSetSub(ELEMENT_SUBIDX, SUB_TYPE, sub_type(0x1234u));
 
-  const auto ret = co_dev_up_req(dev, IDX, ELEMENT_SUBIDX, &mbuf,
+  const auto ret = co_dev_up_req(dev, IDX + 1u, ELEMENT_SUBIDX, &mbuf,
                                  CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
-  CoCsdoUpCon::Check(nullptr, IDX, ELEMENT_SUBIDX, 0, membuf_begin(&mbuf),
+  CoCsdoUpCon::Check(nullptr, IDX + 1u, ELEMENT_SUBIDX, 0, membuf_begin(&mbuf),
                      sizeof(sub_type), nullptr);
-  MembufCheck(&mbuf, buffer, BUFSIZE - sizeof(sub_type), sizeof(sub_type));
+  MembufCheck(&mbuf, buffer, sizeof(sub_type));
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
@@ -1479,7 +1489,7 @@ TEST(CO_Csdo, CoDevUpReq_ReqZero) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&mbuf),
                      sizeof(sub_type), nullptr);
-  MembufCheck(&mbuf, buffer, BUFSIZE - sizeof(sub_type), sizeof(sub_type));
+  MembufCheck(&mbuf, buffer, sizeof(sub_type));
   CHECK_EQUAL(0x0000u, ldle_u16(CoCsdoUpCon::buf));
 }
 
@@ -1500,10 +1510,8 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
     flag--;
     const co_unsigned16_t VAL = co_sub_get_val_u16(sub);
     stle_u16(bytes2up, VAL);
-    req->size = SIZE_OF_SUB_TYPE;
     req->membuf = &ind_mbuf;
     req->buf = bytes2up;
-    req->nbyte = SIZE_OF_SUB_TYPE;
   }
 
   co_unsigned32_t ac = 0;
@@ -1541,14 +1549,13 @@ TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ind_mbuf),
                      sizeof(sub_type), nullptr);
-  MembufCheck(&ind_mbuf, ind_buffer, IND_BUFSIZE - sizeof(sub_type),
-              sizeof(sub_type));
+  MembufCheck(&ind_mbuf, ind_buffer, sizeof(sub_type));
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 namespace CoDevUpReq_NoMemory {
 #if !LELY_NO_MALLOC
-const size_t SIZE = 8u;
+const size_t MEMBUF_SIZE = 8u;
 #endif
 
 co_unsigned32_t
@@ -1562,15 +1569,15 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   CHECK(req->membuf != nullptr);
 #if !LELY_NO_MALLOC
   CHECK(membuf_begin(req->membuf) != nullptr);
-  CHECK_EQUAL(SIZE, membuf_size(req->membuf));
-  memset(membuf_begin(req->membuf), 0xffu, SIZE);
+  CHECK_EQUAL(MEMBUF_SIZE, membuf_size(req->membuf));
+  memset(membuf_begin(req->membuf), 0xffu, MEMBUF_SIZE);
 #endif
 
   return 0;
 }
 }  // namespace CoDevUpReq_NoMemory
 
-/// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets the requested size to a non-zero value
+/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size to a non-zero value
 ///
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, an empty memory buffer to store the requested value and a confirmation function
 ///
@@ -1599,10 +1606,10 @@ TEST(CO_Csdo, CoDevUpReq_NoMemory) {
 #if LELY_NO_MALLOC
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
                      nullptr);
-  MembufCheck(&mbuf, nullptr, 0, 0);
+  MembufCheck(&mbuf, nullptr, 0);
 #else
-  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, SIZE, nullptr);
-  for (size_t i = 0; i < SIZE; i++)
+  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, MEMBUF_SIZE, nullptr);
+  for (size_t i = 0; i < MEMBUF_SIZE; i++)
     CHECK_EQUAL(0xffu, *(static_cast<uint_least8_t*>(membuf_begin(&mbuf)) + i));
 #endif
 }
@@ -1613,12 +1620,6 @@ const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
-#if LELY_NO_MALLOC
-uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
-#else
-uint_least8_t* bytes2up = nullptr;
-#endif
-
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   (void)data;
@@ -1626,16 +1627,7 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
   static int flag = 1;
   if (flag != 0) {
     flag--;
-#if !LELY_NO_MALLOC
-    bytes2up = static_cast<uint_least8_t*>(malloc(SIZE_OF_SUB_TYPE));
-    if (bytes2up == nullptr) return CO_SDO_AC_ERROR;
-#endif
-    const co_unsigned16_t VAL = co_sub_get_val_u16(sub);
-    stle_u16(bytes2up, VAL);
-    req->size = SIZE_OF_SUB_TYPE;
     req->membuf = &ind_mbuf;
-    req->buf = bytes2up;
-    req->nbyte = SIZE_OF_SUB_TYPE;
   }
 
   co_unsigned32_t ac = 0;
@@ -1645,7 +1637,7 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 }
 }  // namespace CoDevUpReq_ExternalBufferTooSmall
 
-/// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
+/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
 ///
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
@@ -1683,11 +1675,11 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 #if LELY_NO_MALLOC
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
                      nullptr);
-  MembufCheck(&ext_mbuf, ext_buffer, EXT_BUFSIZE, 0);
+  MembufCheck(&ext_mbuf, ext_buffer, 0);
 #else
   CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, sizeof(sub_type),
                              nullptr);
-  MembufCheck(&ext_mbuf, ext_buffer, 14u, sizeof(sub_type));
+  MembufCheck(&ext_mbuf, ext_buffer, sizeof(sub_type));
 #endif
 }
 
@@ -1696,6 +1688,7 @@ const size_t SIZE_OF_SUB_TYPE = 2u;
 const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
+size_t nbyte = 0u;
 
 #if LELY_NO_MALLOC
 uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
@@ -1722,14 +1715,13 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
 
   co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
-  static size_t nbyte = 0u;
   req->nbyte = nbyte++;
 
   return 0;
 }
 }  // namespace CoDevUpReq_ExternalBuffer
 
-/// \Given a pointer to the device (co_dev_t) containing an object inserted with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
+/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
 ///
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
@@ -1766,12 +1758,11 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
                      sizeof(sub_type), nullptr);
-  MembufCheck(&ext_mbuf, ext_buffer, EXT_BUFSIZE - sizeof(sub_type),
-              sizeof(sub_type));
+  MembufCheck(&ext_mbuf, ext_buffer, sizeof(sub_type));
   CHECK_EQUAL(0x3434u, ldle_u16(CoCsdoUpCon::buf));
 }
 
-/// \Given a pointer to the device (co_dev_t) containing an object inserted with a default set as an upload indication function
+/// \Given a pointer to the device (co_dev_t) containing an object with a default set as an upload indication function
 ///
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
@@ -1793,6 +1784,7 @@ TEST(CO_Csdo, CoDevUpReq_Nominal) {
   const size_t BUFSIZE = sizeof(sub_type);
   char buffer[BUFSIZE] = {0};
   membuf_init(&mbuf, buffer, BUFSIZE);
+
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
 
   const auto ret =
@@ -1801,7 +1793,7 @@ TEST(CO_Csdo, CoDevUpReq_Nominal) {
   CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&mbuf),
                      sizeof(sub_type), nullptr);
-  MembufCheck(&mbuf, buffer, BUFSIZE - sizeof(sub_type), sizeof(sub_type));
+  MembufCheck(&mbuf, buffer, sizeof(sub_type));
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 

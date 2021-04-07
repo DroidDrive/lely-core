@@ -1445,10 +1445,10 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_DataPresent) {
 
 namespace CoDevUpReq_ReqZero {
 co_unsigned32_t
-req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac,
+           void* data) {
   (void)data;
 
-  co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
   req->buf = nullptr;
   req->size = 0;
@@ -1502,7 +1502,8 @@ membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
 
 co_unsigned32_t
-req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac,
+           void* data) {
   (void)data;
 
   static int flag = 1;
@@ -1514,7 +1515,6 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
     req->buf = bytes2up;
   }
 
-  co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
 
   return 0;
@@ -1559,10 +1559,10 @@ const size_t MEMBUF_SIZE = 8u;
 #endif
 
 co_unsigned32_t
-req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac,
+           void* data) {
   (void)data;
 
-  co_unsigned32_t ac = 0;
   req->size = 1u;
   co_sub_on_up(sub, req, &ac);
 
@@ -1621,7 +1621,8 @@ char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
 co_unsigned32_t
-req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac,
+           void* data) {
   (void)data;
 
   static int flag = 1;
@@ -1630,7 +1631,6 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
     req->membuf = &ind_mbuf;
   }
 
-  co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
 
   return 0;
@@ -1697,7 +1697,8 @@ uint_least8_t* bytes2up = nullptr;
 #endif
 
 co_unsigned32_t
-req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac,
+           void* data) {
   (void)data;
 
   static int flag = 1;
@@ -1713,7 +1714,6 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, void* data) {
     req->buf = bytes2up;
   }
 
-  co_unsigned32_t ac = 0;
   co_sub_on_up(sub, req, &ac);
   req->nbyte = nbyte++;
 

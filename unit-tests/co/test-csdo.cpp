@@ -1496,22 +1496,14 @@ TEST(CO_Csdo, CoDevUpReq_ReqZero) {
 }
 
 namespace CoDevUpReq_IndBufIsReqBuf {
-static bool initialized = false;
 const size_t SIZE_OF_SUB_TYPE = 2u;
 const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
-uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
-  if (!initialized) {
-    initialized = true;
-    const co_unsigned16_t VAL = co_sub_get_val_u16(sub);
-    stle_u16(bytes2up, VAL);
-    req->membuf = &ind_mbuf;
-    req->buf = bytes2up;
-  }
+  req->membuf = &ind_mbuf;
 
   co_sub_on_up(sub, req, &ac);
 
@@ -1564,7 +1556,6 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
   CHECK(req->membuf != nullptr);
 #if !LELY_NO_MALLOC
   CHECK(membuf_begin(req->membuf) != nullptr);
-  CHECK_EQUAL(MEMBUF_SIZE, membuf_size(req->membuf));
   memset(membuf_begin(req->membuf), 0xffu, MEMBUF_SIZE);
 #endif
 
@@ -1610,7 +1601,6 @@ TEST(CO_Csdo, CoDevUpReq_NoMemory) {
 }
 
 namespace CoDevUpReq_ExternalBufferTooSmall {
-static bool initialized = false;
 const size_t SIZE_OF_SUB_TYPE = 2u;
 const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
@@ -1618,10 +1608,7 @@ membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
-  if (!initialized) {
-    initialized = true;
-    req->membuf = &ind_mbuf;
-  }
+  req->membuf = &ind_mbuf;
 
   co_sub_on_up(sub, req, &ac);
 
@@ -1675,46 +1662,28 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 #endif
 }
 
-namespace CoDevUpReq_ExternalBuffer {
-static bool initialized = false;
+namespace CoDevUpReq_ExternalBufferNotLast {
 const size_t SIZE_OF_SUB_TYPE = 2u;
 const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
-size_t nbyte = 0u;
-
-#if LELY_NO_MALLOC
-uint_least8_t bytes2up[SIZE_OF_SUB_TYPE] = {0};
-#else
-uint_least8_t* bytes2up = nullptr;
-#endif
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
-  if (!initialized) {
-    initialized = true;
-#if !LELY_NO_MALLOC
-    bytes2up = static_cast<uint_least8_t*>(malloc(SIZE_OF_SUB_TYPE));
-    if (bytes2up == nullptr) return CO_SDO_AC_ERROR;
-#endif
-    const co_unsigned16_t VAL = co_sub_get_val_u16(sub);
-    stle_u16(bytes2up, VAL);
-    req->membuf = &ind_mbuf;
-    req->buf = bytes2up;
-  }
+  req->membuf = &ind_mbuf;
 
   co_sub_on_up(sub, req, &ac);
-  req->nbyte = nbyte++;
+  req->size = SIZE_OF_SUB_TYPE + 1u;
 
   return 0;
 }
-}  // namespace CoDevUpReq_ExternalBuffer
+}  // namespace CoDevUpReq_ExternalBufferNotLast
 
-/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
+/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size as greater than the size of the requested entry
 ///
-/// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the sub-object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; if LELY_NO_MALLOC: the supplied buffer remains empty; else the memory buffer is not empty and contains the requested value
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; the memory buffer contains the requested value
 ///       \Calls get_errc()
 ///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
 ///       \Calls co_sdo_req_init()
@@ -1726,13 +1695,13 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
 ///       \Calls co_sdo_req_fini()
 ///       \Calls membuf_fini()
 ///       \Calls set_errc()
-/*IGNORE_*/ TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
-  using namespace CoDevUpReq_ExternalBuffer;
+TEST(CO_Csdo, CoDevUpReq_ExternalBufferNotLast) {
+  using namespace CoDevUpReq_ExternalBufferNotLast;
 
   co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   co_obj_set_up_ind(obj2020->Get(), req_up_ind, nullptr);
 
-  const size_t EXT_BUFSIZE = 2u;
+  const size_t EXT_BUFSIZE = sizeof(sub_type) + 1u;
   membuf ext_mbuf = MEMBUF_INIT;
 #if LELY_NO_MALLOC
   char ext_buffer[EXT_BUFSIZE] = {0};
@@ -1746,21 +1715,73 @@ req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
       co_dev_up_req(dev, IDX, SUBIDX, &ext_mbuf, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
+                     sizeof(sub_type) + 1u, nullptr);
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
+}
+
+namespace CoDevUpReq_ExternalBuffer {
+const size_t SIZE_OF_SUB_TYPE = 2u;
+const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
+char ind_buffer[IND_BUFSIZE] = {0};
+membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
+
+co_unsigned32_t
+req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
+  req->membuf = &ind_mbuf;
+
+  co_sub_on_up(sub, req, &ac);
+
+  return 0;
+}
+}  // namespace CoDevUpReq_ExternalBuffer
+
+/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size as 2, offset as 0 and nbyte as 0
+///
+/// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
+///
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer; the memory buffer contains the requested value
+///       \Calls get_errc()
+///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
+///       \Calls co_sdo_req_init()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_find_sub()
+///       \Calls co_obj_get_code()
+///       \Calls co_sub_up_ind()
+///       \Calls co_sdo_req_last()
+///       \Calls co_sdo_req_fini()
+///       \Calls membuf_fini()
+///       \Calls set_errc()
+TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
+  using namespace CoDevUpReq_ExternalBuffer;
+
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
+  co_obj_set_up_ind(obj2020->Get(), req_up_ind, nullptr);
+
+  const size_t EXT_BUFSIZE = sizeof(sub_type);
+  membuf ext_mbuf = MEMBUF_INIT;
 #if LELY_NO_MALLOC
+  char ext_buffer[EXT_BUFSIZE] = {0};
+  membuf_init(&ext_mbuf, ext_buffer, EXT_BUFSIZE);
+  CHECK_EQUAL(EXT_BUFSIZE, membuf_reserve(&ext_mbuf, EXT_BUFSIZE));
+#else
+  CHECK_EQUAL(LELY_MEMBUF_SIZE, membuf_reserve(&ext_mbuf, EXT_BUFSIZE));
+#endif
+
+  const auto ret =
+      co_dev_up_req(dev, IDX, SUBIDX, &ext_mbuf, CoCsdoUpCon::func, nullptr);
+
+  CHECK_EQUAL(0, ret);
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
                      sizeof(sub_type), nullptr);
-#else
-  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf), 3u,
-                     nullptr);
-#endif
-  CHECK_EQUAL(0x3434u, ldle_u16(CoCsdoUpCon::buf));
+  CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a default set as an upload indication function
 ///
 /// \When co_dev_up_req() is called with an index and a sub-index of the object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer, the memory buffer is not empty and contains the requested value
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, 0 as the abort code, a pointer to the memory buffer, requested size of the value and a null user-specified data pointer, the memory buffer contains the requested value
 ///       \Calls get_errc()
 ///       \IfCalls{LELY_NO_MALLOC, membuf_init()}
 ///       \Calls co_sdo_req_init()

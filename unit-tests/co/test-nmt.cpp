@@ -33,6 +33,7 @@
 
 #include <libtest/allocators/default.hpp>
 #include <libtest/allocators/limited.hpp>
+#include <libtest/override/lelyco-val.hpp>
 #include <libtest/tools/lely-cpputest-ext.hpp>
 #include <libtest/tools/lely-unit-test.hpp>
 
@@ -72,6 +73,8 @@ TEST_BASE(CO_NmtBase) {
 
   std::unique_ptr<CoDevTHolder> dev_holder;
   std::unique_ptr<CoObjTHolder> obj1016;
+  std::unique_ptr<CoObjTHolder> obj1000;
+  std::unique_ptr<CoObjTHolder> obj2000;
 
   Allocators::Default allocator;
 
@@ -187,6 +190,88 @@ TEST(CO_NmtCreate, CoNmtCreate_Default) {
 #endif
 #endif
 }
+
+#if HAVE_LELY_OVERRIDE
+
+#if !LELY_NO_CO_DCF_RESTORE
+/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
+///        contains a single entry in the application parameters area
+///        (0x2000-0x9fff), a number of valid calls is limited to one call to
+///        co_dev_write_dcf()
+///
+/// \When co_nmt_create() is called with pointer to the network and the device
+///
+/// \Then a null pointer is returned, NMT service is not created
+///       \Calls mem_alloc()
+///       \Calls can_net_get_alloc()
+///       \Calls co_nmt_alignof()
+///       \Calls co_nmt_sizeof()
+///       \Calls co_dev_get_id()
+///       \Calls co_dev_write_dcf()
+///       \Calls mem_free()
+///       \Calls get_errc()
+///       \Calls set_errc()
+TEST(CO_NmtCreate, CoRpdoCreate_DcfAppParamsWriteFail) {
+  const size_t SUBS_NUM = 1u;
+  CreateObj(obj2000, 0x2000u);
+  obj2000->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
+
+  // Concise DCF format (every <> is a call to co_val_write()):
+  // <total number of subs> + (<sub's value> + <sub's size>) * SUBS_NUM
+  LelyOverride::co_val_write(1u + 2u * SUBS_NUM);
+
+  nmt = co_nmt_create(net, dev);
+
+  POINTERS_EQUAL(nullptr, nmt);
+
+  LelyOverride::co_val_write(Override::AllCallsValid);
+}
+#endif
+
+/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
+///        contains a single entry in the application parameters area
+///        (0x2000-0x9fff) [if !LELY_NO_CO_DCF_RESTORE] and a single entry in
+///        the communication parameters area (0x1000-0x1fff), a number of valid
+///        calls is limited to three (one [if !LELY_NO_CO_DCF_RESTORE]) call to
+///        co_dev_write_dcf()
+///
+/// \When co_nmt_create() is called with pointer to the network and the device
+///
+/// \Then a null pointer is returned, NMT service is not created
+///       \Calls mem_alloc()
+///       \Calls can_net_get_alloc()
+///       \Calls co_nmt_alignof()
+///       \Calls co_nmt_sizeof()
+///       \Calls co_dev_get_id()
+///       \Calls co_dev_write_dcf()
+///       \Calls mem_free()
+///       \Calls get_errc()
+///       \Calls set_errc()
+TEST(CO_NmtCreate, CoRpdoCreate_DcfCommParamsWriteFail) {
+  const size_t SUBS_NUM = 1u;
+#if !LELY_NO_CO_DCF_RESTORE
+  CreateObj(obj2000, 0x2000u);
+  obj2000->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
+#endif
+  CreateObj(obj1000, 0x1000u);
+  obj1000->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
+
+  // Concise DCF format (every <> is a call to co_val_write()):
+  // <total number of subs> + (<sub's value> + <sub's size>) * SUBS_NUM
+#if !LELY_NO_CO_DCF_RESTORE
+  LelyOverride::co_val_write(3u * (1u + 2u * SUBS_NUM));
+#else
+  LelyOverride::co_val_write(1u + (2u * SUBS_NUM));
+#endif
+
+  nmt = co_nmt_create(net, dev);
+
+  POINTERS_EQUAL(nullptr, nmt);
+
+  LelyOverride::co_val_write(Override::AllCallsValid);
+}
+
+#endif  // HAVE_LELY_OVERRIDE
 
 ///@}
 

@@ -1498,8 +1498,8 @@ TEST(CO_Csdo, CoDevUpReq_ReqZero) {
 namespace CoDevUpReq_IndBufIsReqBuf {
 static const size_t SIZE_OF_SUB_TYPE = 2u;
 static const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
-char ind_buffer[IND_BUFSIZE] = {0};
-membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
+static char ind_buffer[IND_BUFSIZE] = {0};
+static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
@@ -1545,7 +1545,7 @@ TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
 
 namespace CoDevUpReq_NoMemory {
 #if !LELY_NO_MALLOC
-const size_t MEMBUF_SIZE = 8u;
+static const size_t MEMBUF_SIZE = 8u;
 #endif
 
 co_unsigned32_t
@@ -1601,10 +1601,10 @@ TEST(CO_Csdo, CoDevUpReq_NoMemory) {
 }
 
 namespace CoDevUpReq_ExternalBufferTooSmall {
-const size_t SIZE_OF_SUB_TYPE = 2u;
-const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
-char ind_buffer[IND_BUFSIZE] = {0};
-membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
+static const size_t SIZE_OF_SUB_TYPE = 2u;
+static const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
+static char ind_buffer[IND_BUFSIZE] = {0};
+static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
@@ -1643,9 +1643,9 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 #if LELY_NO_MALLOC
   char ext_buffer[EXT_BUFSIZE] = {0};
   membuf_init(&ext_mbuf, ext_buffer, EXT_BUFSIZE);
-  CHECK_EQUAL(EXT_BUFSIZE, membuf_reserve(&ext_mbuf, EXT_BUFSIZE));
 #else
-  CHECK_EQUAL(LELY_MEMBUF_SIZE, membuf_reserve(&ext_mbuf, EXT_BUFSIZE));
+  const auto mret = membuf_reserve(&ext_mbuf, EXT_BUFSIZE);
+  CHECK_COMPARE(mret, >=, EXT_BUFSIZE);
 #endif
 
   const auto ret =
@@ -1663,10 +1663,10 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 }
 
 namespace CoDevUpReq_ExternalBufferNotLast {
-const size_t SIZE_OF_SUB_TYPE = 2u;
-const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
-char ind_buffer[IND_BUFSIZE] = {0};
-membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
+static const size_t SIZE_OF_SUB_TYPE = 2u;
+static const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
+static char ind_buffer[IND_BUFSIZE] = {0};
+static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
@@ -1726,10 +1726,10 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferNotLast) {
 }
 
 namespace CoDevUpReq_ExternalBuffer {
-const size_t SIZE_OF_SUB_TYPE = 2u;
-const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
-char ind_buffer[IND_BUFSIZE] = {0};
-membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
+static const size_t SIZE_OF_SUB_TYPE = 2u;
+static const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
+static char ind_buffer[IND_BUFSIZE] = {0};
+static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {

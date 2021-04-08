@@ -1496,8 +1496,8 @@ TEST(CO_Csdo, CoDevUpReq_ReqZero) {
 }
 
 namespace CoDevUpReq_IndBufIsReqBuf {
-const size_t SIZE_OF_SUB_TYPE = 2u;
-const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
+static const size_t SIZE_OF_SUB_TYPE = 2u;
+static const size_t IND_BUFSIZE = SIZE_OF_SUB_TYPE;
 char ind_buffer[IND_BUFSIZE] = {0};
 membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + IND_BUFSIZE};
 
@@ -1715,8 +1715,13 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferNotLast) {
       co_dev_up_req(dev, IDX, SUBIDX, &ext_mbuf, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
+#if LELY_NO_MALLOC
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
                      sizeof(sub_type) + 1u, nullptr);
+#else
+  CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
+                     sizeof(sub_type) + 2u, nullptr);
+#endif
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 

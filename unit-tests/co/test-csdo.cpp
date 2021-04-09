@@ -1629,6 +1629,7 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 #else
   CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, sizeof(sub_type),
                              nullptr);
+  membuf_fini(&ext_mbuf);
 #endif
 }
 
@@ -1689,6 +1690,9 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferNotLast) {
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
                      sizeof(sub_type), nullptr);
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
+#if !LELY_NO_MALLOC
+  membuf_fini(&ext_mbuf);
+#endif
 }
 
 namespace CoDevUpReq_ExternalBuffer {
@@ -1744,6 +1748,9 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, 0, membuf_begin(&ext_mbuf),
                      sizeof(sub_type), nullptr);
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
+#if !LELY_NO_MALLOC
+  membuf_fini(&ext_mbuf);
+#endif
 }
 
 /// \Given a pointer to the device (co_dev_t) containing an object with a default set as an upload indication function

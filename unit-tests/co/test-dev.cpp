@@ -510,7 +510,7 @@ TEST(CO_Dev, CoDevSetId_ZeroId) {
 ///
 /// \Then -1 is returned and the required node-ID is not set
 TEST(CO_Dev, CoDevSetId_InvalidId) {
-  const auto ret1 = co_dev_set_id(dev, CO_NUM_NETWORKS + 1);
+  const auto ret1 = co_dev_set_id(dev, CO_NUM_NODES+ 1);
 
   CHECK_EQUAL(-1, ret1);
   CHECK_EQUAL(0x01u, co_dev_get_id(dev));
@@ -805,7 +805,7 @@ TEST(CO_Dev, CoDevFindSub_Nominal) {
 ///
 /// \When co_dev_find_sub() is called with an index and a sub-index
 ///
-/// \Then a pointer to the sub-object is returned
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevFindSub_NoObj) {
   const auto* const ret = co_dev_find_sub(dev, 0x1234u, 0x00u);
 
@@ -973,7 +973,7 @@ TEST(CO_Dev, CoDevSetVendorName_Null) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_vendor_name() is called with a pointer to the empty string
+/// \When co_dev_set_vendor_name() is called with a pointer to an empty string
 ///
 /// \Then 0 is returned and the vendor name is a null pointer
 TEST(CO_Dev, CoDevSetVendorName_Empty) {
@@ -1091,7 +1091,7 @@ TEST(CO_Dev, CoDevSetOrderCode_Empty) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_vendor_id() is called with a valid vendor ID
+/// \When co_dev_set_vendor_id() is called with a vendor ID
 ///
 /// \Then the requested vendor ID is set
 TEST(CO_Dev, CoDevSetVendorId_Nominal) {
@@ -1107,7 +1107,7 @@ TEST(CO_Dev, CoDevSetVendorId_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_product_code() is called with a valid number
+/// \When co_dev_set_product_code() is called with a number
 ///
 /// \Then the requested product code is set
 TEST(CO_Dev, CoDevSetProductCode_Nominal) {
@@ -1123,7 +1123,7 @@ TEST(CO_Dev, CoDevSetProductCode_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_revision() is called with a valid number
+/// \When co_dev_set_revision() is called with a number
 ///
 /// \Then the requested revision is set
 TEST(CO_Dev, CoDevSetRevision_Nominal) {
@@ -1139,7 +1139,7 @@ TEST(CO_Dev, CoDevSetRevision_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_baud() is called with valid flags
+/// \When co_dev_set_baud() is called with supported bit rates 
 ///
 /// \Then the requested flags are set
 TEST(CO_Dev, CoDevSetBaud_Nominal) {
@@ -1171,13 +1171,13 @@ TEST(CO_Dev, CoDevSetRate_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_lss() is called with valid flags
+/// \When co_dev_set_lss() is called with a non-zero number
 ///
 /// \Then the LSS support flag is set
 TEST(CO_Dev, CoDevSetLSS_Nominal) {
   co_dev_set_lss(dev, 123);
 
-  CHECK_EQUAL(true, co_dev_get_lss(dev));
+  CHECK_EQUAL(1, co_dev_get_lss(dev));
 }
 
 ///@}
@@ -1187,9 +1187,9 @@ TEST(CO_Dev, CoDevSetLSS_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_dummy() is called with valid flags
+/// \When co_dev_set_dummy() is called with data types supported for mapping dummy entries in PDOs
 ///
-/// \Then the LSS support flag is set
+/// \Then the data types supported for mapping dummy entries in PDOs are set
 TEST(CO_Dev, CoDevSetDummy_Nominal) {
   co_dev_set_dummy(dev, 0x00010001u);
 

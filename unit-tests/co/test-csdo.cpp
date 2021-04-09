@@ -24,8 +24,6 @@
 #include <config.h>
 #endif
 
-#include <cstdint>
-#include <cstdlib>
 #include <memory>
 
 #include <CppUTest/TestHarness.h>
@@ -41,7 +39,6 @@
 #include <libtest/allocators/default.hpp>
 #include <libtest/allocators/limited.hpp>
 #include <libtest/override/lelyco-val.hpp>
-#include <libtest/override/lelyutil-membuf.hpp>
 #include <libtest/tools/lely-unit-test.hpp>
 #include <libtest/tools/lely-cpputest-ext.hpp>
 
@@ -1388,7 +1385,7 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   membuf mbuf = MEMBUF_INIT;
   membuf_init(&mbuf, buffer, sizeof(sub_type));
 
-  std::unique_ptr<CoObjTHolder> obj2021;
+  std::unique_ptr<CoObjTHolder> obj2021;  // TODO: won't it be destroyed?
   CreateObjInDev(obj2021, ARR_IDX);
   co_obj_set_code(obj2021->Get(), CO_OBJECT_ARRAY);
   obj2021->InsertAndSetSub(SUBIDX, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
@@ -1493,7 +1490,8 @@ TEST(CO_Csdo, CoDevUpReq_ReqZero) {
 
 namespace CoDevUpReq_IndBufIsReqBuf {
 static char ind_buffer[sizeof(sub_type)] = {0};
-static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + sizeof(sub_type)};
+static membuf ind_mbuf = {ind_buffer, ind_buffer,
+                          ind_buffer + sizeof(sub_type)};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
@@ -1575,7 +1573,8 @@ TEST(CO_Csdo, CoDevUpReq_NotAbleToComplete) {
 
 namespace CoDevUpReq_ExternalBufferTooSmall {
 static char ind_buffer[sizeof(sub_type)] = {0};
-static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + sizeof(sub_type)};
+static membuf ind_mbuf = {ind_buffer, ind_buffer,
+                          ind_buffer + sizeof(sub_type)};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
@@ -1636,7 +1635,8 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferTooSmall) {
 namespace CoDevUpReq_ExternalBufferNotLast {
 static size_t num_called = 0;
 static char ind_buffer[sizeof(sub_type)] = {0};
-static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + sizeof(sub_type)};
+static membuf ind_mbuf = {ind_buffer, ind_buffer,
+                          ind_buffer + sizeof(sub_type)};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
@@ -1693,7 +1693,8 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferNotLast) {
 
 namespace CoDevUpReq_ExternalBuffer {
 static char ind_buffer[sizeof(sub_type)] = {0};
-static membuf ind_mbuf = {ind_buffer, ind_buffer, ind_buffer + sizeof(sub_type)};
+static membuf ind_mbuf = {ind_buffer, ind_buffer,
+                          ind_buffer + sizeof(sub_type)};
 
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {

@@ -149,7 +149,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_FailCsdoAlloc) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-  CHECK_EQUAL(ERRNUM_INVAL, get_errnum());
+  CHECK_EQUAL(ERRNUM_NOMEM, get_errnum());
 }
 
 /// \Given a pointer to the device (co_dev_t)
@@ -258,7 +258,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_RecvCreateFail) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-  CHECK_EQUAL(0, get_errc());
+  CHECK_EQUAL(ERRNUM_NOMEM, get_errnum());
 }
 
 /// \Given a pointer to the device (co_dev_t) containing 0x1280 object
@@ -281,7 +281,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_TimerCreateFail) {
   co_csdo_t* const csdo = co_csdo_create(failing_net, dev, CSDO_NUM);
 
   POINTERS_EQUAL(nullptr, csdo);
-  CHECK_EQUAL(0, get_errc());
+  CHECK_EQUAL(ERRNUM_NOMEM, get_errnum());
 }
 
 ///@}
@@ -1385,7 +1385,7 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   membuf mbuf = MEMBUF_INIT;
   membuf_init(&mbuf, buffer, sizeof(sub_type));
 
-  std::unique_ptr<CoObjTHolder> obj2021;  // TODO: won't it be destroyed?
+  std::unique_ptr<CoObjTHolder> obj2021;
   CreateObjInDev(obj2021, ARR_IDX);
   co_obj_set_code(obj2021->Get(), CO_OBJECT_ARRAY);
   obj2021->InsertAndSetSub(SUBIDX, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));

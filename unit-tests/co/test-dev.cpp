@@ -927,7 +927,7 @@ TEST(CO_Dev, CoDevSetName_Null) {
 ///
 /// \When co_dev_set_name() is called with a pointer to an empty string
 ///
-/// \Then 0 is returned and the empty string is the device name
+/// \Then 0 is returned and the device name is a null pointer
 TEST(CO_Dev, CoDevSetName_Empty) {
   const char* name = "DeviceName";
   CHECK_EQUAL(0, co_dev_set_name(dev, name));
@@ -1155,7 +1155,7 @@ TEST(CO_Dev, CoDevSetBaud_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_rate() is called with valid flags
+/// \When co_dev_set_rate() is called with a baudrate value
 ///
 /// \Then the requested baudrate is set
 TEST(CO_Dev, CoDevSetRate_Nominal) {
@@ -1224,7 +1224,7 @@ TEST(CO_Dev, CoDevGetVal_Nominal) {
 
 /// \Given a null pointer to a device (co_dev_t)
 ///
-/// \When co_dev_get_val() is called with the index and sub-index of the sub-object
+/// \When co_dev_get_val() is called with any index and sub-index
 ///
 /// \Then a pointer to the sub-object's value is returned
 TEST(CO_Dev, CoDevGetVal_NullDev) {

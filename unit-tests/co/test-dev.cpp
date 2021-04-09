@@ -510,7 +510,7 @@ TEST(CO_Dev, CoDevSetId_ZeroId) {
 ///
 /// \Then -1 is returned and the required node-ID is not set
 TEST(CO_Dev, CoDevSetId_InvalidId) {
-  const auto ret1 = co_dev_set_id(dev, CO_NUM_NODES+ 1);
+  const auto ret1 = co_dev_set_id(dev, CO_NUM_NODES + 1);
 
   CHECK_EQUAL(-1, ret1);
   CHECK_EQUAL(0x01u, co_dev_get_id(dev));
@@ -1139,7 +1139,7 @@ TEST(CO_Dev, CoDevSetRevision_Nominal) {
 
 /// \Given a pointer to a device (co_dev_t)
 ///
-/// \When co_dev_set_baud() is called with supported bit rates 
+/// \When co_dev_set_baud() is called with supported bit rates
 ///
 /// \Then the requested flags are set
 TEST(CO_Dev, CoDevSetBaud_Nominal) {

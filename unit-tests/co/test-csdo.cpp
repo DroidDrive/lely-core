@@ -1543,61 +1543,41 @@ TEST(CO_Csdo, CoDevUpReq_IndBufIsReqBuf) {
   CHECK_EQUAL(0x1234u, ldle_u16(CoCsdoUpCon::buf));
 }
 
-namespace CoDevUpReq_NoMemory {
-#if !LELY_NO_MALLOC
-static const size_t MEMBUF_SIZE = 8u;
-#endif
-
+namespace CoDevUpReq_NotAbleToComplete {
 co_unsigned32_t
 req_up_ind(const co_sub_t* sub, co_sdo_req* req, co_unsigned32_t ac, void*) {
-  req->size = 1u;
   co_sub_on_up(sub, req, &ac);
-
-  CHECK(req->membuf != nullptr);
-#if !LELY_NO_MALLOC
-  CHECK(membuf_begin(req->membuf) != nullptr);
-  memset(membuf_begin(req->membuf), 0xffu, MEMBUF_SIZE);
-#endif
+  req->nbyte = 0;  // function was not able to complete the download
 
   return 0;
 }
-}  // namespace CoDevUpReq_NoMemory
+}  // namespace CoDevUpReq_NotAbleToComplete
 
-/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which sets the requested size to a non-zero value
+/// \Given a pointer to the device (co_dev_t) containing an object with an upload indication function which is not able to complete the download
 ///
-/// \When co_dev_up_req() is called with an index and a sub-index of the object, an empty memory buffer to store the requested value and a confirmation function
+/// \When co_dev_up_req() is called with an index and a sub-index of the sub-object, a memory buffer to store the requested value and a confirmation function
 ///
-/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_MEM, a null memory buffer pointer, 0 as a size of the value and a null user-specified data pointer; the memory buffer remains empty
-TEST(CO_Csdo, CoDevUpReq_NoMemory) {
-  using namespace CoDevUpReq_NoMemory;
+/// \Then 0 is returned, the confirmation function is called with a null pointer, the index, the sub-index, CO_SDO_AC_NO_MEM, a null memory buffer pointer, 0 as a size of the value and a null user-specified data pointer; the memory buffer contains the requested value
+TEST(CO_Csdo, CoDevUpReq_NotAbleToComplete) {
+  using namespace CoDevUpReq_NotAbleToComplete;
 
   membuf mbuf = MEMBUF_INIT;
-  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
-  obj2020->RemoveAndDestroyLastSub();
-  const size_t STRING_SIZE = 10u;
-  uint_least8_t arr_os[STRING_SIZE] = {0x00u, 0x01u, 0x02u, 0x03u, 0x04u,
-                                       0x05u, 0x06u, 0x07u, 0x08u, 0x09u};
-  CoArrays arrays;
-  co_octet_string_t os = arrays.Init<co_octet_string_t>();
-  CHECK_EQUAL(STRING_SIZE,
-              co_val_make(CO_DEFTYPE_OCTET_STRING, &os, arr_os, STRING_SIZE));
+  const size_t BUFSIZE = sizeof(sub_type);
+  char buffer[BUFSIZE] = {0};
+  membuf_init(&mbuf, buffer, BUFSIZE);
 
-  obj2020->InsertAndSetSub(SUBIDX, CO_DEFTYPE_OCTET_STRING, os);
+  co_dev_set_val_u16(dev, IDX, SUBIDX, 0x1234u);
   co_obj_set_up_ind(obj2020->Get(), req_up_ind, nullptr);
 
   const auto ret =
       co_dev_up_req(dev, IDX, SUBIDX, &mbuf, CoCsdoUpCon::func, nullptr);
 
   CHECK_EQUAL(0, ret);
-#if LELY_NO_MALLOC
   CoCsdoUpCon::Check(nullptr, IDX, SUBIDX, CO_SDO_AC_NO_MEM, nullptr, 0,
                      nullptr);
-  MembufCheck(&mbuf, nullptr, 0);
-#else
-  CoCsdoUpCon::CheckNonempty(nullptr, IDX, SUBIDX, 0, MEMBUF_SIZE, nullptr);
-  for (size_t i = 0; i < MEMBUF_SIZE; i++)
-    CHECK_EQUAL(0xffu, *(static_cast<uint_least8_t*>(membuf_begin(&mbuf)) + i));
-#endif
+  MembufCheck(&mbuf, buffer, BUFSIZE);
+  CHECK_EQUAL(0x1234u,
+              ldle_u16(static_cast<uint_least8_t*>(membuf_begin(&mbuf))));
 }
 
 namespace CoDevUpReq_ExternalBufferTooSmall {

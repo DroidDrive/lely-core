@@ -2389,6 +2389,8 @@ TEST(CO_Sub, CoSubOnDn_OutsideRange) {
   const auto ret = co_sub_on_dn(sub, &req, nullptr);
 
   CHECK_EQUAL(-1, ret);
+
+  co_sdo_req_fini(&req);
 }
 
 /// \Given TODO
@@ -2409,6 +2411,8 @@ TEST(CO_Sub, CoSubOnDn_OutsideRange_AbortCode) {
 
   CHECK_EQUAL(-1, ret);
   CHECK_EQUAL(CO_SDO_AC_PARAM_HI, ac);
+
+  co_sdo_req_fini(&req);
 }
 
 /// \Given TODO
@@ -2427,6 +2431,8 @@ TEST(CO_ObjSub, CoSubOnDn_BasicType) {
   CHECK_EQUAL(0, ret);
   CHECK_EQUAL(0, ac);
   CHECK_EQUAL(req_value, co_sub_get_val_i16(sub));
+
+  co_sdo_req_fini(&req);
 }
 
 /// \Given TODO
@@ -2437,6 +2443,7 @@ TEST(CO_ObjSub, CoSubOnDn_BasicType) {
 TEST(CO_ObjSubArray, CoSubOnDn_ArrayType) {
   CoArrays arrays;
   array_type req_value = arrays.DeadBeef<array_type>();
+  CHECK_EQUAL(0, co_val_init(SUB_ARRAYTYPE, &req_value));
   co_sdo_req req;
   co_sdo_req_init(&req, &buf);
   CHECK_EQUAL(0, co_sdo_req_up_val(&req, SUB_ARRAYTYPE, &req_value, nullptr));
@@ -2521,19 +2528,23 @@ TEST(CO_Sub, CoSubDnIndVal_DifferentType) {
   CHECK_EQUAL(CO_SDO_AC_TYPE_LEN, ac);
 }
 
+#if HAVE_LELY_OVERRIDE
+
 /// \Given TODO
 ///
-/// \When TODO NOTE: value larger than can be stored in built-in request buffer
+/// \When TODO
 ///
 /// \Then TODO
-TEST(CO_ObjSubArray, CoSubDnIndVal_CannotStoreValueInRequestBuffer) {
-  CoArrays arrays;
-  array_type value = arrays.DeadBeef<array_type>();
+TEST(CO_ObjSub, CoSubDnIndVal_CannotStoreValueInRequestBuffer) {
+  LelyOverride::co_val_write(1);
 
-  const auto ret = co_sub_dn_ind_val(sub, SUB_ARRAYTYPE, &value, nullptr);
+  const CO_ObjBase::sub_type value = 0x1234;
+  const auto ret = co_sub_dn_ind_val(sub, SUB_DEFTYPE, &value, nullptr);
 
-  CHECK_EQUAL(CO_SDO_AC_NO_MEM, ret);
+  CHECK_EQUAL(CO_SDO_AC_ERROR, ret);
 }
+
+#endif  // HAVE_LELY_OVERRIDE
 
 /// \Given TODO
 ///
@@ -2736,6 +2747,8 @@ TEST(CO_ObjSub, CoSubOnUp_Nominal) {
   CHECK_EQUAL(0, co_sdo_req_dn_val(&req, SUB_DEFTYPE, &req_value, &ac));
   CHECK_EQUAL(0, ac);
   CHECK_EQUAL(sub_value, req_value);
+
+  co_sdo_req_fini(&req);
 }
 
 ///@}
@@ -2827,6 +2840,8 @@ TEST(CO_ObjSub, CoSubDefaultDnInd_Nominal) {
 
   CHECK_EQUAL(0, ret);
   CHECK_EQUAL(req_value, co_sub_get_val_i16(sub));
+
+  co_sdo_req_fini(&req);
 }
 
 ///@}
@@ -2869,6 +2884,8 @@ TEST(CO_ObjSub, CoSubDefaultUpInd_Nominal) {
   CHECK_EQUAL(0, co_sdo_req_dn_val(&req, SUB_DEFTYPE, &req_value, &ac));
   CHECK_EQUAL(0, ac);
   CHECK_EQUAL(sub_value, req_value);
+
+  co_sdo_req_fini(&req);
 }
 
 ///@}

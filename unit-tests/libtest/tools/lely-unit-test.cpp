@@ -56,8 +56,9 @@ CheckSubDnInd(const co_dev_t* const dev, const co_unsigned16_t idx,
 }
 
 void
-LelyUnitTest::CheckSubDnIndIsSet(const co_dev_t* const dev, const co_unsigned16_t idx,
-                   const void* const data) {
+LelyUnitTest::CheckSubDnIndIsSet(const co_dev_t* const dev,
+                                 const co_unsigned16_t idx,
+                                 const void* const data) {
   CheckSubDnInd(dev, idx,
                 [=](co_sub_dn_ind_t* const ind, const void* const ind_data) {
                   CHECK(ind != &co_sub_default_dn_ind);
@@ -68,7 +69,8 @@ LelyUnitTest::CheckSubDnIndIsSet(const co_dev_t* const dev, const co_unsigned16_
 }
 
 void
-LelyUnitTest::CheckSubDnIndIsDefault(const co_dev_t* const dev, co_unsigned16_t const idx) {
+LelyUnitTest::CheckSubDnIndIsDefault(const co_dev_t* const dev,
+                                     co_unsigned16_t const idx) {
   CheckSubDnInd(dev, idx,
                 [=](co_sub_dn_ind_t* const ind, const void* const data) {
                   FUNCTIONPOINTERS_EQUAL(ind, &co_sub_default_dn_ind);

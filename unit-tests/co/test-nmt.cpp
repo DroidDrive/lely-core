@@ -501,8 +501,10 @@ TEST(CO_NmtCreate, CoNmtDestory_Null) { co_nmt_destroy(nullptr); }
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_recv_stop()}
 ///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NG, can_timer_stop()}
-///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_BOOT && !LELY_NO_MALLOC, co_nmt_boot_destroy()}
-///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_CFG && !LELY_NO_MALLOC, co_nmt_cfg_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_BOOT &&
+///           !LELY_NO_MALLOC, co_nmt_boot_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_CFG &&
+///           !LELY_NO_MALLOC, co_nmt_cfg_destroy()}
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_timer_destroy()}
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_fini()}
 ///       \IfCalls {LELY_NO_MALLOC, co_nmt_hb_destroy()}
@@ -531,8 +533,10 @@ TEST(CO_NmtCreate, CoNmtDestory_Nominal) {
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_recv_stop()}
 ///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NG, can_timer_stop()}
-///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_BOOT && !LELY_NO_MALLOC, co_nmt_boot_destroy()}
-///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_CFG && !LELY_NO_MALLOC, co_nmt_cfg_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_BOOT &&
+///           !LELY_NO_MALLOC, co_nmt_boot_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_CFG &&
+///           !LELY_NO_MALLOC, co_nmt_cfg_destroy()}
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_timer_destroy()}
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_fini()}
 ///       \IfCalls {LELY_NO_MALLOC, co_nmt_hb_destroy()}

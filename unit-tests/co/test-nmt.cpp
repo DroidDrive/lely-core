@@ -518,6 +518,8 @@ TEST(CO_NmtCreate, CoNmtDestory_Nominal) {
   CHECK(nmt != nullptr);
 
   co_nmt_destroy(nmt);
+
+  nmt = nullptr;
 }
 
 /// \Given a pointer to an initialized NMT service (co_nmt_t) configured with
@@ -562,6 +564,8 @@ TEST(CO_NmtCreate, CoNmtDestroy_ConfigurationObjectsInd) {
   LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f80u);
   LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f81);
   LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f82);
+
+  nmt = nullptr;
 }
 
 ///@}

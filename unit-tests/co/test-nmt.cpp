@@ -25,6 +25,7 @@
 #endif
 
 #include <memory>
+#include <functional>
 
 #include <CppUTest/TestHarness.h>
 
@@ -36,6 +37,7 @@
 #include <libtest/override/lelyco-val.hpp>
 #include <libtest/tools/lely-cpputest-ext.hpp>
 #include <libtest/tools/lely-unit-test.hpp>
+#include <libtest/tools/lely-unit-test-compat.hpp>
 
 #include "holder/dev.hpp"
 #include "holder/obj.hpp"
@@ -72,9 +74,18 @@ TEST_BASE(CO_NmtBase) {
   co_dev_t* dev = nullptr;
 
   std::unique_ptr<CoDevTHolder> dev_holder;
-  std::unique_ptr<CoObjTHolder> obj1016;
   std::unique_ptr<CoObjTHolder> obj1000;
+  std::unique_ptr<CoObjTHolder> obj1016;
+  std::unique_ptr<CoObjTHolder> obj1017;
+  std::unique_ptr<CoObjTHolder> obj1f80;
+  std::unique_ptr<CoObjTHolder> obj1f81;
+  std::unique_ptr<CoObjTHolder> obj1f82;
   std::unique_ptr<CoObjTHolder> obj2000;
+
+  // not used in ECSS
+  std::unique_ptr<CoObjTHolder> obj100c;
+  std::unique_ptr<CoObjTHolder> obj100d;
+  std::unique_ptr<CoObjTHolder> obj1f25;
 
   Allocators::Default allocator;
 
@@ -83,6 +94,61 @@ TEST_BASE(CO_NmtBase) {
     obj_holder.reset(new CoObjTHolder(idx));
     CHECK(obj_holder->Get() != nullptr);
     CHECK_EQUAL(0, co_dev_insert_obj(dev, obj_holder->Take()));
+  }
+
+  void CreateObj1016ConsumerHbTimeN(const size_t num) {
+    assert(num > 0 && num <= CO_NMT_MAX_NHB);
+
+    CreateObj(obj1016, 0x1016u);
+
+    // 0x00 - Highest sub-index supported
+    obj1016->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(num));
+    // 0x01-0x7f - Consumer heartbeat time
+    for (co_unsigned8_t i = 0; i < num; ++i) {
+      obj1016->InsertAndSetSub(
+          i + 1, CO_DEFTYPE_UNSIGNED32,
+          co_unsigned32_t(co_unsigned32_t(SLAVE_DEV_ID) << 16u) |
+              co_unsigned32_t(0x0001));  //  1 ms
+    }
+  }
+
+  void CreateObj1017ProducerHeartbeatTime(const co_unsigned16_t hb_time) {
+    CreateObj(obj1017, 0x1017u);
+    obj1017->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED16,
+                             co_unsigned16_t(hb_time));
+  }
+
+  void CreateObj1f80NmtStartup(const co_unsigned32_t startup) {
+    CreateObj(obj1f80, 0x1f80u);
+    obj1f80->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED32,
+                             co_unsigned32_t(startup));
+  }
+
+  void CreateObj1f81SlaveAssignmentN(const size_t num) {
+    assert(num > 0 && num <= CO_NUM_NODES);
+    // object 0x1f81 - Slave assignment object
+    CreateObj(obj1f81, 0x1f81u);
+
+    // 0x00 - Highest sub-index supported
+    obj1f81->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(num));
+    // 0x01-0x7f - Slave with the given Node-ID
+    for (co_unsigned8_t i = 0; i < num; ++i) {
+      obj1f81->InsertAndSetSub(i + 1, CO_DEFTYPE_UNSIGNED32,
+                               co_unsigned32_t(0x01));
+    }
+  }
+
+  void CreateObj1f82RequestNmt(const size_t num) {
+    assert(num > 0 && num <= CO_NUM_NODES);
+    // object 0x1f82 - Request NMT object
+    CreateObj(obj1f82, 0x1f82u);
+
+    // 0x00 - Highest sub-index supported
+    obj1f82->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(num));
+    // 0x01-0x7f - Request NMT-Service for slave with the given Node-ID
+    for (co_unsigned8_t i = 0; i < num; ++i) {
+      obj1f82->InsertAndSetSub(i + 1, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
+    }
   }
 
   TEST_SETUP() {
@@ -105,13 +171,62 @@ TEST_BASE(CO_NmtBase) {
 TEST_GROUP_BASE(CO_NmtCreate, CO_NmtBase) {
   co_nmt_t* nmt = nullptr;
 
+  void CheckNmtDefaults() {
+    POINTERS_EQUAL(net, co_nmt_get_net(nmt));
+    POINTERS_EQUAL(dev, co_nmt_get_dev(nmt));
+
+    void* pdata;
+    co_nmt_cs_ind_t* cs_ind;
+    co_nmt_get_cs_ind(nmt, &cs_ind, &pdata);
+    FUNCTIONPOINTERS_EQUAL(nullptr, cs_ind);
+    FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
+
+    co_nmt_hb_ind_t* hb_ind;
+    co_nmt_get_hb_ind(nmt, &hb_ind, &pdata);
+    CHECK(hb_ind != nullptr);
+    FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
+
+    co_nmt_st_ind_t* st_ind;
+    co_nmt_get_st_ind(nmt, &st_ind, &pdata);
+    CHECK(st_ind != nullptr);
+    FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
+
+#if !LELY_NO_CO_MASTER
+    co_nmt_sdo_ind_t* dn_ind;
+    co_nmt_get_dn_ind(nmt, &dn_ind, &pdata);
+    FUNCTIONPOINTERS_EQUAL(nullptr, dn_ind);
+    FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
+
+    co_nmt_sdo_ind_t* up_ind;
+    co_nmt_get_up_ind(nmt, &up_ind, &pdata);
+    FUNCTIONPOINTERS_EQUAL(nullptr, up_ind);
+    FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
+#endif
+
+    co_nmt_sync_ind_t* sync_ind;
+    co_nmt_get_sync_ind(nmt, &sync_ind, &pdata);
+    FUNCTIONPOINTERS_EQUAL(nullptr, sync_ind);
+    FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
+
+    CHECK_EQUAL(DEV_ID, co_nmt_get_id(nmt));
+    CHECK_EQUAL(CO_NMT_ST_BOOTUP, co_nmt_get_st(nmt));
+    CHECK_EQUAL(0, co_nmt_is_master(nmt));
+#if !LELY_NO_CO_MASTER
+#if !LELY_NO_CO_NMT_BOOT || !LELY_NO_CO_NMT_CFG
+    CHECK_EQUAL(LELY_CO_NMT_TIMEOUT, co_nmt_get_timeout(nmt));
+#else
+    CHECK_EQUAL(0, co_nmt_get_timeout(nmt));
+#endif
+#endif
+  }
+
   TEST_TEARDOWN() {
     co_nmt_destroy(nmt);
     TEST_BASE_TEARDOWN();
   }
 };
 
-/// @name co_emcy_create()
+/// @name co_nmt_create()
 ///@{
 
 /// \Given initialized device (co_dev_t) and network (can_net_t)
@@ -142,53 +257,7 @@ TEST(CO_NmtCreate, CoNmtCreate_Default) {
   nmt = co_nmt_create(net, dev);
 
   CHECK(nmt != nullptr);
-
-  POINTERS_EQUAL(net, co_nmt_get_net(nmt));
-  POINTERS_EQUAL(dev, co_nmt_get_dev(nmt));
-
-  void* pdata;
-  co_nmt_cs_ind_t* cs_ind;
-  co_nmt_get_cs_ind(nmt, &cs_ind, &pdata);
-  FUNCTIONPOINTERS_EQUAL(nullptr, cs_ind);
-  FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
-
-  co_nmt_hb_ind_t* hb_ind;
-  co_nmt_get_hb_ind(nmt, &hb_ind, &pdata);
-  CHECK(hb_ind != nullptr);
-  FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
-
-  co_nmt_st_ind_t* st_ind;
-  co_nmt_get_st_ind(nmt, &st_ind, &pdata);
-  CHECK(st_ind != nullptr);
-  FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
-
-#if !LELY_NO_CO_MASTER
-  co_nmt_sdo_ind_t* dn_ind;
-  co_nmt_get_dn_ind(nmt, &dn_ind, &pdata);
-  FUNCTIONPOINTERS_EQUAL(nullptr, dn_ind);
-  FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
-
-  co_nmt_sdo_ind_t* up_ind;
-  co_nmt_get_up_ind(nmt, &up_ind, &pdata);
-  FUNCTIONPOINTERS_EQUAL(nullptr, up_ind);
-  FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
-#endif
-
-  co_nmt_sync_ind_t* sync_ind;
-  co_nmt_get_sync_ind(nmt, &sync_ind, &pdata);
-  FUNCTIONPOINTERS_EQUAL(nullptr, sync_ind);
-  FUNCTIONPOINTERS_EQUAL(nullptr, pdata);
-
-  CHECK_EQUAL(DEV_ID, co_nmt_get_id(nmt));
-  CHECK_EQUAL(CO_NMT_ST_BOOTUP, co_nmt_get_st(nmt));
-  CHECK_EQUAL(0, co_nmt_is_master(nmt));
-#if !LELY_NO_CO_MASTER
-#if !LELY_NO_CO_NMT_BOOT || !LELY_NO_CO_NMT_CFG
-  CHECK_EQUAL(LELY_CO_NMT_TIMEOUT, co_nmt_get_timeout(nmt));
-#else
-  CHECK_EQUAL(0, co_nmt_get_timeout(nmt));
-#endif
-#endif
+  CheckNmtDefaults();
 }
 
 #if HAVE_LELY_OVERRIDE
@@ -273,27 +342,229 @@ TEST(CO_NmtCreate, CoRpdoCreate_DcfCommParamsWriteFail) {
 
 #endif  // HAVE_LELY_OVERRIDE
 
+/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
+///        contains the Consumer Heartbeat Time object (0x1016) with less than
+///        maximum number of entries
+///
+/// \When co_nmt_create() is called with pointers to the network and the device
+///
+/// \Then a pointer to a created NMT service is returned, the service is
+///       configured with default values
+///       \Calls mem_alloc()
+///       \Calls can_net_get_alloc()
+///       \Calls co_nmt_alignof()
+///       \Calls co_nmt_sizeof()
+///       \Calls co_dev_get_id()
+///       \Calls co_dev_write_dcf()
+///       \Calls co_nmt_srv_init()
+///       \Calls can_recv_create()
+///       \Calls can_recv_set_func()
+///       \Calls can_timer_create()
+///       \Calls can_timer_set_func()
+///       \Calls co_dev_find_obj()
+///       \IfCalls{LELY_NO_MALLOC, memset()}
+///       \IfCalls{LELY_NO_MALLOC, co_obj_find_sub()}
+///       \IfCalls{LELY_NO_MALLOC, co_nmt_hb_create()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_init()}
+///       \Calls can_net_get_time()
+///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
+///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
+///       \Calls co_obj_set_dn_ind()
+TEST(CO_NmtCreate, CoNmtCreate_WithObj1016_LessThanMaxEntries) {
+  CreateObj1016ConsumerHbTimeN(1u);
+
+  nmt = co_nmt_create(net, dev);
+
+  CHECK(nmt != nullptr);
+  CheckNmtDefaults();
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1016, nmt);
+}
+
+/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
+///        contains the Slave Assignment object (0x1f81) with at least one
+///        slave in the network list
+///
+/// \When co_nmt_create() is called with pointers to the network and the device
+///
+/// \Then a pointer to a created NMT service is returned, the service is
+///       configured with default values
+///       \Calls mem_alloc()
+///       \Calls can_net_get_alloc()
+///       \Calls co_nmt_alignof()
+///       \Calls co_nmt_sizeof()
+///       \Calls co_dev_get_id()
+///       \Calls co_dev_write_dcf()
+///       \Calls co_nmt_srv_init()
+///       \Calls can_recv_create()
+///       \Calls can_recv_set_func()
+///       \Calls can_timer_create()
+///       \Calls can_timer_set_func()
+///       \Calls co_dev_find_obj()
+///       \IfCalls{LELY_NO_MALLOC, memset()}
+///       \IfCalls{LELY_NO_MALLOC, co_obj_find_sub()}
+///       \IfCalls{LELY_NO_MALLOC, co_nmt_hb_create()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_init()}
+///       \Calls can_net_get_time()
+///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
+///       \IfCalls{!LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
+///       \IfCalls{!LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
+///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
+///       \Calls co_obj_set_dn_ind()
+TEST(CO_NmtCreate, CoNmtCreate_WithObj1f81) {
+  CreateObj1f81SlaveAssignmentN(1u);
+
+  nmt = co_nmt_create(net, dev);
+
+  CHECK(nmt != nullptr);
+  CheckNmtDefaults();
+}
+
+/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
+///        contains the Consumer Heartbeat Time (0x1016), the Producer
+///        Heartbeat Time (0x1017), the NMT Start-up (0x1f80), the Slave
+///        Assignment (0x1f81) and the Request NMT (0x1f82) objects
+///
+/// \When co_nmt_create() is called with pointers to the network and the device
+///
+/// \Then a pointer to a created NMT service is returned, the service is
+///       configured with default values and indication functions for all
+///       sub-objects are set
+///       \Calls mem_alloc()
+///       \Calls can_net_get_alloc()
+///       \Calls co_nmt_alignof()
+///       \Calls co_nmt_sizeof()
+///       \Calls co_dev_get_id()
+///       \Calls co_dev_write_dcf()
+///       \Calls co_nmt_srv_init()
+///       \Calls can_recv_create()
+///       \Calls can_recv_set_func()
+///       \Calls can_timer_create()
+///       \Calls can_timer_set_func()
+///       \Calls co_dev_find_obj()
+///       \IfCalls{LELY_NO_MALLOC, memset()}
+///       \IfCalls{LELY_NO_MALLOC, co_obj_find_sub()}
+///       \IfCalls{LELY_NO_MALLOC, co_nmt_hb_create()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_init()}
+///       \Calls can_net_get_time()
+///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
+///       \IfCalls{!LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
+///       \IfCalls{!LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
+///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
+///       \Calls co_obj_set_dn_ind()
+TEST(CO_NmtCreate, CoNmtCreate_ConfigurationObjectsInd) {
+  CreateObj1016ConsumerHbTimeN(1u);
+  CreateObj1017ProducerHeartbeatTime(0);
+  CreateObj1f80NmtStartup(0);
+  CreateObj1f81SlaveAssignmentN(1u);
+  CreateObj1f82RequestNmt(1u);
+
+  nmt = co_nmt_create(net, dev);
+
+  CHECK(nmt != nullptr);
+  CheckNmtDefaults();
+
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1016u, nmt);
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1017u, nmt);
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1f80u, nmt);
+#if !LELY_NO_CO_MASTER && !LELY_NO_MALLOC
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1f81, nmt);
+#else
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f81);
+#endif
+#if !LELY_NO_CO_MASTER
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1f82u, nmt);
+#else
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f82);
+#endif
+}
+
+///@}
+
+/// @name co_nmt_destroy()
+///@{
+
+/// \Given N/A
+///
+/// \When co_nmt_destroy() is called with a null NMT service pointer
+///
+/// \Then nothing is changed
+TEST(CO_NmtCreate, CoNmtDestory_Null) { co_nmt_destroy(nullptr); }
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_destroy() is called with a pointer to the service
+///
+/// \Then the service is finalized and freed
+///       \Calls co_nmt_get_alloc()
+///       \Calls co_dev_find_obj()
+///       \Calls co_obj_set_dn_ind()
+///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_recv_stop()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NG, can_timer_stop()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_BOOT && !LELY_NO_MALLOC, co_nmt_boot_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_CFG && !LELY_NO_MALLOC, co_nmt_cfg_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_timer_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_fini()}
+///       \IfCalls {LELY_NO_MALLOC, co_nmt_hb_destroy()}
+///       \Calls can_timer_stop()
+///       \Calls can_timer_destroy()
+///       \Calls can_recv_destroy()
+///       \Calls co_nmt_srv_fini()
+///       \Calls mem_free()
+TEST(CO_NmtCreate, CoNmtDestory_Nominal) {
+  nmt = co_nmt_create(net, dev);
+  CHECK(nmt != nullptr);
+
+  co_nmt_destroy(nmt);
+}
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t) configured with
+///        the Consumer Heartbeat Time (0x1016), the Producer Heartbeat Time
+///        (0x1017), the NMT Start-up (0x1f80), the Slave Assignment (0x1f81)
+///        and the Request NMT (0x1f82) objects in the OD
+///
+/// \When co_nmt_destroy() is called with a pointer to the service
+///
+/// \Then the service is finalized and freed
+///       \Calls co_nmt_get_alloc()
+///       \Calls co_dev_find_obj()
+///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_recv_stop()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NG, can_timer_stop()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_BOOT && !LELY_NO_MALLOC, co_nmt_boot_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER && !LELY_NO_CO_NMT_CFG && !LELY_NO_MALLOC, co_nmt_cfg_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_timer_destroy()}
+///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_fini()}
+///       \IfCalls {LELY_NO_MALLOC, co_nmt_hb_destroy()}
+///       \Calls can_timer_stop()
+///       \Calls can_timer_destroy()
+///       \Calls can_recv_destroy()
+///       \Calls co_nmt_srv_fini()
+///       \Calls mem_free()
+TEST(CO_NmtCreate, CoNmtDestroy_ConfigurationObjectsInd) {
+  CreateObj1016ConsumerHbTimeN(1u);
+  CreateObj1017ProducerHeartbeatTime(0);
+  CreateObj1f80NmtStartup(0);
+  CreateObj1f81SlaveAssignmentN(1u);
+  CreateObj1f82RequestNmt(1u);
+
+  nmt = co_nmt_create(net, dev);
+  CHECK(nmt != nullptr);
+
+  co_nmt_destroy(nmt);
+
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1016u);
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1017u);
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f80u);
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f81);
+  LelyUnitTest::CheckSubDnIndIsDefault(dev, 0x1f82);
+}
+
 ///@}
 
 TEST_GROUP_BASE(CO_NmtAllocation, CO_NmtBase) {
   Allocators::Limited limitedAllocator;
   co_nmt_t* nmt = nullptr;
-
-  void CreateObj1016ConsumerHbTimeN(const size_t num) {
-    assert(num <= CO_NMT_MAX_NHB);
-    // object 0x1016 - Consumer heartbeat time
-    CreateObj(obj1016, 0x1016u);
-
-    // 0x00 - Highest sub-index supported
-    obj1016->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(num));
-    // 0x01-0x7f - Consumer heartbeat time
-    for (co_unsigned8_t i = 0; i < num; ++i) {
-      obj1016->InsertAndSetSub(
-          i + 1, CO_DEFTYPE_UNSIGNED32,
-          co_unsigned32_t(co_unsigned32_t(SLAVE_DEV_ID) << 16u) |
-              co_unsigned32_t(0x0001));  //  1 ms
-    }
-  }
 
   size_t GetDcfParamsAllocSize() {
     size_t dcfs_size = 0;
@@ -360,7 +631,7 @@ TEST_GROUP_BASE(CO_NmtAllocation, CO_NmtBase) {
   }
 };
 
-/// @name co_emcy_create()
+/// @name co_nmt_create()
 ///@{
 
 /// \Given initialized device (co_dev_t) and network (can_net_t) with a memory
@@ -732,8 +1003,6 @@ TEST(CO_NmtAllocation, CoNmtCreate_NoMemoryForNmtSlaveRecvs) {
 ///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \Calls co_obj_set_dn_ind()
-///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
-///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory) {
   limitedAllocator.LimitAllocationTo(
       co_nmt_sizeof() + GetDcfParamsAllocSize() + GetServicesAllocSize() +
@@ -774,9 +1043,7 @@ TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory) {
 ///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \Calls co_obj_set_dn_ind()
-///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
-///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
-TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory_WithObj1016) {
+TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory_WithObj1016_MaxEntries) {
   CreateObj1016ConsumerHbTimeN(CO_NMT_MAX_NHB);
 
   limitedAllocator.LimitAllocationTo(

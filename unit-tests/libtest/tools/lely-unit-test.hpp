@@ -26,13 +26,13 @@
 #include <config.h>
 #endif
 
+#include <cassert>
+
 #include <CppUTest/TestHarness.h>
 
 #include <lely/can/msg.h>
 #include <lely/co/type.h>
 #include <lely/util/diag.h>
-
-#include <cassert>
 
 namespace LelyUnitTest {
 /**

@@ -33,10 +33,12 @@
 #include <lely/co/sdo.h>
 #include <lely/co/val.h>
 #include <lely/util/diag.h>
+#include <lely/util/membuf.h>
 
 #include <libtest/tools/lely-unit-test.hpp>
 #include <libtest/override/lelyco-val.hpp>
 
+#include "holder/array-init.hpp"
 #include "holder/dev.hpp"
 #include "holder/obj.hpp"
 #include "holder/sub.hpp"
@@ -199,6 +201,22 @@ TEST_GROUP_BASE(CO_ObjSub, CO_ObjBase) {
     return 0;
   }
 
+  co_sub_dn_ind_t* GetSubDnInd() {
+    co_sub_dn_ind_t* pind = nullptr;
+    co_sub_get_dn_ind(sub, &pind, nullptr);
+    CHECK(pind != nullptr);
+
+    return pind;
+  }
+
+  co_sub_up_ind_t* GetSubUpInd() {
+    co_sub_up_ind_t* pind = nullptr;
+    co_sub_get_up_ind(sub, &pind, nullptr);
+    CHECK(pind != nullptr);
+
+    return pind;
+  }
+
   TEST_SETUP() {
     LelyUnitTest::DisableDiagnosticMessages();
 
@@ -217,6 +235,49 @@ TEST_GROUP_BASE(CO_ObjSub, CO_ObjBase) {
   }
 
   TEST_TEARDOWN() {
+    sub_holder.reset();
+    obj_holder.reset();
+  }
+};
+
+TEST_GROUP_BASE(CO_ObjSubArray, CO_ObjBase) {
+  using array_type = co_octet_string_t;
+  const co_unsigned16_t SUB_ARRAYTYPE = CO_DEFTYPE_OCTET_STRING;
+  static const size_t BUF_CAPACITY = 100u;
+  membuf buf;
+#if LELY_NO_MALLOC
+  co_unsigned8_t memory[BUF_CAPACITY] = {0};
+#endif
+
+  std::unique_ptr<CoObjTHolder> obj_holder;
+  std::unique_ptr<CoSubTHolder> sub_holder;
+  co_obj_t* obj = nullptr;
+  co_sub_t* sub = nullptr;
+
+  TEST_SETUP() {
+    LelyUnitTest::DisableDiagnosticMessages();
+
+    obj_holder.reset(new CoObjTHolder(OBJ_IDX));
+    obj = obj_holder->Get();
+    CHECK(obj != nullptr);
+
+    sub_holder.reset(new CoSubTHolder(SUB_IDX, SUB_ARRAYTYPE));
+    sub = sub_holder->Get();
+    CHECK(sub != nullptr);
+
+    CHECK(obj_holder->InsertSub(*sub_holder) != nullptr);
+
+#if LELY_NO_MALLOC
+    membuf_init(&buf, &memory, BUF_CAPACITY);
+#else
+    membuf_init(&buf, nullptr, 0);
+    membuf_reserve(&buf, BUF_CAPACITY);
+#endif
+  }
+
+  TEST_TEARDOWN() {
+    membuf_fini(&buf);
+
     sub_holder.reset();
     obj_holder.reset();
   }
@@ -2299,7 +2360,94 @@ TEST(CO_ObjSub, CoSubSetDnInd_Nominal) {
 /// @name co_sub_on_dn()
 ///@{
 
-// TODO(sdo): co_sub_on_dn() tests
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_Sub, CoSubOnDn_EmptyRequest) {
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+
+  const auto ret = co_sub_on_dn(sub, &req, nullptr);
+
+  CHECK_EQUAL(-1, ret);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_Sub, CoSubOnDn_OutsideRange) {
+  const CO_ObjBase::sub_type max_val = 0x1111;
+  co_sub_set_max(sub, &max_val, sizeof(max_val));
+
+  const CO_ObjBase::sub_type val = 0x2222;
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+  CHECK_EQUAL(0, co_sdo_req_up_val(&req, SUB_DEFTYPE, &val, nullptr));
+
+  const auto ret = co_sub_on_dn(sub, &req, nullptr);
+
+  CHECK_EQUAL(-1, ret);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_Sub, CoSubOnDn_OutsideRange_AbortCode) {
+  const CO_ObjBase::sub_type max_val = 0x1111;
+  co_sub_set_max(sub, &max_val, sizeof(max_val));
+
+  const CO_ObjBase::sub_type val = 0x2222;
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+  CHECK_EQUAL(0, co_sdo_req_up_val(&req, SUB_DEFTYPE, &val, nullptr));
+
+  co_unsigned32_t ac = 0;
+  const auto ret = co_sub_on_dn(sub, &req, &ac);
+
+  CHECK_EQUAL(-1, ret);
+  CHECK_EQUAL(CO_SDO_AC_PARAM_HI, ac);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubOnDn_BasicType) {
+  const CO_ObjBase::sub_type req_value = 0x1234;
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+  CHECK_EQUAL(0, co_sdo_req_up_val(&req, SUB_DEFTYPE, &req_value, nullptr));
+
+  co_unsigned32_t ac = 0;
+  const auto ret = co_sub_on_dn(sub, &req, &ac);
+
+  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(0, ac);
+  CHECK_EQUAL(req_value, co_sub_get_val_i16(sub));
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSubArray, CoSubOnDn_ArrayType) {
+  CoArrays arrays;
+  array_type req_value = arrays.DeadBeef<array_type>();
+  co_sdo_req req;
+  co_sdo_req_init(&req, &buf);
+  CHECK_EQUAL(0, co_sdo_req_up_val(&req, SUB_ARRAYTYPE, &req_value, nullptr));
+
+  const auto ret = co_sub_on_dn(sub, &req, nullptr);
+  CHECK_EQUAL(0, ret);
+
+  const auto* sub_value = co_sub_get_val(sub);
+  CHECK(sub_value != nullptr);
+  CHECK_EQUAL(0, co_val_cmp(SUB_ARRAYTYPE, &req_value, sub_value));
+}
 
 ///@}
 
@@ -2362,14 +2510,100 @@ TEST(CO_ObjSub, CoSubDnInd_Nominal) {
 /// @name co_sub_dn_ind_val()
 ///@{
 
-// TODO(sdo): co_sub_dn_ind_val() tests
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_Sub, CoSubDnIndVal_DifferentType) {
+  const auto ac = co_sub_dn_ind_val(sub, SUB_DEFTYPE + 1, nullptr, nullptr);
+
+  CHECK_EQUAL(CO_SDO_AC_TYPE_LEN, ac);
+}
+
+/// \Given TODO
+///
+/// \When TODO NOTE: value larger than can be stored in built-in request buffer
+///
+/// \Then TODO
+TEST(CO_ObjSubArray, CoSubDnIndVal_CannotStoreValueInRequestBuffer) {
+  CoArrays arrays;
+  array_type value = arrays.DeadBeef<array_type>();
+
+  const auto ret = co_sub_dn_ind_val(sub, SUB_ARRAYTYPE, &value, nullptr);
+
+  CHECK_EQUAL(CO_SDO_AC_NO_MEM, ret);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubDnIndVal_Nominal) {
+  const CO_ObjBase::sub_type value = 0x1234;
+  co_sub_set_dn_ind(sub, dn_ind_func, nullptr);
+
+  const auto ac = co_sub_dn_ind_val(sub, SUB_DEFTYPE, &value, nullptr);
+
+  CHECK_EQUAL(0, ac);
+  CHECK_EQUAL(1, CO_ObjSub_Static::dn_ind_func_counter);
+}
 
 ///@}
 
 /// @name co_sub_dn()
 ///@{
 
-// TODO(sdo): co_sub_dn() tests
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubDn_RefuseWriteOnDownload) {
+  co_sub_set_flags(sub, CO_OBJ_FLAGS_WRITE);
+
+  const auto ret = co_sub_dn(sub, nullptr);
+
+  CHECK_EQUAL(0, ret);
+}
+
+#if LELY_NO_MALLOC
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSubArray, CoSubDn_FailedToStore) {
+  co_array array;
+  array.hdr.capacity = CO_ARRAY_CAPACITY;
+  array.hdr.size = CO_ARRAY_CAPACITY;  // too large
+  memset(array.u.data, 0xffu, CO_ARRAY_CAPACITY);
+  array_type value;
+  co_val_init_array(&value, &array);
+
+  const auto ret = co_sub_dn(sub, &value);
+
+  CHECK_EQUAL(-1, ret);
+}
+
+#endif  // LELY_NO_MALLOC
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubDn_Nominal) {
+  const auto expected_value = 0x1234;
+
+  CO_ObjBase::sub_type value = expected_value;
+  const auto ret = co_sub_dn(sub, &value);
+
+  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(expected_value, co_sub_get_val_i16(sub));
+}
 
 ///@}
 
@@ -2452,7 +2686,57 @@ TEST(CO_ObjSub, CoSubSetUpInd_Nominal) {
 /// @name co_sub_on_up()
 ///@{
 
-// TODO(sdo): co_sub_on_up() tests
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_Sub, CoSubOnUp_UninitializedSubValue) {
+  POINTERS_EQUAL(nullptr, co_sub_get_val(sub));
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+
+  const auto ret = co_sub_on_up(sub, &req, nullptr);
+
+  CHECK_EQUAL(-1, ret);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_Sub, CoSubOnUp_UninitializedSubValue_AbortCode) {
+  POINTERS_EQUAL(nullptr, co_sub_get_val(sub));
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+
+  co_unsigned32_t ac = 0;
+  const auto ret = co_sub_on_up(sub, &req, &ac);
+
+  CHECK_EQUAL(-1, ret);
+  CHECK_EQUAL(CO_SDO_AC_NO_DATA, ac);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubOnUp_Nominal) {
+  const CO_ObjBase::sub_type sub_value = 0x42u;
+  co_sub_set_val_i16(sub, sub_value);
+
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+  co_unsigned32_t ac = 0;
+  const auto ret = co_sub_on_up(sub, &req, &ac);
+
+  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(0, ac);
+
+  CO_ObjBase::sub_type req_value = 0xff;
+  CHECK_EQUAL(0, co_sdo_req_dn_val(&req, SUB_DEFTYPE, &req_value, &ac));
+  CHECK_EQUAL(0, ac);
+  CHECK_EQUAL(sub_value, req_value);
+}
 
 ///@}
 
@@ -2510,6 +2794,81 @@ TEST(CO_ObjSub, CoSubUpInd_Nominal) {
 
 ///@}
 
-// TODO(sdo): co_sub_up_ind_val() tests
+/// @name default download indication function
+///@{
 
-// TODO(sdo): co_sub_up() tests
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubDefaultDnInd_NonZeroAbortCode) {
+  const auto default_dn = GetSubDnInd();
+
+  const co_unsigned32_t ac = 0x42;
+  const auto ret = default_dn(sub, nullptr, ac, nullptr);
+
+  CHECK_EQUAL(ac, ret);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+///       \Calls co_sub_on_dn()
+TEST(CO_ObjSub, CoSubDefaultDnInd_Nominal) {
+  const CO_ObjBase::sub_type req_value = 0x1234;
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+  CHECK_EQUAL(0, co_sdo_req_up_val(&req, SUB_DEFTYPE, &req_value, nullptr));
+
+  const auto default_dn = GetSubDnInd();
+  const auto ret = default_dn(sub, &req, 0, nullptr);
+
+  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(req_value, co_sub_get_val_i16(sub));
+}
+
+///@}
+
+/// @name default upload indication function
+///@{
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+TEST(CO_ObjSub, CoSubDefaultUpInd_NonZeroAbortCode) {
+  const auto default_up = GetSubUpInd();
+
+  const co_unsigned32_t ac = 0x42;
+  const auto ret = default_up(sub, nullptr, ac, nullptr);
+
+  CHECK_EQUAL(ac, ret);
+}
+
+/// \Given TODO
+///
+/// \When TODO
+///
+/// \Then TODO
+///       \Calls co_sub_on_up()
+TEST(CO_ObjSub, CoSubDefaultUpInd_Nominal) {
+  const CO_ObjBase::sub_type sub_value = 0x42u;
+  co_sub_set_val_i16(sub, sub_value);
+
+  const auto default_up = GetSubUpInd();
+  co_sdo_req req = CO_SDO_REQ_INIT(req);
+  const auto ret = default_up(sub, &req, 0, nullptr);
+
+  CHECK_EQUAL(0, ret);
+
+  co_unsigned32_t ac = 0;
+  CO_ObjBase::sub_type req_value = 0xff;
+  CHECK_EQUAL(0, co_sdo_req_dn_val(&req, SUB_DEFTYPE, &req_value, &ac));
+  CHECK_EQUAL(0, ac);
+  CHECK_EQUAL(sub_value, req_value);
+}
+
+///@}

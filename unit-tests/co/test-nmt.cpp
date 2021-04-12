@@ -233,7 +233,7 @@ TEST_GROUP_BASE(CO_NmtCreate, CO_NmtBase) {
 /// \When co_nmt_create() is called with pointers to the network and the device
 ///
 /// \Then a pointer to a created NMT service is returned, the service is
-///       configured with default values
+///       configured with the default values
 ///       \Calls mem_alloc()
 ///       \Calls can_net_get_alloc()
 ///       \Calls co_nmt_alignof()
@@ -262,14 +262,14 @@ TEST(CO_NmtCreate, CoNmtCreate_Default) {
 #if HAVE_LELY_OVERRIDE
 
 #if !LELY_NO_CO_DCF_RESTORE
-/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
-///        contains a single entry in the application parameters area
-///        (0x2000-0x9fff), a number of valid calls is limited to one call to
-///        co_dev_write_dcf()
+/// \Given initialized device (co_dev_t) and network (can_net_t), the object
+///        dictionary contains a single entry in the application parameters
+///        area (0x2000-0x9fff), a number of valid calls is limited to one call
+///        to co_dev_write_dcf()
 ///
-/// \When co_nmt_create() is called with pointer to the network and the device
+/// \When co_nmt_create() is called with pointers to the network and the device
 ///
-/// \Then a null pointer is returned, NMT service is not created
+/// \Then a null pointer is returned, an NMT service is not created
 ///       \Calls mem_alloc()
 ///       \Calls can_net_get_alloc()
 ///       \Calls co_nmt_alignof()
@@ -296,16 +296,16 @@ TEST(CO_NmtCreate, CoRpdoCreate_DcfAppParamsWriteFail) {
 }
 #endif
 
-/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
-///        contains a single entry in the application parameters area
-///        (0x2000-0x9fff) [if !LELY_NO_CO_DCF_RESTORE] and a single entry in
-///        the communication parameters area (0x1000-0x1fff), a number of valid
-///        calls is limited to three (one [if !LELY_NO_CO_DCF_RESTORE]) call to
-///        co_dev_write_dcf()
+/// \Given initialized device (co_dev_t) and network (can_net_t), the object
+///        dictionary contains a single entry in the application parameters
+///        area (0x2000-0x9fff) [if !LELY_NO_CO_DCF_RESTORE] and a single entry
+///        in the communication parameters area (0x1000-0x1fff), a number of
+///        valid calls is limited to three (or one [if
+///        !LELY_NO_CO_DCF_RESTORE]) call to co_dev_write_dcf()
 ///
-/// \When co_nmt_create() is called with pointer to the network and the device
+/// \When co_nmt_create() is called with pointers to the network and the device
 ///
-/// \Then a null pointer is returned, NMT service is not created
+/// \Then a null pointer is returned, an NMT service is not created
 ///       \Calls mem_alloc()
 ///       \Calls can_net_get_alloc()
 ///       \Calls co_nmt_alignof()
@@ -341,14 +341,14 @@ TEST(CO_NmtCreate, CoRpdoCreate_DcfCommParamsWriteFail) {
 
 #endif  // HAVE_LELY_OVERRIDE
 
-/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
-///        contains the Consumer Heartbeat Time object (0x1016) with less than
-///        maximum number of entries
+/// \Given initialized device (co_dev_t) and network (can_net_t), the object
+///        dictionary contains the Consumer Heartbeat Time object (0x1016) with
+///        less than maximum number of entries
 ///
 /// \When co_nmt_create() is called with pointers to the network and the device
 ///
 /// \Then a pointer to a created NMT service is returned, the service is
-///       configured with default values
+///       configured with the default values
 ///       \Calls mem_alloc()
 ///       \Calls can_net_get_alloc()
 ///       \Calls co_nmt_alignof()
@@ -376,17 +376,17 @@ TEST(CO_NmtCreate, CoNmtCreate_WithObj1016_LessThanMaxEntries) {
 
   CHECK(nmt != nullptr);
   CheckNmtDefaults();
-  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1016, nmt);
+  LelyUnitTest::CheckSubDnIndIsSet(dev, 0x1016u, nmt);
 }
 
-/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
-///        contains the Slave Assignment object (0x1f81) with at least one
-///        slave in the network list
+/// \Given initialized device (co_dev_t) and network (can_net_t), the object
+///        dictionary contains the Slave Assignment object (0x1f81) with at
+///        least one slave in the network list
 ///
 /// \When co_nmt_create() is called with pointers to the network and the device
 ///
 /// \Then a pointer to a created NMT service is returned, the service is
-///       configured with default values
+///       configured with the default values
 ///       \Calls mem_alloc()
 ///       \Calls can_net_get_alloc()
 ///       \Calls co_nmt_alignof()
@@ -418,16 +418,16 @@ TEST(CO_NmtCreate, CoNmtCreate_WithObj1f81) {
   CheckNmtDefaults();
 }
 
-/// \Given initialized device (co_dev_t) and network (can_net_t), the OD
-///        contains the Consumer Heartbeat Time (0x1016), the Producer
-///        Heartbeat Time (0x1017), the NMT Start-up (0x1f80), the Slave
-///        Assignment (0x1f81) and the Request NMT (0x1f82) objects
+/// \Given initialized device (co_dev_t) and network (can_net_t), the object
+///        dictionary contains the Consumer Heartbeat Time (0x1016), the
+///        Producer Heartbeat Time (0x1017), the NMT Start-up (0x1f80), the
+///        Slave Assignment (0x1f81) and the Request NMT (0x1f82) objects
 ///
 /// \When co_nmt_create() is called with pointers to the network and the device
 ///
 /// \Then a pointer to a created NMT service is returned, the service is
-///       configured with default values and indication functions for all
-///       sub-objects are set
+///       configured with the default values and indication functions are set
+///       for all sub-objects
 ///       \Calls mem_alloc()
 ///       \Calls can_net_get_alloc()
 ///       \Calls co_nmt_alignof()
@@ -450,7 +450,7 @@ TEST(CO_NmtCreate, CoNmtCreate_WithObj1f81) {
 ///       \Calls co_obj_set_dn_ind()
 ///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
 ///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
-TEST(CO_NmtCreate, CoNmtCreate_ConfigurationObjectsInd) {
+TEST(CO_NmtCreate, CoNmtCreate_ConfigurationObjectsInds) {
   CreateObj1016ConsumerHbTimeN(1u);
   CreateObj1017ProducerHeartbeatTime(0);
   CreateObj1f80NmtStartup(0);
@@ -524,7 +524,7 @@ TEST(CO_NmtCreate, CoNmtDestory_Nominal) {
 /// \Given a pointer to an initialized NMT service (co_nmt_t) configured with
 ///        the Consumer Heartbeat Time (0x1016), the Producer Heartbeat Time
 ///        (0x1017), the NMT Start-up (0x1f80), the Slave Assignment (0x1f81)
-///        and the Request NMT (0x1f82) objects in the OD
+///        and the Request NMT (0x1f82) objects in the object dictionary
 ///
 /// \When co_nmt_destroy() is called with a pointer to the service
 ///
@@ -902,8 +902,8 @@ TEST(CO_NmtAllocation, CoNmtCreate_NoMemoryForCsTimer) {
 ///        allocator limited to only allocate the NMT service instance, DCFs for
 ///        application/communication parameters, the default services instances,
 ///        all NMT receivers and a timer for life guarding/heartbeat production;
-///        the OD contains the Consumer Heartbeat Time object (0x1016) with at
-///        least one entry
+///        the object dictionary contains the Consumer Heartbeat Time object
+///        (0x1016) with at least one entry
 ///
 /// \When co_nmt_create() is called with pointers to the network and the device
 ///
@@ -1026,8 +1026,8 @@ TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory) {
 #if LELY_NO_MALLOC
 /// \Given initialized device (co_dev_t) and network (can_net_t) with a memory
 ///        allocator limited to exactly allocate the NMT service and all
-///        required objects; the OD contains the Consumer Heartbeat Time object
-///        (0x1016) with the maximum number of entries
+///        required objects; the object dictionary contains the Consumer
+///        Heartbeat Time object (0x1016) with the maximum number of entries
 ///
 /// \When co_nmt_create() is called with pointers to the network and the device
 ///

@@ -86,12 +86,14 @@ TEST_GROUP(CO_DevInit) {
     CHECK_EQUAL(0, co_dev_get_dummy(dev));
   }
 
+#if !LELY_NO_MALLOC
   void CheckDefaultNames(co_dev_t* const dev) {
     POINTERS_EQUAL(nullptr, co_dev_get_name(dev));
     POINTERS_EQUAL(nullptr, co_dev_get_vendor_name(dev));
     POINTERS_EQUAL(nullptr, co_dev_get_product_name(dev));
     POINTERS_EQUAL(nullptr, co_dev_get_order_code(dev));
   }
+#endif
 
   void DestroyCoDevT(co_dev_t* const dev) {
     co_dev_fini(dev);
@@ -798,7 +800,7 @@ TEST(CO_Dev, CoDevFindObj_Empty_NotFound) {
 /// @name co_dev_find_sub()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object and a sub-object inserted in the Object Dictionary 
+/// \Given a pointer to a device (co_dev_t) containing an object and a sub-object inserted in the Object Dictionary
 ///
 /// \When co_dev_find_sub() is called with an index and a sub-index of the sub-object
 ///
@@ -816,7 +818,7 @@ TEST(CO_Dev, CoDevFindSub_Nominal) {
   POINTERS_EQUAL(sub, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary 
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_find_sub() is called with an index and a sub-index
 ///
@@ -827,7 +829,7 @@ TEST(CO_Dev, CoDevFindSub_NoObj) {
   POINTERS_EQUAL(nullptr, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without sub-objects inserted in the Object Dictionary 
+/// \Given a pointer to a device (co_dev_t) containing an object without sub-objects inserted in the Object Dictionary
 ///
 /// \When co_dev_find_sub() is called with the index of the object and a sub-index
 ///
@@ -888,7 +890,7 @@ TEST(CO_Dev, CoDevFirstObj_LowestInsertedInMiddle) {
   POINTERS_EQUAL(obj, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing three objects in the Object Dictionary, object with the lowest index is inserted last 
+/// \Given a pointer to a device (co_dev_t) containing three objects in the Object Dictionary, object with the lowest index is inserted last
 ///
 /// \When co_dev_first_obj() is called
 ///
@@ -982,7 +984,7 @@ TEST(CO_Dev, CoDevLastObj_HighestInsertedInMiddle) {
   POINTERS_EQUAL(obj3, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing three objects in the Object Dictionary, object with the highest index is inserted last 
+/// \Given a pointer to a device (co_dev_t) containing three objects in the Object Dictionary, object with the highest index is inserted last
 ///
 /// \When co_dev_last_obj() is called
 ///

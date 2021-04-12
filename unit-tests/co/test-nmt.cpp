@@ -74,18 +74,15 @@ TEST_BASE(CO_NmtBase) {
   co_dev_t* dev = nullptr;
 
   std::unique_ptr<CoDevTHolder> dev_holder;
+
   std::unique_ptr<CoObjTHolder> obj1000;
+  std::unique_ptr<CoObjTHolder> obj2000;
+
   std::unique_ptr<CoObjTHolder> obj1016;
   std::unique_ptr<CoObjTHolder> obj1017;
   std::unique_ptr<CoObjTHolder> obj1f80;
   std::unique_ptr<CoObjTHolder> obj1f81;
   std::unique_ptr<CoObjTHolder> obj1f82;
-  std::unique_ptr<CoObjTHolder> obj2000;
-
-  // not used in ECSS
-  std::unique_ptr<CoObjTHolder> obj100c;
-  std::unique_ptr<CoObjTHolder> obj100d;
-  std::unique_ptr<CoObjTHolder> obj1f25;
 
   Allocators::Default allocator;
 
@@ -108,7 +105,7 @@ TEST_BASE(CO_NmtBase) {
       obj1016->InsertAndSetSub(
           i + 1, CO_DEFTYPE_UNSIGNED32,
           co_unsigned32_t(co_unsigned32_t(SLAVE_DEV_ID) << 16u) |
-              co_unsigned32_t(0x0001));  //  1 ms
+              co_unsigned32_t(0x0001u));  //  1 ms
     }
   }
 
@@ -133,8 +130,8 @@ TEST_BASE(CO_NmtBase) {
     obj1f81->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(num));
     // 0x01-0x7f - Slave with the given Node-ID
     for (co_unsigned8_t i = 0; i < num; ++i) {
-      obj1f81->InsertAndSetSub(i + 1, CO_DEFTYPE_UNSIGNED32,
-                               co_unsigned32_t(0x01));
+      obj1f81->InsertAndSetSub(i + 1u, CO_DEFTYPE_UNSIGNED32,
+                               co_unsigned32_t(0x01u));
     }
   }
 
@@ -147,7 +144,7 @@ TEST_BASE(CO_NmtBase) {
     obj1f82->InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(num));
     // 0x01-0x7f - Request NMT-Service for slave with the given Node-ID
     for (co_unsigned8_t i = 0; i < num; ++i) {
-      obj1f82->InsertAndSetSub(i + 1, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
+      obj1f82->InsertAndSetSub(i + 1u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0));
     }
   }
 
@@ -174,6 +171,8 @@ TEST_GROUP_BASE(CO_NmtCreate, CO_NmtBase) {
   void CheckNmtDefaults() {
     POINTERS_EQUAL(net, co_nmt_get_net(nmt));
     POINTERS_EQUAL(dev, co_nmt_get_dev(nmt));
+
+    CHECK_EQUAL(0, co_nmt_is_master(nmt));
 
     void* pdata;
     co_nmt_cs_ind_t* cs_ind;
@@ -406,10 +405,10 @@ TEST(CO_NmtCreate, CoNmtCreate_WithObj1016_LessThanMaxEntries) {
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_init()}
 ///       \Calls can_net_get_time()
 ///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
-///       \IfCalls{!LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
-///       \IfCalls{!LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \Calls co_obj_set_dn_ind()
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 TEST(CO_NmtCreate, CoNmtCreate_WithObj1f81) {
   CreateObj1f81SlaveAssignmentN(1u);
 
@@ -447,10 +446,10 @@ TEST(CO_NmtCreate, CoNmtCreate_WithObj1f81) {
 ///       \IfCalls{!LELY_NO_CO_MASTER, can_buf_init()}
 ///       \Calls can_net_get_time()
 ///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
-///       \IfCalls{!LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
-///       \IfCalls{!LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \Calls co_obj_set_dn_ind()
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 TEST(CO_NmtCreate, CoNmtCreate_ConfigurationObjectsInd) {
   CreateObj1016ConsumerHbTimeN(1u);
   CreateObj1017ProducerHeartbeatTime(0);
@@ -1011,6 +1010,8 @@ TEST(CO_NmtAllocation, CoNmtCreate_NoMemoryForNmtSlaveRecvs) {
 ///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \Calls co_obj_set_dn_ind()
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory) {
   limitedAllocator.LimitAllocationTo(
       co_nmt_sizeof() + GetDcfParamsAllocSize() + GetServicesAllocSize() +
@@ -1051,6 +1052,8 @@ TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory) {
 ///       \IfCalls{LELY_NO_MALLOC, co_dev_get_val_u32()}
 ///       \IfCalls{!LELY_NO_CO_TPDO, co_dev_set_tpdo_event_ind()}
 ///       \Calls co_obj_set_dn_ind()
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_BOOT, co_nmt_boot_create()}
+///       \IfCalls{LELY_NO_MALLOC && !LELY_NO_CO_NMT_CFG, co_nmt_cfg_create()}
 TEST(CO_NmtAllocation, CoNmtCreate_ExactMemory_WithObj1016_MaxEntries) {
   CreateObj1016ConsumerHbTimeN(CO_NMT_MAX_NHB);
 

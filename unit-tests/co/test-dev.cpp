@@ -608,7 +608,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj) {
 ///
 /// \When co_dev_get_idx() is called with maximum number of indices to return lower than the number of the objects in the dictionary, a memory area to store the results
 ///
-/// \Then a number of the inserted objects is returned, indices of objects up to the maximum are stored in the memory area
+/// \Then a number of the inserted objects is returned, requested number of indices in order from lowest to highest are stored in the memory area
 TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
   CoObjTHolder obj1(0x0000u);
   CoObjTHolder obj2(0x1234u);
@@ -1226,7 +1226,7 @@ TEST(CO_Dev, CoDevGetVal_Nominal) {
 ///
 /// \When co_dev_get_val() is called with any index and sub-index
 ///
-/// \Then a pointer to the sub-object's value is returned
+/// \Then a null pointer is returned
 TEST(CO_Dev, CoDevGetVal_NullDev) {
   co_dev_t* const dev = nullptr;
 
@@ -1286,7 +1286,7 @@ TEST(CO_Dev, CoDevSetVal_NotFound) {
 ///
 /// \When co_dev_set_val_<typename>() is called with the index and sub-index of the sub-object
 ///
-/// \Then co_dev_get_val_<typename>() returns the requested value
+/// \Then the requested value is set and can be obtained using co_dev_get_val_<typename>() 
 TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
   (void)0;  // clang-format fix
 

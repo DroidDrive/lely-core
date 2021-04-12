@@ -1680,7 +1680,8 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBufferNotLast) {
   membuf_init(&ext_mbuf, ext_buffer, EXT_BUFSIZE);
   CHECK_EQUAL(EXT_BUFSIZE, membuf_reserve(&ext_mbuf, EXT_BUFSIZE));
 #else
-  CHECK_EQUAL(LELY_MEMBUF_SIZE, membuf_reserve(&ext_mbuf, EXT_BUFSIZE));
+  const auto mret = membuf_reserve(&ext_mbuf, EXT_BUFSIZE);
+  CHECK_COMPARE(mret, >=, EXT_BUFSIZE);
 #endif
 
   const auto ret =
@@ -1738,7 +1739,8 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
   membuf_init(&ext_mbuf, ext_buffer, sizeof(sub_type));
   CHECK_EQUAL(sizeof(sub_type), membuf_reserve(&ext_mbuf, sizeof(sub_type)));
 #else
-  CHECK_EQUAL(LELY_MEMBUF_SIZE, membuf_reserve(&ext_mbuf, sizeof(sub_type)));
+  const auto mret = membuf_reserve(&ext_mbuf, EXT_BUFSIZE);
+  CHECK_COMPARE(mret, >=, EXT_BUFSIZE);
 #endif
 
   const auto ret =

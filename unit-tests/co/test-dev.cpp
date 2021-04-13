@@ -418,7 +418,7 @@ TEST(CO_Dev, CoDevSetId_CheckObj) {
 #endif
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object of the basic type in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary, the sub-object is of the basic type
 ///
 /// \When co_dev_set_id() is called with a valid node-ID
 ///
@@ -455,7 +455,7 @@ TEST(CO_Dev, CoDevSetId_CoType_BasicType) {
 #undef LELY_CO_DEFINE_TYPE
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object of the non-basic type in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary, the subobject is of the non-basic type
 ///
 /// \When co_dev_set_id() is called with a valid node-ID
 ///
@@ -1787,7 +1787,7 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
 }
 #endif
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object of a domain type in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary, the sub-object is of a domain type
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to a start of a buffer with a value in the concise DCF format and a pointer to one past the last byte in the buffer
 ///
@@ -1812,7 +1812,7 @@ TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
 
 /// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
-/// \When co_dev_write_sub() is called with an index and a sub-index and null pointers to the buffer 
+/// \When co_dev_write_sub() is called with an index and a sub-index and null pointers to the buffer
 ///
 /// \Then the number of bytes that would have been written had the buffer been sufficiently large is returned
 ///       \Calls co_dev_find_sub()
@@ -1870,7 +1870,7 @@ TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
   const auto ret = co_dev_write_sub(dev, 0x1234u, 0xabu, buf, buf + BUF_SIZE);
 
   const size_t bytes_read = 9u;
-  CHECK_EQUAL(, ret);
+  CHECK_EQUAL(bytes_read, ret);
   uint_least8_t test_buf[BUF_SIZE] = {0};
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
@@ -2050,7 +2050,7 @@ TEST(CO_DevDCF, CoDevReadDcf_NullMinMax) {
   CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
-/// \Given an empty buffer 
+/// \Given an empty buffer
 ///
 /// \When co_dev_read_dcf() is called with no memory area to store the minimum object index and the maximum object index, a pointer to the empty buffer and a pointer to one past the last byte in the buffer
 ///
@@ -2120,7 +2120,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Nominal) {
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, minimum object index is greater than the index of the contained object, a pointer to a start of a buffer with a value in the concise DCF format and a pointer to one past the last byte in the buffer
 ///
-/// \Then a minimum number of bytes that would have been written to the buffer is returned, the buffer remains empty 
+/// \Then a minimum number of bytes that would have been written to the buffer is returned, the buffer remains empty
 ///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
   uint_least8_t tmp[BUF_SIZE] = {0};
@@ -2136,7 +2136,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, maximum object index is lower than the index of the contained object, a pointer to a start of a buffer with a value in the concise DCF format and a pointer to one past the last byte in the buffer
 ///
-/// \Then a minimum number of bytes that would have been written to the buffer is returned, the buffer remains empty 
+/// \Then a minimum number of bytes that would have been written to the buffer is returned, the buffer remains empty
 ///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
   uint_least8_t tmp[BUF_SIZE] = {0};
@@ -2151,7 +2151,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
 #if LELY_NO_MALLOC
 /// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
-/// \When co_dev_write_dcf() is called with a minimum and a maximum object index and null buffer pointers 
+/// \When co_dev_write_dcf() is called with a minimum and a maximum object index and null buffer pointers
 ///
 /// \Then a number of bytes that would have been written had the buffer been sufficiently large is returned
 ///       \Calls co_dev_first_obj()
@@ -2170,7 +2170,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Null) {
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to a start of a buffer with a value in the concise DCF format and a pointer to one past the last byte in the buffer but co_val_write() fails
 ///
-/// \Then 0 is returned, the buffer remains empty 
+/// \Then 0 is returned, the buffer remains empty
 ///       \Calls co_dev_first_obj()
 TEST(CO_DevDCF, CoDevWriteDcf_FailedToWriteSubObject) {
   co_dev_set_val_i16(dev, 0x1234u, 0xabu, 0x0987u);
@@ -2351,7 +2351,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
   co_dev_tpdo_event(dev, 0x0000u, 0x00u);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping disabled in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary, the sub-object's PDO mapping is disabled
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object
 ///
@@ -2365,7 +2365,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_OnlySubNoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping enabled in the Object Dictionary, the mapping entry is missing
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary, the sub-object's PDO mapping is enabled but the mapping entry is missing
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object
 ///
@@ -2378,7 +2378,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_MappingPossibleButNoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping enabled and invalid TPDO maximum sub-index in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary, the sub-object's PDO mapping is enabled and invalid TPDO maximum sub-index is set
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object
 ///

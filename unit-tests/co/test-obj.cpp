@@ -2360,24 +2360,41 @@ TEST(CO_ObjSub, CoSubSetDnInd_Nominal) {
 /// @name co_sub_on_dn()
 ///@{
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) and an empty SDO download
+///        request
 ///
-/// \When TODO
+/// \When co_sub_on_dn() is called with a pointer to the request and a pointer
+///       to an abort code
 ///
-/// \Then TODO
+/// \Then -1 is returned, the abort code is set to CO_SDO_AC_TYPE_LEN_LO
+///       \Calls co_sub_get_type()
+///       \IfCalls{LELY_NO_MALLOC, co_type_is_array()}
+///       \IfCalls{LELY_NO_MALLOC, co_val_init_array()}
+///       \Calls co_sdo_req_dn_val()
 TEST(CO_Sub, CoSubOnDn_EmptyRequest) {
   co_sdo_req req = CO_SDO_REQ_INIT(req);
 
-  const auto ret = co_sub_on_dn(sub, &req, nullptr);
+  co_unsigned32_t ac = 0xffff;
+  const auto ret = co_sub_on_dn(sub, &req, &ac);
 
   CHECK_EQUAL(-1, ret);
+  CHECK_EQUAL(CO_SDO_AC_TYPE_LEN_LO, ac);
 }
 
-/// \Given TODO
+#if !LELY_NO_CO_OBJ_LIMITS
+
+/// \Given a pointer to a sub-object (co_sub_t) with value limits set and an SDO
+///        download request with a value outside those limits
 ///
-/// \When TODO
+/// \When co_sub_on_dn() is called with a pointer to the request and a null
+///       pointer to an abort code
 ///
-/// \Then TODO
+/// \Then -1 is returned, nothing is changed
+///       \Calls co_sub_get_type()
+///       \IfCalls{LELY_NO_MALLOC, co_type_is_array()}
+///       \Calls co_sdo_req_dn_val()
+///       \Calls co_sub_chk_val()
+///       \IfCalls{!LELY_NO_MALLOC, co_val_fini()}
 TEST(CO_Sub, CoSubOnDn_OutsideRange) {
   const CO_ObjBase::sub_type max_val = 0x1111;
   co_sub_set_max(sub, &max_val, sizeof(max_val));
@@ -2393,11 +2410,19 @@ TEST(CO_Sub, CoSubOnDn_OutsideRange) {
   co_sdo_req_fini(&req);
 }
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with value limits set and an SDO
+///        download request with a value outside those limits
 ///
-/// \When TODO
+/// \When co_sub_on_dn() is called with a pointer to the request and a pointer
+///       to an abort code
 ///
-/// \Then TODO
+/// \Then -1 is returned, the abort code is set as if by calling
+///       co_sub_chk_val(), nothing is changed
+///       \Calls co_sub_get_type()
+///       \IfCalls{LELY_NO_MALLOC, co_type_is_array()}
+///       \Calls co_sdo_req_dn_val()
+///       \Calls co_sub_chk_val()
+///       \IfCalls{!LELY_NO_MALLOC, co_val_fini()}
 TEST(CO_Sub, CoSubOnDn_OutsideRange_AbortCode) {
   const CO_ObjBase::sub_type max_val = 0x1111;
   co_sub_set_max(sub, &max_val, sizeof(max_val));
@@ -2415,11 +2440,22 @@ TEST(CO_Sub, CoSubOnDn_OutsideRange_AbortCode) {
   co_sdo_req_fini(&req);
 }
 
-/// \Given TODO
+#endif  // !LELY_NO_CO_OBJ_LIMITS
+
+/// \Given a pointer to a sub-object (co_sub_t) with a value of a basic type set
+///        and an SDO download request with any value of that type
 ///
-/// \When TODO
+/// \When co_sub_on_dn() is called with a pointer to the request and a pointer
+///       to an abort code
 ///
-/// \Then TODO
+/// \Then 0 is returned, the abort code is set to 0, the value from the request
+///       is downloaded to the sub-object
+///       \Calls co_sub_get_type()
+///       \IfCalls{LELY_NO_MALLOC, co_type_is_array()}
+///       \Calls co_sdo_req_dn_val()
+///       \Calls co_sub_chk_val()
+///       \Calls co_sub_dn()
+///       \IfCalls{!LELY_NO_MALLOC, co_val_fini()}
 TEST(CO_ObjSub, CoSubOnDn_BasicType) {
   const CO_ObjBase::sub_type req_value = 0x1234;
   co_sdo_req req = CO_SDO_REQ_INIT(req);
@@ -2435,11 +2471,21 @@ TEST(CO_ObjSub, CoSubOnDn_BasicType) {
   co_sdo_req_fini(&req);
 }
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with a value of an array type
+///        set and an SDO download request with any value of that type
 ///
-/// \When TODO
+/// \When co_sub_on_dn() is called with a pointer to the request and a pointer
+///       to an abort code
 ///
-/// \Then TODO
+/// \Then 0 is returned, the abort code is set to 0, the value from the request
+///       is downloaded to the sub-object
+///       \Calls co_sub_get_type()
+///       \IfCalls{LELY_NO_MALLOC, co_type_is_array()}
+///       \IfCalls{LELY_NO_MALLOC, co_val_init_array()}
+///       \Calls co_sdo_req_dn_val()
+///       \Calls co_sub_chk_val()
+///       \Calls co_sub_dn()
+///       \IfCalls{!LELY_NO_MALLOC, co_val_fini()}
 TEST(CO_ObjSubArray, CoSubOnDn_ArrayType) {
   CoArrays arrays;
   array_type req_value = arrays.DeadBeef<array_type>();
@@ -2517,11 +2563,13 @@ TEST(CO_ObjSub, CoSubDnInd_Nominal) {
 /// @name co_sub_dn_ind_val()
 ///@{
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t)
 ///
-/// \When TODO
+/// \When co_sub_dn_ind_val() is called with any type different than that of the
+///       sub-object
 ///
-/// \Then TODO
+/// \Then CO_SDO_AC_TYPE_LEN is returned, nothing is changed
+///       \Calls co_sub_get_type()
 TEST(CO_Sub, CoSubDnIndVal_DifferentType) {
   const auto ac = co_sub_dn_ind_val(sub, SUB_DEFTYPE + 1, nullptr, nullptr);
 
@@ -2530,11 +2578,18 @@ TEST(CO_Sub, CoSubDnIndVal_DifferentType) {
 
 #if HAVE_LELY_OVERRIDE
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t)
 ///
-/// \When TODO
+/// \When co_sub_dn_ind_val() is called with the type of the sub-object and a
+///       pointer to any value of that type, but an internal call to
+///       co_sdo_req_up_val() fails
 ///
-/// \Then TODO
+/// \Then the abort code explaining the failure in co_sdo_req_up_val() is
+///       returned, nothing is changed
+///       \Calls co_sub_get_type()
+///       \Calls co_sdo_req_init()
+///       \Calls co_sdo_req_up_val()
+///       \Calls co_sdo_req_fini()
 TEST(CO_ObjSub, CoSubDnIndVal_CannotStoreValueInRequestBuffer) {
   LelyOverride::co_val_write(1);
 
@@ -2546,11 +2601,18 @@ TEST(CO_ObjSub, CoSubDnIndVal_CannotStoreValueInRequestBuffer) {
 
 #endif  // HAVE_LELY_OVERRIDE
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t)
 ///
-/// \When TODO
+/// \When co_sub_dn_ind_val() is called with the type of the sub-object and a
+///       pointer to any value of that type
 ///
-/// \Then TODO
+/// \Then 0 is returned, the download indication function set in the sub-object
+///       is called
+///       \Calls co_sub_get_type()
+///       \Calls co_sdo_req_init()
+///       \Calls co_sdo_req_up_val()
+///       \Calls co_sub_dn_ind()
+///       \Calls co_sdo_req_fini()
 TEST(CO_ObjSub, CoSubDnIndVal_Nominal) {
   const CO_ObjBase::sub_type value = 0x1234;
   co_sub_set_dn_ind(sub, dn_ind_func, nullptr);
@@ -2566,11 +2628,12 @@ TEST(CO_ObjSub, CoSubDnIndVal_Nominal) {
 /// @name co_sub_dn()
 ///@{
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the
+///        refuse-write-on-download flag set
 ///
-/// \When TODO
+/// \When co_sub_dn() is called with any pointer to a value
 ///
-/// \Then TODO
+/// \Then 0 is returned, nothing is changed
 TEST(CO_ObjSub, CoSubDn_RefuseWriteOnDownload) {
   co_sub_set_flags(sub, CO_OBJ_FLAGS_WRITE);
 
@@ -2581,11 +2644,14 @@ TEST(CO_ObjSub, CoSubDn_RefuseWriteOnDownload) {
 
 #if LELY_NO_MALLOC
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the
+///        refuse-write-on-download flag not set
 ///
-/// \When TODO
+/// \When co_sub_dn() is called with a pointer to any value of sub-object's
+///       type, but writing of the value fails
 ///
-/// \Then TODO
+/// \Then -1 is returned, nothing is changed
+///       \Calls co_val_copy()
 TEST(CO_ObjSubArray, CoSubDn_FailedToStore) {
   co_array array;
   array.hdr.capacity = CO_ARRAY_CAPACITY;
@@ -2601,11 +2667,16 @@ TEST(CO_ObjSubArray, CoSubDn_FailedToStore) {
 
 #endif  // LELY_NO_MALLOC
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the
+///        refuse-write-on-download flag not set
 ///
-/// \When TODO
+/// \When co_sub_dn() is called with a pointer to any value of sub-object's
+///       type
 ///
-/// \Then TODO
+/// \Then 0 is returned, the requested value is downloaded to the sub-object
+///       \IfCalls{LELY_NO_MALLOC, co_val_copy()}
+///       \IfCalls{!LELY_NO_MALLOC, co_val_fini()}
+///       \IfCalls{!LELY_NO_MALLOC, co_val_move()}
 TEST(CO_ObjSub, CoSubDn_Nominal) {
   const auto expected_value = 0x1234;
 
@@ -2697,11 +2768,14 @@ TEST(CO_ObjSub, CoSubSetUpInd_Nominal) {
 /// @name co_sub_on_up()
 ///@{
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) initialized with a null pointer
+///        to value and an initialized SDO upload request
 ///
-/// \When TODO
+/// \When co_sub_on_up() is called with a pointer to the request and a null
+///       pointer to an abort code
 ///
-/// \Then TODO
+/// \Then -1 is returned, nothing is changed
+///       \Calls co_sub_get_val()
 TEST(CO_Sub, CoSubOnUp_UninitializedSubValue) {
   POINTERS_EQUAL(nullptr, co_sub_get_val(sub));
   co_sdo_req req = CO_SDO_REQ_INIT(req);
@@ -2711,11 +2785,14 @@ TEST(CO_Sub, CoSubOnUp_UninitializedSubValue) {
   CHECK_EQUAL(-1, ret);
 }
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) initialized with a null pointer
+///        to value and an initialized SDO upload request
 ///
-/// \When TODO
+/// \When co_sub_on_up() is called with a pointer to the request and a pointer
+///       to an abort code
 ///
-/// \Then TODO
+/// \Then -1 is returned, the abort code is set to CO_SDO_AC_NO_DATA
+///       \Calls co_sub_get_val()
 TEST(CO_Sub, CoSubOnUp_UninitializedSubValue_AbortCode) {
   POINTERS_EQUAL(nullptr, co_sub_get_val(sub));
   co_sdo_req req = CO_SDO_REQ_INIT(req);
@@ -2727,11 +2804,17 @@ TEST(CO_Sub, CoSubOnUp_UninitializedSubValue_AbortCode) {
   CHECK_EQUAL(CO_SDO_AC_NO_DATA, ac);
 }
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) and an initialized SDO upload
+///        request
 ///
-/// \When TODO
+/// \When co_sub_on_up() is called with a pointer to the request and a pointer
+///       to an abort code
 ///
-/// \Then TODO
+/// \Then 0 is returned, the abort code is set to zero, the request has the
+///       sub-object's value encoded
+///       \Calls co_sub_get_val()
+///       \Calls co_sub_get_type()
+///       \Calls co_sdo_req_up_val()
 TEST(CO_ObjSub, CoSubOnUp_Nominal) {
   const CO_ObjBase::sub_type sub_value = 0x42u;
   co_sub_set_val_i16(sub, sub_value);
@@ -2810,11 +2893,13 @@ TEST(CO_ObjSub, CoSubUpInd_Nominal) {
 /// @name default download indication function
 ///@{
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the default download
+///        indication function set
 ///
-/// \When TODO
+/// \When the sub-object's download indication function is called with a
+///       non-zero SDO abort code
 ///
-/// \Then TODO
+/// \Then the abort code is returned, nothing is changed
 TEST(CO_ObjSub, CoSubDefaultDnInd_NonZeroAbortCode) {
   const auto default_dn = GetSubDnInd();
 
@@ -2824,11 +2909,16 @@ TEST(CO_ObjSub, CoSubDefaultDnInd_NonZeroAbortCode) {
   CHECK_EQUAL(ac, ret);
 }
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the default download
+///        indication function set and an SDO download request with a value
+///        encoded
 ///
-/// \When TODO
+/// \When the sub-object's download indication function is called with a pointer
+///       to the request, zero SDO abort code and any pointer to user-specified
+///       data
 ///
-/// \Then TODO
+/// \Then 0 is returned, the value from the request is downloaded to the
+///       sub-object
 ///       \Calls co_sub_on_dn()
 TEST(CO_ObjSub, CoSubDefaultDnInd_Nominal) {
   const CO_ObjBase::sub_type req_value = 0x1234;
@@ -2849,11 +2939,13 @@ TEST(CO_ObjSub, CoSubDefaultDnInd_Nominal) {
 /// @name default upload indication function
 ///@{
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the default upload
+///        indication function set
 ///
-/// \When TODO
+/// \When the sub-object's upload indication function is called with a non-zero
+///       SDO abort code
 ///
-/// \Then TODO
+/// \Then the abort code is returned, nothing is changed
 TEST(CO_ObjSub, CoSubDefaultUpInd_NonZeroAbortCode) {
   const auto default_up = GetSubUpInd();
 
@@ -2863,11 +2955,14 @@ TEST(CO_ObjSub, CoSubDefaultUpInd_NonZeroAbortCode) {
   CHECK_EQUAL(ac, ret);
 }
 
-/// \Given TODO
+/// \Given a pointer to a sub-object (co_sub_t) with the default upload
+///        indication function set and an initialized SDO upload request
 ///
-/// \When TODO
+/// \When the sub-object's upload indication function is called with a pointer
+///       to the request, zero SDO abort code and any pointer to user-specified
+///       data
 ///
-/// \Then TODO
+/// \Then 0 is returned, the request has the sub-object's value encoded
 ///       \Calls co_sub_on_up()
 TEST(CO_ObjSub, CoSubDefaultUpInd_Nominal) {
   const CO_ObjBase::sub_type sub_value = 0x42u;

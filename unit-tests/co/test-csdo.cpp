@@ -1739,8 +1739,8 @@ TEST(CO_Csdo, CoDevUpReq_ExternalBuffer) {
   membuf_init(&ext_mbuf, ext_buffer, sizeof(sub_type));
   CHECK_EQUAL(sizeof(sub_type), membuf_reserve(&ext_mbuf, sizeof(sub_type)));
 #else
-  const auto mret = membuf_reserve(&ext_mbuf, EXT_BUFSIZE);
-  CHECK_COMPARE(mret, >=, EXT_BUFSIZE);
+  const auto mret = membuf_reserve(&ext_mbuf, sizeof(sub_type));
+  CHECK_COMPARE(mret, >=, sizeof(sub_type));
 #endif
 
   const auto ret =

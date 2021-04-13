@@ -303,15 +303,33 @@ TEST(CO_NmtCreate, CoNmtEs2Str_Unknown) {
 TEST(CO_NmtCreate, CoNmtSizeof_Nominal) {
   const auto ret = co_nmt_sizeof();
 
-#if defined(LELY_NO_MALLOC) || defined(__MINGW64__)
-  CHECK_EQUAL(4768u, ret);
+#if defined(__MINGW32__)
+#if defined(__MINGW64__)
+  CHECK_EQUAL(10728u, ret);
 #else
-#if defined(__MINGW32__) && !defined(__MINGW64__)
-  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(6420u, ret);
+#endif
+
+#elif LELY_NO_MALLOC
+#if LELY_NO_CO_NG && LELY_NO_CO_NMT_BOOT && LELY_NO_CO_NMT_CFG // ECSS
+#if LELY_NO_CO_MASTER
+  CHECK_EQUAL(1360u, ret);
+#else
+  CHECK_EQUAL(4768u, ret);
+#endif
+#else
+  CHECK_EQUAL(11872u, ret);
+#endif
+
+#elif LELY_NO_HOSTED
+  CHECK_EQUAL(11872u, ret);
+
+#elif LELY_NO_CO_MASTER
+  CHECK_EQUAL(400u, ret);
+
 #else
   CHECK_EQUAL(9712u, ret);
 #endif
-#endif  // LELY_NO_MALLOC
 }
 
 ///@}

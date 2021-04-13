@@ -111,7 +111,7 @@ TEST(CO_CsdoInit, CoCsdoSizeof_Nominal) {
   CHECK_EQUAL(256u, ret);
 #else
 #if defined(__MINGW32__) && !defined(__MINGW64__)
-  CHECK_EQUAL(108u, ret);
+  CHECK_EQUAL(144u, ret);
 #else
   CHECK_EQUAL(248u, ret);
 #endif

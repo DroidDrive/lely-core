@@ -161,7 +161,7 @@ TEST(CO_EmcyCreate, CoEmcySizeof_Nominal) {
 #endif
 #else
 #if defined(__MINGW32__) && !defined(__MINGW64__)
-  CHECK_EQUAL(1368u, size);
+  CHECK_EQUAL(1080u, size);
 #else
   CHECK_EQUAL(2160u, size);
 #endif

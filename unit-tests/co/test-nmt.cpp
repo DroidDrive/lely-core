@@ -311,7 +311,7 @@ TEST(CO_NmtCreate, CoNmtSizeof_Nominal) {
 #endif
 
 #elif LELY_NO_MALLOC
-#if LELY_NO_CO_NG && LELY_NO_CO_NMT_BOOT && LELY_NO_CO_NMT_CFG // ECSS
+#if LELY_NO_CO_NG && LELY_NO_CO_NMT_BOOT && LELY_NO_CO_NMT_CFG  // ECSS
 #if LELY_NO_CO_MASTER
   CHECK_EQUAL(1360u, ret);
 #else

@@ -300,7 +300,7 @@ TEST(CO_NmtCreate, CoNmtEs2Str_Unknown) {
 /// \When co_nmt_sizeof() is called
 ///
 /// \Then 4768 is returned
-TEST(CO_NmtCreate, CoNmtSizeOf_Nominal) {
+TEST(CO_NmtCreate, CoNmtSizeof_Nominal) {
   const auto ret = co_nmt_sizeof();
 
 #if defined(LELY_NO_MALLOC) || defined(__MINGW64__)
@@ -309,7 +309,7 @@ TEST(CO_NmtCreate, CoNmtSizeOf_Nominal) {
 #if defined(__MINGW32__) && !defined(__MINGW64__)
   CHECK_EQUAL(0, ret);
 #else
-  CHECK_EQUAL(0, ret);
+  CHECK_EQUAL(9712u, ret);
 #endif
 #endif  // LELY_NO_MALLOC
 }
@@ -325,7 +325,7 @@ TEST(CO_NmtCreate, CoNmtSizeOf_Nominal) {
 ///
 /// \Then if (__MINGW32__ && !__MINGW64), then 4 is returned; else 8 is
 ///       returned
-TEST(CO_NmtCreate, CoNmtAlignOf_Nominal) {
+TEST(CO_NmtCreate, CoNmtAlignof_Nominal) {
   const auto ret = co_nmt_alignof();
 
 #if defined(__MINGW32__) && !defined(__MINGW64__)

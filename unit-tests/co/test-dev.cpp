@@ -319,7 +319,7 @@ TEST(CO_Dev, CoDevSetId_Nominal) {
   CHECK_EQUAL(0x3du, co_dev_get_id(dev));
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_set_id() is called with a valid node-ID
 ///
@@ -553,7 +553,7 @@ TEST(CO_Dev, CoDevGetIdx_EmptyNull) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) with one object inserted
+/// \Given a pointer to a device (co_dev_t) containing one object in the Object Dictionary
 ///
 /// \When co_dev_get_idx() is called with no memory area to store the results
 ///
@@ -567,7 +567,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckNumber) {
   CHECK_EQUAL(1u, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) with one object inserted
+/// \Given a pointer to a device (co_dev_t) containing one object in the Object Dictionary
 ///
 /// \When co_dev_get_idx() is called with a memory area to store the results
 ///
@@ -582,7 +582,7 @@ TEST(CO_Dev, CoDevGetIdx_OneObjCheckIdx) {
   CHECK_EQUAL(0x1234u, out_idx);
 }
 
-/// \Given a pointer to a device (co_dev_t) with many objects inserted
+/// \Given a pointer to a device (co_dev_t) containing many objects in the Object Dictionary
 ///
 /// \When co_dev_get_idx() is called with a maximum number of indices to return equal to the number of the objects in the dictionary, a memory area to store the results
 ///
@@ -606,7 +606,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj) {
   CHECK_EQUAL(0x0000u, out_idx[4]);
 }
 
-/// \Given a pointer to a device (co_dev_t) with many objects inserted
+/// \Given a pointer to a device (co_dev_t) containing many objects in the Object Dictionary
 ///
 /// \When co_dev_get_idx() is called with maximum number of indices to return lower than the number of the objects in the dictionary, a memory area to store the results
 ///
@@ -639,7 +639,7 @@ TEST(CO_Dev, CoDevGetIdx_ManyObj_MaxIdxLessThanArrLen) {
 /// @name co_dev_insert_obj()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) with empty Object Dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_insert_obj() is called with a pointer to an object (co_obj_t)
 ///
@@ -658,7 +658,7 @@ TEST(CO_Dev, CoDevInsertObj) {
   CHECK_EQUAL(dev, co_obj_get_dev(obj));
 }
 
-/// \Given a pointer to a device (co_dev_t) with empty Object Dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_insert_obj() is called with a pointer to the object (co_obj_t)
 ///       which was inserted into other device
@@ -736,7 +736,7 @@ TEST(CO_Dev, CoDevRemoveObj) {
   POINTERS_EQUAL(nullptr, co_obj_get_dev(obj));
 }
 
-/// \Given a pointer to a device (co_dev_t) with empty Object Dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_remove_obj() is called with a pointer to the object (co_obj_t)
 ///
@@ -784,7 +784,7 @@ TEST(CO_Dev, CoDevFindObj_Nonempty_NotFound) {
   POINTERS_EQUAL(nullptr, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) with empty Object Dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_find_obj() is called with an index
 ///
@@ -800,7 +800,7 @@ TEST(CO_Dev, CoDevFindObj_Empty_NotFound) {
 /// @name co_dev_find_sub()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object and a sub-object inserted in the Object Dictionary
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_find_sub() is called with an index and a sub-index of the sub-object
 ///
@@ -926,7 +926,7 @@ TEST(CO_Dev, CoDevFirstObj_SingleObject) {
   POINTERS_EQUAL(obj, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) with empty Object Dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_first_obj() is called
 ///
@@ -1020,7 +1020,7 @@ TEST(CO_Dev, CoDevLastObj_SingleObject) {
   POINTERS_EQUAL(obj, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) with empty Object Dictionary
+/// \Given a pointer to a device (co_dev_t) with an empty Object Dictionary
 ///
 /// \When co_dev_last_obj() is called
 ///
@@ -1344,7 +1344,7 @@ TEST(CO_Dev, CoDevSetDummy_Nominal) {
 /// @name co_dev_get_val()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_get_val() is called with an index and a sub-index of the sub-object
 ///
@@ -1394,7 +1394,7 @@ TEST(CO_Dev, CoDevGetVal_NotFound) {
 /// @name co_dev_set_val()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object and a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_set_val() is called with an index and sub-index of the sub-object, a pointer to the value to be copied, a number of bytes present at the pointer
 ///
@@ -1451,7 +1451,6 @@ TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
 \
     CHECK_EQUAL(get_ret, static_cast<co_##b##_t>(0x42u)); \
   }
-  // add teardown fix to prevent .Take() fail
 #include <lely/co/def/basic.def>  // NOLINT(build/include)
 #undef LELY_CO_DEFINE_TYPE
 }
@@ -1461,9 +1460,9 @@ TEST(CO_Dev, CoDevSetGetVal_BasicTypes) {
 /// @name co_dev_read_sub()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
-/// \When co_dev_read_sub() is called with pointers to memory area for an index and a sub-index, a pointer to the concise DCF buffer and the end of the buffer
+/// \When co_dev_read_sub() is called with pointers to memory area for an index and a sub-index, a pointer to start of a buffer with a value in the concise DCF format and a pointer to one past the last byte in the buffer
 ///
 /// \Then a size of the concise DCF buffer is returned, an index and a sub-index are stored in the memory and the requested value is set
 ///       \Calls co_dev_find_sub()
@@ -1487,10 +1486,10 @@ TEST(CO_Dev, CoDevReadSub_Nominal) {
   CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, idx, subidx));
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory are for an index and a sub-index, a pointer to the concise DCF buffer and the end of the buffer
-///
+///,
 /// \Then the requested value is set
 TEST(CO_Dev, CoDevReadSub_NoIdx) {
   CoObjTHolder obj(0x1234u);
@@ -1508,7 +1507,7 @@ TEST(CO_Dev, CoDevReadSub_NoIdx) {
   CHECK_EQUAL(0x0987u, co_dev_get_val_i16(dev, 0x1234u, 0xabu));
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer and the end of the buffer
 ///
@@ -1526,7 +1525,7 @@ TEST(CO_Dev, CoDevReadSub_NoSub) {
   CHECK_EQUAL(BUF_SIZE, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a null pointer to the concise DCF buffer begin and a pointer to the end of the buffer
 ///
@@ -1545,7 +1544,7 @@ TEST(CO_Dev, CoDevReadSub_NoBegin) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1564,7 +1563,7 @@ TEST(CO_Dev, CoDevReadSub_NoEnd) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to too small concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1581,7 +1580,7 @@ TEST(CO_Dev, CoDevReadSub_TooSmallBuffer) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to too small concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1600,7 +1599,7 @@ TEST(CO_Dev, CoDevReadSub_TooSmallForType) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails
 ///
@@ -1619,7 +1618,7 @@ TEST(CO_Dev, CoDevReadSub_ReadIdxFailed) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails on the second call
 ///
@@ -1638,7 +1637,7 @@ TEST(CO_Dev, CoDevReadSub_ReadSubidxFailed) {
   CHECK_EQUAL(0, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer, but co_val_read() fails on the third call
 ///
@@ -1658,7 +1657,7 @@ TEST(CO_Dev, CoDevReadSub_ReadSizeFailed) {
 }
 
 #if LELY_NO_MALLOC
-/// \Given a pointer to a device (co_dev_t) containing an object of the array type inserted
+/// \Given a pointer to a device (co_dev_t) containing an object of the array type inserted in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1687,7 +1686,7 @@ TEST(CO_Dev, CoDevReadSub_ArrayType) {
 
 #endif  // HAVE_LELY_OVERRIDE
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_read_sub() is called with null pointers to the memory area for an index and a sub-index, a pointer to the concise DCF buffer with invalid data size declared and a pointer to the end of the buffer
 ///
@@ -1715,7 +1714,7 @@ TEST(CO_Dev, CoDevReadSub_ValSizeTooBig) {
 /// @name co_dev_write_sub()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1739,7 +1738,7 @@ TEST(CO_Dev, CoDevWriteSub_Nominal) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object without any sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with the index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1760,7 +1759,7 @@ TEST(CO_Dev, CoDevWriteSub_NoSub) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but the co_val_write() fails
 ///
@@ -1784,7 +1783,7 @@ TEST(CO_Dev, CoDevWriteSub_InitWriteFailed) {
 }
 #endif
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object of a domain type inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object of a domain type inserted in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1806,7 +1805,7 @@ TEST(CO_Dev, CoDevWriteSub_EmptyDomain) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, null pointers to the concise DCF buffer
 ///
@@ -1823,7 +1822,7 @@ TEST(CO_Dev, CoDevWriteSub_NoBegin) {
   CHECK_EQUAL(9, ret);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a non-null pointer to the concise DCF buffer and a null pointer to the end of the buffer
 ///
@@ -1847,7 +1846,7 @@ TEST(CO_Dev, CoDevWriteSub_NoEnd) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -1870,7 +1869,7 @@ TEST(CO_Dev, CoDevWriteSub_TooSmallBuffer) {
 }
 
 #ifdef HAVE_LELY_OVERRIDE
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the second call
 ///
@@ -1894,7 +1893,7 @@ TEST(CO_Dev, CoDevWriteSub_IdxWriteFailed) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the third call
 ///
@@ -1919,7 +1918,7 @@ TEST(CO_Dev, CoDevWriteSub_SubidxWriteFailed) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the fourth call
 ///
@@ -1944,7 +1943,7 @@ TEST(CO_Dev, CoDevWriteSub_SizeWriteFailed) {
   CheckBuffers(buf, test_buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_sub() is called with an index and a sub-index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails on the fifth call
 ///
@@ -2091,7 +2090,7 @@ TEST(CO_DevDCF, CoDevReadDcf_FailedToReadNumberOfSubIndexes) {
 /// @name co_dev_write_dcf()
 ///@{
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -2109,7 +2108,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Nominal) {
   CheckBuffers(tmp, buf, BUF_SIZE);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, minimum object index is greater than the index of the inserted object, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -2125,7 +2124,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_BeforeMin) {
   for (size_t i = 0; i < BUF_SIZE; i++) CHECK_EQUAL(0, tmp[i]);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, maximum object index is lower than the index of the inserted object, a pointer to the concise DCF buffer and a pointer to the end of the buffer
 ///
@@ -2142,7 +2141,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_AfterMax) {
 }
 
 #if LELY_NO_MALLOC
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index and no concise DCF buffer
 ///
@@ -2159,7 +2158,7 @@ TEST(CO_DevDCF, CoDevWriteDcf_Null) {
 #endif
 
 #if HAVE_LELY_OVERRIDE
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object in the Object Dictionary
 ///
 /// \When co_dev_write_dcf() is called with a minimum and a maximum object index, a pointer to the concise DCF buffer and a pointer to the end of the buffer but co_val_write() fails
 ///
@@ -2344,7 +2343,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidIndices) {
   co_dev_tpdo_event(dev, 0x0000u, 0x00u);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping disabled inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping disabled inserted in the Object Dictionary
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object
 ///
@@ -2371,7 +2370,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_MappingPossibleButNoMapping) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping enabled and invalid TPDO maximum sub-index inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping enabled and invalid TPDO maximum sub-index inserted in the Object Dictionary
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object
 ///
@@ -2421,7 +2420,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ReservedTransmissionType) {
   CHECK_EQUAL(0, CO_DevTPDO_Static::tpdo_event_ind_counter);
 }
 
-/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping enabled and no TPDO mapping entry inserted
+/// \Given a pointer to a device (co_dev_t) containing an object with a sub-object with a PDO mapping enabled and no TPDO mapping entry inserted in the Object Dictionary
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of the sub-object
 ///
@@ -2521,7 +2520,7 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_ValidEventDrivenTpdo) {
 ///
 /// \When co_dev_tpdo_event() is called with an index and a sub-index of two sub-objects
 ///
-/// \Then TPDO event indication function was called twice, second time with a PDO number 30
+/// \Then TPDO event indication function was called for every matched TPDO (twice), indication function was called in order of matched TPDO numbers
 ///       \Calls co_dev_find_sub()
 ///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_CallsIndicationFunction_ForMatchedTpdos) {

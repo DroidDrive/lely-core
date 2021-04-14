@@ -1492,6 +1492,8 @@ TEST(CO_Nmt, CoNmtSetStInd_Null) {
 
 ///@}
 
+#if !LELY_NO_CO_MASTER
+
 /// @name co_nmt_get_dn_ind()
 ///@{
 
@@ -1609,6 +1611,8 @@ TEST(CO_Nmt, CoNmtSetUpInd_Nominal) {
 }
 
 ///@}
+
+#endif  // !LELY_NO_CO_MASTER
 
 /// @name co_nmt_get_sync_ind()
 ///@{
@@ -1787,6 +1791,7 @@ TEST(CO_Nmt, CoNmtIsMaster_Slave) {
   CHECK_EQUAL(0, ret);
 }
 
+#if !LELY_NO_CO_MASTER
 /// \Given a pointer to an initialized NMT service (co_nmt_t) configured as
 ///        a master
 ///
@@ -1802,8 +1807,11 @@ TEST(CO_Nmt, CoNmtIsMaster_Master) {
 
   CHECK_EQUAL(1, ret);
 }
+#endif
 
 ///@}
+
+#if !LELY_NO_CO_MASTER
 
 /// @name co_nmt_get_timeout()
 ///@{
@@ -1818,7 +1826,11 @@ TEST(CO_Nmt, CoNmtGetTimeout_Nominal) {
 
   const auto ret = co_nmt_get_timeout(nmt);
 
+#if !LELY_NO_CO_NMT_BOOT || !LELY_NO_CO_NMT_CFG
+  CHECK_EQUAL(LELY_CO_NMT_TIMEOUT, ret);
+#else
   CHECK_EQUAL(0, ret);
+#endif
 }
 
 ///@}
@@ -1842,3 +1854,4 @@ TEST(CO_Nmt, CoNmtSetTimeout_Nominal) {
 
 ///@}
 
+#endif  // !LELY_NO_CO_MASTER

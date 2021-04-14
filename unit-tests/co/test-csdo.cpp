@@ -56,6 +56,7 @@ TEST_GROUP(CO_CsdoInit) {
   can_net_t* failing_net = nullptr;
   can_net_t* net = nullptr;
   std::unique_ptr<CoDevTHolder> dev_holder;
+  std::unique_ptr<CoObjTHolder> obj1280;
   Allocators::Default defaultAllocator;
   Allocators::Limited limitedAllocator;
 
@@ -196,7 +197,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_NumTooHigh) {
 ///       \Calls co_csdo_alloc()
 ///       \Calls co_csdo_init()
 TEST(CO_CsdoInit, CoCsdoCreate_WithObj1280) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
 
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
@@ -246,7 +247,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_NoServerParameterObj) {
 ///       \Calls co_csdo_free()
 ///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_RecvCreateFail) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
 
   limitedAllocator.LimitAllocationTo(co_csdo_sizeof());
@@ -269,7 +270,7 @@ TEST(CO_CsdoInit, CoCsdoCreate_RecvCreateFail) {
 ///       \Calls co_csdo_free()
 ///       \Calls set_errc()
 TEST(CO_CsdoInit, CoCsdoCreate_TimerCreateFail) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
 
   limitedAllocator.LimitAllocationTo(co_csdo_sizeof() + can_recv_sizeof());
@@ -303,7 +304,7 @@ TEST(CO_CsdoInit, CoCsdoDestroy_Nullptr) {
 ///       \Calls co_ssdo_fini()
 ///       \Calls co_ssdo_free()
 TEST(CO_CsdoInit, CoCsdoDestroy_Nominal) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
   CHECK(csdo != nullptr);
@@ -344,7 +345,7 @@ TEST(CO_CsdoInit, CoCsdoStart_NoDev) {
 /// \Then 0 is returned, the service is not stopped, the service is idle
 ///       \Calls co_csdo_is_stopped()
 TEST(CO_CsdoInit, CoCsdoStart_AlreadyStarted) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
   CHECK_EQUAL(0, co_csdo_start(csdo));
@@ -372,7 +373,7 @@ TEST(CO_CsdoInit, CoCsdoStart_AlreadyStarted) {
 ///       \Calls co_csdo_enter()
 ///       \Calls co_csdo_update()
 TEST(CO_CsdoInit, CoCsdoStart_DefaultCSDO_WithObj1280) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
 
@@ -397,7 +398,7 @@ TEST(CO_CsdoInit, CoCsdoStart_DefaultCSDO_WithObj1280) {
 /// \Then the service is stopped
 ///       \Calls co_csdo_is_stopped()
 TEST(CO_CsdoInit, CoCsdoStop_OnCreated) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
   CHECK(csdo != nullptr);
@@ -422,7 +423,7 @@ TEST(CO_CsdoInit, CoCsdoStop_OnCreated) {
 ///       \Calls co_obj_set_dn_ind()
 ///       \Calls co_csdo_enter()
 TEST(CO_CsdoInit, CoCsdoStop_OnStarted) {
-  std::unique_ptr<CoObjTHolder> obj1280(new CoObjTHolder(0x1280u));
+  obj1280.reset(new CoObjTHolder(0x1280u));
   co_dev_insert_obj(dev, obj1280->Take());
   co_csdo_t* const csdo = co_csdo_create(net, dev, CSDO_NUM);
   CHECK(csdo != nullptr);
@@ -795,6 +796,7 @@ TEST_GROUP_BASE(CO_Csdo, CO_CsdoBase) {
   const co_unsigned16_t ARR_IDX = 0x2021u;
   const co_unsigned16_t VAL = 0xabcdu;
   std::unique_ptr<CoObjTHolder> obj2020;
+  std::unique_ptr<CoObjTHolder> obj2021;
 
   static co_unsigned32_t co_sub_failing_dn_ind(co_sub_t*, co_sdo_req*,
                                                co_unsigned32_t, void*) {
@@ -1136,7 +1138,6 @@ TEST(CO_Csdo, CoDevDnDcfReq_ManyEntriesButDnIndFail) {
   uint_least8_t* const begin = concise_dcf;
   uint_least8_t* const end = concise_dcf + CONCISE_DCF_COMBINED_SIZE;
   const co_unsigned16_t OTHER_IDX = 0x2021u;
-  std::unique_ptr<CoObjTHolder> obj2021;
   CreateObjInDev(obj2021, OTHER_IDX);
   obj2021->InsertAndSetSub(0x00u, SUB_TYPE, sub_type(0));
   CHECK_EQUAL(CONCISE_DCF_COMBINED_SIZE,
@@ -1380,7 +1381,6 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_NoData) {
   membuf mbuf = MEMBUF_INIT;
   membuf_init(&mbuf, buffer, sizeof(sub_type));
 
-  std::unique_ptr<CoObjTHolder> obj2021;
   CreateObjInDev(obj2021, ARR_IDX);
   co_obj_set_code(obj2021->Get(), CO_OBJECT_ARRAY);
   obj2021->InsertAndSetSub(SUBIDX, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
@@ -1421,7 +1421,6 @@ TEST(CO_Csdo, CoDevUpReq_ArrayObject_DataPresent) {
   membuf mbuf = MEMBUF_INIT;
   membuf_init(&mbuf, buffer, sizeof(sub_type));
 
-  std::unique_ptr<CoObjTHolder> obj2021;
   CreateObjInDev(obj2021, ARR_IDX);
   co_obj_set_code(obj2021->Get(), CO_OBJECT_ARRAY);
   obj2021->InsertAndSetSub(0x00, CO_DEFTYPE_UNSIGNED8, ELEMENT_SUBIDX);

@@ -56,10 +56,12 @@ extern "C" {
  * Initializes a memory buffer.
  *
  * @param buf  a pointer to a memory buffer.
- * @param ptr  a pointer to the memory region to be used by the buffer. If not
- *             NULL, the buffer takes ownership of the region at <b>ptr</b> and
- *             MAY reallocate or free the region during subsequent calls to
- *             membuf_reserve() and membuf_fini().
+ * @param ptr  a pointer to the memory region to be used by the buffer.
+ *             In !LELY_NO_MALLOC: if not NULL, the buffer takes ownership of
+ *             the region at <b>ptr</b> and MAY reallocate or free the region
+ *             during subsequent calls to membuf_reserve() and membuf_fini().
+ *             In LELY_NO_MALLOC this shall be either NULL or a pointer to
+ *             a memory allocated on stack.
  * @param size the number of bytes available at <b>ptr</b>.
  *
  * @see membuf_fini()

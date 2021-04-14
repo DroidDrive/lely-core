@@ -46,11 +46,6 @@
 #include "holder/obj.hpp"
 #include "holder/array-init.hpp"
 
-#ifndef LELY_MEMBUF_SIZE
-/// The initial size (in bytes) of a memory buffer.
-#define LELY_MEMBUF_SIZE 16
-#endif
-
 using sub_type = co_unsigned16_t;
 
 TEST_GROUP(CO_CsdoInit) {

@@ -25,6 +25,7 @@
 #include <lely/coapp/sdo_error.hpp>
 #include <lely/coapp/type_traits.hpp>
 #include <lely/util/mutex.hpp>
+#include <lely/co/sdev.h>
 
 #include <functional>
 #include <memory>
@@ -60,6 +61,8 @@ class Device {
    */
   Device(const ::std::string& dcf_txt, const ::std::string& dcf_bin = "",
          uint8_t id = 0xff, util::BasicLockable* mutex = nullptr);
+
+  Device(const co_sdev* generatedDev, uint8_t id = 0xff, util::BasicLockable* mutex = nullptr);
 
   Device(const Device&) = delete;
   Device& operator=(const Device&) = delete;

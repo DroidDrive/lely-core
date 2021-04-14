@@ -27,6 +27,7 @@
 #include <lely/co/dcf.h>
 #endif
 #include <lely/co/dev.h>
+#include <lely/co/sdev.h>
 #include <lely/co/obj.h>
 #include <lely/co/pdo.h>
 #include <lely/co/val.h>
@@ -64,6 +65,7 @@ struct Device::Impl_ : util::BasicLockable {
 #if !LELY_NO_CO_DCF
   Impl_(Device* self, const ::std::string& dcf_txt,
         const ::std::string& dcf_bin, uint8_t id, util::BasicLockable* mutex);
+  Impl_(Device* self, const co_sdev* staticDevice, uint8_t id, util::BasicLockable* mutex);
 #endif
   virtual ~Impl_() = default;
 
@@ -178,6 +180,9 @@ struct Device::Impl_ : util::BasicLockable {
 Device::Device(const ::std::string& dcf_txt, const ::std::string& dcf_bin,
                uint8_t id, util::BasicLockable* mutex)
     : impl_(new Impl_(this, dcf_txt, dcf_bin, id, mutex)) {}
+Device::Device(const co_sdev* generatedDev,
+               uint8_t id, util::BasicLockable* mutex)
+    : impl_(new Impl_(this, generatedDev, id, mutex)) {}
 #endif
 
 Device::~Device() = default;
@@ -1809,6 +1814,37 @@ Device::Impl_::Impl_(Device* self_, const ::std::string& dcf_txt,
         [](co_sub_t* sub, co_sdo_req* req, void* data) -> uint32_t {
           // Implement the default behavior, but do not issue a notification for
           // incomplete or failed writes.
+          uint32_t ac = 0;
+          if (co_sub_on_dn(sub, req, &ac) == -1 || ac) return ac;
+          auto impl_ = static_cast<Impl_*>(data);
+          impl_->OnWrite(co_obj_get_idx(co_sub_get_obj(sub)),
+                         co_sub_get_subidx(sub));
+          return 0;
+        },
+        static_cast<void*>(this));
+  }
+}
+Device::Impl_::Impl_(Device* self_, const co_sdev* staticDevice, uint8_t id, util::BasicLockable* mutex_)
+    : self(self_),
+      mutex(mutex_),
+      dev(co_dev_create_from_sdev(staticDevice)) {
+  
+  if (id != 0xff && co_dev_set_id(dev.get(), id) == -1)
+    util::throw_errc("Device");
+  // Register a notification function for all objects in the object dictionary
+  // in case of write (SDO upload) access.
+  for (auto obj = co_dev_first_obj(dev.get()); obj; obj = co_obj_next(obj)) {
+    // Skip data types and the communication profile area.
+    if (co_obj_get_idx(obj) < 0x2000) continue;
+    // Skip reserved objects.
+    if (co_obj_get_idx(obj) >= 0xC000) break;
+    co_obj_set_dn_ind(
+        obj,
+        //[](co_sub_t* sub, co_sdo_req* req, uint32_t ac, void* data) -> uint32_t {
+          // Implement the default behavior, but do not issue a notification for
+          // incomplete or failed writes.
+          //if (ac) return ac;
+          [](co_sub_t* sub, co_sdo_req* req, void* data) -> uint32_t {
           uint32_t ac = 0;
           if (co_sub_on_dn(sub, req, &ac) == -1 || ac) return ac;
           auto impl_ = static_cast<Impl_*>(data);

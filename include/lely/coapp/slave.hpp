@@ -60,12 +60,17 @@ class BasicSlave : public Node {
   explicit BasicSlave(ev_exec_t* exec, io::TimerBase& timer,
                       io::CanChannelBase& chan, const ::std::string& dcf_txt,
                       const ::std::string& dcf_bin = "", uint8_t id = 0xff);
+  explicit BasicSlave(ev_exec_t* exec, io::TimerBase& timer,
+                      io::CanChannelBase& chan, const co_sdev* staticDevice, uint8_t id = 0xff);
 
   /// Creates a new CANopen slave.
   explicit BasicSlave(io::TimerBase& timer, io::CanChannelBase& chan,
                       const ::std::string& dcf_txt,
                       const ::std::string& dcf_bin = "", uint8_t id = 0xff)
       : BasicSlave(nullptr, timer, chan, dcf_txt, dcf_bin, id) {}
+  explicit BasicSlave(io::TimerBase& timer, io::CanChannelBase& chan,
+                      const co_sdev* staticDevice, uint8_t id = 0xff)
+      : BasicSlave(nullptr, timer, chan, staticDevice, id) {}
 
   virtual ~BasicSlave();
 

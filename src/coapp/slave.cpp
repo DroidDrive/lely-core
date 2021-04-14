@@ -26,6 +26,7 @@
 #if !LELY_NO_COAPP_SLAVE
 
 #include <lely/co/dev.h>
+#include <lely/co/sdev.h>
 #include <lely/co/nmt.h>
 #include <lely/co/obj.h>
 #include <lely/co/sdo.h>
@@ -77,6 +78,11 @@ BasicSlave::BasicSlave(ev_exec_t* exec, io::TimerBase& timer,
                        io::CanChannelBase& chan, const ::std::string& dcf_txt,
                        const ::std::string& dcf_bin, uint8_t id)
     : Node(exec, timer, chan, dcf_txt, dcf_bin, id),
+      impl_(new Impl_(this, Node::nmt())) {}
+
+BasicSlave::BasicSlave(ev_exec_t* exec, io::TimerBase& timer,
+                       io::CanChannelBase& chan, const co_sdev* staticDevice, uint8_t id)
+    : Node(exec, timer, chan, staticDevice, id),
       impl_(new Impl_(this, Node::nmt())) {}
 
 BasicSlave::~BasicSlave() = default;

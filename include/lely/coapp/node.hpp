@@ -143,12 +143,19 @@ class Node : public io::CanNet, public Device {
   explicit Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
                 const ::std::string& dcf_txt, const ::std::string& dcf_bin = "",
                 uint8_t id = 0xff);
+  explicit Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
+                const co_sdev* staticDevice,
+                uint8_t id = 0xff);
 
   /// Creates a new CANopen node.
   explicit Node(io::TimerBase& timer, io::CanChannelBase& chan,
                 const ::std::string& dcf_txt, const ::std::string& dcf_bin = "",
                 uint8_t id = 0xff)
       : Node(nullptr, timer, chan, dcf_txt, dcf_bin, id) {}
+  explicit Node(io::TimerBase& timer, io::CanChannelBase& chan,
+                const co_sdev* staticDevice,
+                uint8_t id = 0xff)
+      : Node(nullptr, timer, chan, staticDevice, id) {}
 
   Node(const Node&) = delete;
   Node& operator=(const Node&) = delete;

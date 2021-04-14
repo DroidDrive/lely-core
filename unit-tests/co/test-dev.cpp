@@ -664,7 +664,7 @@ TEST(CO_Dev, CoDevInsertObj) {
 ///       which was inserted into other device's Object Dictionary
 ///
 /// \Then -1 is returned, the object is still inserted into other device's Object Dictionary and is not inserted into target device's OD
-TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
+TEST(CO_Dev, CoDevInsertObj_InsertedIntoOtherDev) {
   CoDevTHolder other_dev_holder(0x02u);
   CoObjTHolder obj_holder(0x0001u);
   co_dev_t* const other_dev = other_dev_holder.Get();
@@ -684,7 +684,7 @@ TEST(CO_Dev, CoDevInsertObj_AddedToOtherDev) {
 ///       which was already inserted into the other device's OD
 ///
 /// \Then 0 is returned, the object is still inserted into the other device's OD
-TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
+TEST(CO_Dev, CoDevInsertObj_AlreadyInserted) {
   CoObjTHolder obj_holder(0x00001);
   co_obj_t* const obj = obj_holder.Take();
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj));
@@ -702,7 +702,7 @@ TEST(CO_Dev, CoDevInsertObj_AlreadyAdded) {
 ///       already inserted into the other device's OD
 ///
 /// \Then -1 is returned, the initial object is still inserted into the other device's OD
-TEST(CO_Dev, CoDevInsertObj_AlreadyAddedAtIdx) {
+TEST(CO_Dev, CoDevInsertObj_AlreadyInsertedAtIdx) {
   CoObjTHolder obj1_holder(0x0001u);
   CoObjTHolder obj2_holder(0x0001u);
   co_obj_t* const obj1 = obj1_holder.Take();
@@ -741,7 +741,7 @@ TEST(CO_Dev, CoDevRemoveObj) {
 /// \When co_dev_remove_obj() is called with a pointer to the object (co_obj_t)
 ///
 /// \Then -1 is returned, nothing is changed
-TEST(CO_Dev, CoDevRemoveObj_NotAdded) {
+TEST(CO_Dev, CoDevRemoveObj_NotInserted) {
   CoObjTHolder obj(0x1234u);
 
   const auto ret = co_dev_remove_obj(dev, obj.Get());
@@ -2387,7 +2387,9 @@ TEST(CO_DevTpdoEvent, CoDevTpdoEvent_MappingPossibleButNoMapping) {
 ///       \Calls co_dev_find_obj()
 TEST(CO_DevTpdoEvent, CoDevTpdoEvent_InvalidTpdoMaxSubIndex) {
   CoObjTHolder obj1800(0x1800u);
-  obj1800.InsertAndSetSub(0x00u, CO_DEFTYPE_UNSIGNED8, co_unsigned8_t(0x00u));
+  obj1800.InsertAndSetSub(
+      0x00u, CO_DEFTYPE_UNSIGNED8,
+      co_unsigned8_t(0x00u));  // highest sub-index supported
   CHECK_EQUAL(0, co_dev_insert_obj(dev, obj1800.Take()));
   CreateSingleEntryMapping(EncodeMapping(OBJ_IDX, SUB_IDX, SUB_SIZE));
 

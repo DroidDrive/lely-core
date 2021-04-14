@@ -1619,8 +1619,9 @@ TEST(CO_Nmt, CoNmtSetUpInd_Nominal) {
 
 /// \Given a pointer to an initialized NMT service (co_nmt_t)
 ///
-/// \When co_nmt_get_sync_ind() is called with no address to store the indication
-///       functions pointer and no address to store user-specifed data pointer
+/// \When co_nmt_get_sync_ind() is called with no address to store the
+///       indication functions pointer and no address to store user-specifed
+///       data pointer
 ///
 /// \Then nothing is changed
 TEST(CO_Nmt, CoNmtGetSyncInd_Null) {
@@ -1631,8 +1632,9 @@ TEST(CO_Nmt, CoNmtGetSyncInd_Null) {
 
 /// \Given a pointer to an initialized NMT service (co_nmt_t)
 ///
-/// \When co_nmt_get_sync_ind() is called with an address to store the indication
-///       function pointer and an address to store user-specifed data pointer
+/// \When co_nmt_get_sync_ind() is called with an address to store the
+///       indication function pointer and an address to store user-specifed
+///       data pointer
 ///
 /// \Then null addresses are returned for both pointers
 TEST(CO_Nmt, CoNmtGetSyncInd_Nominal) {

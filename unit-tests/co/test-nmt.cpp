@@ -1207,6 +1207,8 @@ TEST_GROUP_BASE(CO_Nmt, CO_NmtBase) {
   static void empty_cs_ind(co_nmt_t*, co_unsigned8_t, void*) {}
   static void empty_hb_ind(co_nmt_t*, co_unsigned8_t, int, int, void*) {}
   static void empty_st_ind(co_nmt_t*, co_unsigned8_t, co_unsigned8_t, void*) {}
+  static void empty_sdo_ind(co_nmt_t*, co_unsigned8_t, co_unsigned16_t,
+                            co_unsigned8_t, size_t, size_t, void*) {}
   int data = 0;
 
   void CreateNmt() {
@@ -1488,3 +1490,122 @@ TEST(CO_Nmt, CoNmtSetStInd_Null) {
 }
 
 ///@}
+
+/// @name co_nmt_get_dn_ind()
+///@{
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_get_dn_ind() is called with no address to store the indication
+///       functions pointer and no address to store user-specifed data pointer
+///
+/// \Then nothing is changed
+TEST(CO_Nmt, CoNmtGetDnInd_Null) {
+  CreateNmt();
+
+  co_nmt_get_dn_ind(nmt, nullptr, nullptr);
+}
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_get_dn_ind() is called with an address to store the indication
+///       function pointer and an address to store user-specifed data pointer
+///
+/// \Then null addresses are returned for both pointers
+TEST(CO_Nmt, CoNmtGetDnInd_Nominal) {
+  CreateNmt();
+
+  co_nmt_sdo_ind_t* ind = &empty_sdo_ind;
+  void* dn_data = &data;
+
+  co_nmt_get_dn_ind(nmt, &ind, &dn_data);
+
+  FUNCTIONPOINTERS_EQUAL(nullptr, ind);
+  POINTERS_EQUAL(nullptr, dn_data);
+}
+
+///@}
+
+/// @name co_nmt_set_dn_ind()
+///@{
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_set_dn_ind() is called with a pointer to an indication
+///       function and a pointer to an user-specified data
+///
+/// \Then the indication function and the user-specified data pointers are set
+///       in the NMT service
+TEST(CO_Nmt, CoNmtSetDnInd_Nominal) {
+  CreateNmt();
+
+  co_nmt_set_dn_ind(nmt, &empty_sdo_ind, &data);
+
+  co_nmt_sdo_ind_t* ind = nullptr;
+  void* dn_data = nullptr;
+  co_nmt_get_dn_ind(nmt, &ind, &dn_data);
+  FUNCTIONPOINTERS_EQUAL(&empty_sdo_ind, ind);
+  POINTERS_EQUAL(&data, dn_data);
+}
+
+///@}
+
+/// @name co_nmt_get_up_ind()
+///@{
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_get_up_ind() is called with no address to store the indication
+///       functions pointer and no address to store user-specifed data pointer
+///
+/// \Then nothing is changed
+TEST(CO_Nmt, CoNmtGetUpInd_Null) {
+  CreateNmt();
+
+  co_nmt_get_up_ind(nmt, nullptr, nullptr);
+}
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_get_up_ind() is called with an address to store the indication
+///       function pointer and an address to store user-specifed data pointer
+///
+/// \Then null addresses are returned for both pointers
+TEST(CO_Nmt, CoNmtGetUpInd_Nominal) {
+  CreateNmt();
+
+  co_nmt_sdo_ind_t* ind = &empty_sdo_ind;
+  void* up_data = &data;
+
+  co_nmt_get_up_ind(nmt, &ind, &up_data);
+
+  FUNCTIONPOINTERS_EQUAL(nullptr, ind);
+  POINTERS_EQUAL(nullptr, up_data);
+}
+
+///@}
+
+/// @name co_nmt_set_up_ind()
+///@{
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_set_up_ind() is called with a pointer to an indication
+///       function and a pointer to an user-specified data
+///
+/// \Then the indication function and the user-specified data pointers are set
+///       in the NMT service
+TEST(CO_Nmt, CoNmtSetUpInd_Nominal) {
+  CreateNmt();
+
+  co_nmt_set_up_ind(nmt, &empty_sdo_ind, &data);
+
+  co_nmt_sdo_ind_t* ind = nullptr;
+  void* up_data = nullptr;
+  co_nmt_get_up_ind(nmt, &ind, &up_data);
+  FUNCTIONPOINTERS_EQUAL(&empty_sdo_ind, ind);
+  POINTERS_EQUAL(&data, up_data);
+}
+
+///@}
+

@@ -1779,6 +1779,20 @@ TEST(CO_Nmt, CoNmtGetSt_Nominal) {
 /// @name co_nmt_is_master()
 ///@{
 
+/// \Given a pointer to an initialized NMT service (co_nmt_t) before initial
+///        'reset node'
+///
+/// \When co_nmt_is_master() is called
+///
+/// \Then 0 is returned
+TEST(CO_Nmt, CoNmtIsMaster_BeforeInitialReset) {
+  CreateNmt();
+
+  const auto ret = co_nmt_is_master(nmt);
+
+  CHECK_EQUAL(0, ret);
+}
+
 /// \Given a pointer to an initialized NMT service (co_nmt_t) configured as
 ///        a slave
 ///
@@ -1786,7 +1800,9 @@ TEST(CO_Nmt, CoNmtGetSt_Nominal) {
 ///
 /// \Then 0 is returned
 TEST(CO_Nmt, CoNmtIsMaster_Slave) {
+  CreateObj1f80NmtStartup(0x00);
   CreateNmt();
+  co_nmt_cs_ind(nmt, CO_NMT_CS_RESET_NODE);
 
   const auto ret = co_nmt_is_master(nmt);
 

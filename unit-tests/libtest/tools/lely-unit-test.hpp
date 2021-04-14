@@ -22,14 +22,6 @@
 #ifndef LELY_UNIT_TEST_HPP_
 #define LELY_UNIT_TEST_HPP_
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <cassert>
-
-#include <CppUTest/TestHarness.h>
-
 #include <lely/can/msg.h>
 #include <lely/co/type.h>
 

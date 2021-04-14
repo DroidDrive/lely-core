@@ -20,6 +20,11 @@
  * limitations under the License.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <cassert>
 #include <functional>
 
 #include <CppUTest/TestHarness.h>
@@ -31,16 +36,23 @@
 
 #include "lely-unit-test.hpp"
 
-static void CheckSubDnInd(
-    const co_dev_t* const dev, const co_unsigned16_t idx,
-    std::function<void(co_sub_dn_ind_t*, void* data)> pred);
-
 co_csdo_t* CoCsdoDnCon::sdo = nullptr;
 co_unsigned16_t CoCsdoDnCon::idx = 0;
 co_unsigned8_t CoCsdoDnCon::subidx = 0;
 co_unsigned32_t CoCsdoDnCon::ac = 0;
 void* CoCsdoDnCon::data = nullptr;
 unsigned int CoCsdoDnCon::num_called = 0;
+
+int CanSend::ret = 0;
+void* CanSend::data = nullptr;
+unsigned int CanSend::num_called = 0;
+can_msg CanSend::msg = CAN_MSG_INIT;
+can_msg* CanSend::msg_buf = &CanSend::msg;
+size_t CanSend::buf_size = 1u;
+
+static void CheckSubDnInd(
+    const co_dev_t* const dev, const co_unsigned16_t idx,
+    std::function<void(co_sub_dn_ind_t*, void* data)> pred);
 
 void
 CoCsdoDnCon::func(co_csdo_t* sdo_, co_unsigned16_t idx_, co_unsigned8_t subidx_,
@@ -74,13 +86,6 @@ CoCsdoDnCon::Check(const co_csdo_t* sdo_, const co_unsigned16_t idx_,
   CHECK_EQUAL(ac_, ac);
   POINTERS_EQUAL(data_, data);
 }
-
-int CanSend::ret = 0;
-void* CanSend::data = nullptr;
-unsigned int CanSend::num_called = 0;
-can_msg CanSend::msg = CAN_MSG_INIT;
-can_msg* CanSend::msg_buf = &CanSend::msg;
-size_t CanSend::buf_size = 1u;
 
 int
 CanSend::func(const can_msg* msg_, void* data_) {

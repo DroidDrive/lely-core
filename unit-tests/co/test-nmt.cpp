@@ -1726,12 +1726,13 @@ TEST(CO_Nmt, CoNmtSetId_OverMax) {
 ///
 /// \Then 0 is returned, the pending Node-Id is set to the unconfigured Node-ID
 TEST(CO_Nmt, CoNmtSetId_Unconfigured) {
+  const co_unsigned8_t unconfNodeId = 255u;
   CreateNmt();
 
-  const auto ret = co_nmt_set_id(nmt, 255u);
+  const auto ret = co_nmt_set_id(nmt, unconfNodeId);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(255u, co_nmt_get_id(nmt));
+  CHECK_EQUAL(unconfNodeId, co_nmt_get_id(nmt));
 }
 
 /// \Given a pointer to an initialized NMT service (co_nmt_t)
@@ -1740,13 +1741,13 @@ TEST(CO_Nmt, CoNmtSetId_Unconfigured) {
 ///
 /// \Then 0 is returned, the pending Node-Id is set
 TEST(CO_Nmt, CoNmtSetId_Nominal) {
-  const co_unsigned8_t NODE_ID = 0x05;
+  const co_unsigned8_t nodeId = 0x05;
   CreateNmt();
 
-  const auto ret = co_nmt_set_id(nmt, NODE_ID);
+  const auto ret = co_nmt_set_id(nmt, nodeId);
 
   CHECK_EQUAL(0, ret);
-  CHECK_EQUAL(NODE_ID, co_nmt_get_id(nmt));
+  CHECK_EQUAL(nodeId, co_nmt_get_id(nmt));
 }
 
 ///@}
@@ -1800,6 +1801,43 @@ TEST(CO_Nmt, CoNmtIsMaster_Master) {
   const auto ret = co_nmt_is_master(nmt);
 
   CHECK_EQUAL(1, ret);
+}
+
+///@}
+
+/// @name co_nmt_get_timeout()
+///@{
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_get_timeout() is called
+///
+/// \Then the default SDO timeout is returned
+TEST(CO_Nmt, CoNmtGetTimeout_Nominal) {
+  CreateNmt();
+
+  const auto ret = co_nmt_get_timeout(nmt);
+
+  CHECK_EQUAL(0, ret);
+}
+
+///@}
+
+/// @name co_nmt_set_timeout()
+///@{
+
+/// \Given a pointer to an initialized NMT service (co_nmt_t)
+///
+/// \When co_nmt_set_timeout() is called with a timeout value
+///
+/// \Then the default SDO timeout is set
+TEST(CO_Nmt, CoNmtSetTimeout_Nominal) {
+  const int timeout = 500;
+  CreateNmt();
+
+  co_nmt_set_timeout(nmt, timeout);
+
+  CHECK_EQUAL(timeout, co_nmt_get_timeout(nmt));
 }
 
 ///@}

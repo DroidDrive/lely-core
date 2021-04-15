@@ -84,6 +84,11 @@ BasicMaster::BasicMaster(ev_exec_t* exec, io::TimerBase& timer,
     : Node(exec, timer, chan, dcf_txt, dcf_bin, id),
       tpdo_event_mutex(*this),
       impl_(new Impl_(this, Node::nmt())) {}
+BasicMaster::BasicMaster(ev_exec_t* exec, io::TimerBase& timer,
+                         io::CanChannelBase& chan, const co_sdev* staticDevice, uint8_t id)
+    : Node(exec, timer, chan, staticDevice, id),
+      tpdo_event_mutex(*this),
+      impl_(new Impl_(this, Node::nmt())) {}
 
 BasicMaster::~BasicMaster() = default;
 

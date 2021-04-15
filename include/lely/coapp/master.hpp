@@ -588,12 +588,17 @@ class BasicMaster : public Node, protected ::std::map<uint8_t, DriverBase*> {
   explicit BasicMaster(ev_exec_t* exec, io::TimerBase& timer,
                        io::CanChannelBase& chan, const ::std::string& dcf_txt,
                        const ::std::string& dcf_bin = "", uint8_t id = 0xff);
+  explicit BasicMaster(ev_exec_t* exec, io::TimerBase& timer,
+                       io::CanChannelBase& chan, const co_sdev* staticDevice, uint8_t id = 0xff);
 
   /// Creates a new CANopen master.
   explicit BasicMaster(io::TimerBase& timer, io::CanChannelBase& chan,
                        const ::std::string& dcf_txt,
                        const ::std::string& dcf_bin = "", uint8_t id = 0xff)
       : BasicMaster(nullptr, timer, chan, dcf_txt, dcf_bin, id) {}
+  explicit BasicMaster(io::TimerBase& timer, io::CanChannelBase& chan,
+                       const co_sdev* staticDevice, uint8_t id = 0xff)
+      : BasicMaster(nullptr, timer, chan, staticDevice, id) {}
 
   virtual ~BasicMaster();
 

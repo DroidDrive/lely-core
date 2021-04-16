@@ -48,6 +48,11 @@
 namespace lely {
 namespace util {
 
+
+///kikass13
+// random function coming from a magical place ("somewhere") which will be used as a temporary termination callback
+extern void _fiber_terminate();
+
 /**
  * Specifies which properties of the calling environment are saved or restored
  * by a fiber when it is suspended or resumed and how its stack is allocated.
@@ -429,7 +434,11 @@ Fiber::func_(fiber_t* fiber, void* arg) noexcept {
     }
     // Similar to threads, exceptions thrown by a fiber function will result in
     // termination.
-    ::std::terminate();
+    /// kikass13
+    /// do not do this, 
+    //::std::terminate();
+    /// do this instead
+    _fiber_terminate();
   }
 }
 
@@ -449,6 +458,7 @@ Fiber::resume_(Fiber&& f) {
   }
   return ::std::move(f);
 }
+
 
 #endif  // __cpp_exceptions
 

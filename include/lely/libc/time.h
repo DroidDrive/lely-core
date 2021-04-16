@@ -82,7 +82,7 @@
 
 #endif // !_POSIX_C_SOURCE && !_POSIX_TIMERS && !__MINGW32__
 
-#if !LELY_HAVE_TIMESPEC
+#if LELY_HAVE_TIMESPEC
 
 /// A time type with nanosecond resolution.
 struct timespec {
@@ -92,9 +92,9 @@ struct timespec {
 	long tv_nsec;
 };
 
-#endif // !LELY_HAVE_TIMESPEC
+#endif // LELY_HAVE_TIMESPEC
 
-#if !LELY_HAVE_ITIMERSPEC
+#if LELY_HAVE_ITIMERSPEC
 
 /// A struct specifying an interval and initial value for a timer.
 struct itimerspec {
@@ -104,7 +104,7 @@ struct itimerspec {
 	struct timespec it_value;
 };
 
-#endif // !LELY_HAVE_ITIMERSPEC
+#endif // LELY_HAVE_ITIMERSPEC
 
 #ifdef __cplusplus
 extern "C" {

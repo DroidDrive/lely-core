@@ -177,9 +177,11 @@ struct Device::Impl_ : util::BasicLockable {
 };
 
 #if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 Device::Device(const ::std::string& dcf_txt, const ::std::string& dcf_bin,
                uint8_t id, util::BasicLockable* mutex)
     : impl_(new Impl_(this, dcf_txt, dcf_bin, id, mutex)) {}
+#endif
 Device::Device(const co_sdev* generatedDev,
                uint8_t id, util::BasicLockable* mutex)
     : impl_(new Impl_(this, generatedDev, id, mutex)) {}
@@ -1371,7 +1373,7 @@ Device::SetEvent(uint16_t idx, uint8_t subidx, ::std::error_code& ec) noexcept {
 
 #if !LELY_NO_CO_TPDO
   co_dev_tpdo_event(dev(), idx, subidx);
-#if !LELYY_NO_CO_MPDO
+#if !LELY_NO_CO_MPDO
   co_dev_sam_mpdo_event(dev(), idx, subidx);
 #endif
 #endif  // !LELY_NO_CO_TPDO
@@ -1789,6 +1791,7 @@ Device::RpdoWrite(uint8_t id, uint16_t idx, uint8_t subidx) {
 }
 
 #if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 Device::Impl_::Impl_(Device* self_, const ::std::string& dcf_txt,
                      const ::std::string& dcf_bin, uint8_t id,
                      util::BasicLockable* mutex_)
@@ -1824,6 +1827,7 @@ Device::Impl_::Impl_(Device* self_, const ::std::string& dcf_txt,
         static_cast<void*>(this));
   }
 }
+#endif  // !LELY_NO_DCF_VIA_FILESYSTEM
 Device::Impl_::Impl_(Device* self_, const co_sdev* staticDevice, uint8_t id, util::BasicLockable* mutex_)
     : self(self_),
       mutex(mutex_),

@@ -94,6 +94,10 @@ static _Noreturn void sigctx_func(void);
 
 #endif // _POSIX_C_SOURCE >= 200112L && (!__NEWLIB__ || __CYGWIN__)
 
+
+__attribute__((weak)) void 
+FIBER_TERMINATION_ALARM(void){}
+
 int
 mkjmp(jmp_buf env, void (*func)(void *), void *arg, void *sp, size_t size)
 {
@@ -157,10 +161,18 @@ ctx_func(void)
 	// The user-provided function returned. Since we do not have an
 	// environment to restore, terminate the current thread.
 #if !LELY_NO_THREADS
-	thrd_exit(0);
+	/// kikass13:
+	/// do not do that ;)
+	//thrd_exit(0);
 #else
-	exit(EXIT_SUCCESS);
+	/// kikass13:
+	/// do not do that ;)
+	//exit(EXIT_SUCCESS);
 #endif
+	/// kikass13:
+	/// try calling something wortless
+	FIBER_TERMINATION_ALARM();
+	/// idle endlessly
 	for (;;)
 		;
 }

@@ -64,13 +64,17 @@ class BasicSlave : public Node {
                       io::CanChannelBase& chan, const co_sdev* staticDevice, uint8_t id = 0xff);
 
   /// Creates a new CANopen slave.
+#if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
   explicit BasicSlave(io::TimerBase& timer, io::CanChannelBase& chan,
                       const ::std::string& dcf_txt,
                       const ::std::string& dcf_bin = "", uint8_t id = 0xff)
       : BasicSlave(nullptr, timer, chan, dcf_txt, dcf_bin, id) {}
+#endif
   explicit BasicSlave(io::TimerBase& timer, io::CanChannelBase& chan,
                       const co_sdev* staticDevice, uint8_t id = 0xff)
       : BasicSlave(nullptr, timer, chan, staticDevice, id) {}
+#endif
 
   virtual ~BasicSlave();
 

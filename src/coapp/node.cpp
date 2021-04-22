@@ -142,7 +142,8 @@ struct Node::Impl_ {
 #endif
 };
 
-
+#if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
            const ::std::string& dcf_txt, const ::std::string& dcf_bin,
            uint8_t id)
@@ -153,7 +154,7 @@ Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
   // Start processing CAN frames.
   start();
 }
-
+#endif
 /// kikass13:
 /// add static device here
 Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
@@ -165,7 +166,7 @@ Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
   // Start processing CAN frames.
   start();
 }
-
+#endif
 
 Node::~Node() = default;
 
@@ -436,10 +437,10 @@ Node::OnCanState(io::CanState new_state, io::CanState old_state) noexcept {
   assert(new_state != old_state);
 
   // TODO(jseldenthuis@lely.com): Clear EMCY in error active mode.
-  if (new_state == io::CanState::PASSIVE) {
+  if (new_state == io::CanState::CAN_STATE_PASSIVE) {
     // CAN in error passive mode.
     Error(0x8120, 0x10);
-  } else if (old_state == io::CanState::BUSOFF) {
+  } else if (old_state == io::CanState::CAN_STATE_BUSOFF) {
     // Recovered from bus off.
     Error(0x8140, 0x10);
   }

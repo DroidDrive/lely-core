@@ -32,32 +32,32 @@ namespace io {
 /// The states of a CAN node, depending on the TX/RX error count.
 enum class CanState : int {
   /// The error active state (TX/RX error count < 128).
-  ACTIVE = CAN_STATE_ACTIVE,
+  CAN_STATE_ACTIVE = LELY_CAN_STATE_ACTIVE,
   /// The error passive state (TX/RX error count < 256).
-  PASSIVE = CAN_STATE_PASSIVE,
+  CAN_STATE_PASSIVE = LELY_CAN_STATE_PASSIVE,
   /// The bus off state (TX/RX error count >= 256).
-  BUSOFF = CAN_STATE_BUSOFF,
+  CAN_STATE_BUSOFF = LELY_CAN_STATE_BUSOFF,
   /// The device is in sleep mode.
-  SLEEPING = CAN_STATE_SLEEPING,
+  CAN_STATE_SLEEPING = LELY_CAN_STATE_SLEEPING,
   /// The device is stopped.
-  STOPPED = CAN_STATE_STOPPED
+  CAN_STATE_STOPPED = LELY_CAN_STATE_STOPPED
 };
 
 /// The error flags of a CAN bus, which are not mutually exclusive.
 enum class CanError : int {
   /// A single bit error.
-  BIT = CAN_ERROR_BIT,
+  CAN_ERROR_BIT = LELY_CAN_ERROR_BIT,
   /// A bit stuffing error.
-  STUFF = CAN_ERROR_STUFF,
+  CAN_ERROR_STUFF = LELY_CAN_ERROR_STUFF,
   /// A CRC sequence error.
-  CRC = CAN_ERROR_CRC,
+  CAN_ERROR_CRC = LELY_CAN_ERROR_CRC,
   /// A form error.
-  FORM = CAN_ERROR_FORM,
+  CAN_ERROR_FORM = LELY_CAN_ERROR_FORM,
   /// An acknowledgment error.
-  ACK = CAN_ERROR_ACK,
+  CAN_ERROR_ACK = LELY_CAN_ERROR_ACK,
   /// One or more other errors.
-  OTHER = CAN_ERROR_OTHER,
-  NONE = 0
+  CAN_ERROR_OTHER = LELY_CAN_ERROR_OTHER,
+  CAN_ERROR_NONE = 0
 };
 
 constexpr CanError

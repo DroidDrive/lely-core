@@ -25,33 +25,33 @@
 #include <lely/features.h>
 
 /// The states of a CAN node, depending on the TX/RX error count.
-enum can_state {
+enum lely_can_state {
 	/// The error active state (TX/RX error count < 128).
-	CAN_STATE_ACTIVE,
+	LELY_CAN_STATE_ACTIVE,
 	/// The error passive state (TX/RX error count < 256).
-	CAN_STATE_PASSIVE,
+	LELY_CAN_STATE_PASSIVE,
 	/// The bus off state (TX/RX error count >= 256).
-	CAN_STATE_BUSOFF,
+	LELY_CAN_STATE_BUSOFF,
 	/// The device is in sleep mode.
-	CAN_STATE_SLEEPING,
+	LELY_CAN_STATE_SLEEPING,
 	/// The device is stopped.
-	CAN_STATE_STOPPED
+	LELY_CAN_STATE_STOPPED
 };
 
 /// The error flags of a CAN bus, which are not mutually exclusive.
-enum can_error {
+enum lely_can_error {
 	/// A single bit error.
-	CAN_ERROR_BIT = 1u << 0,
+	LELY_CAN_ERROR_BIT = 1u << 0,
 	/// A bit stuffing error.
-	CAN_ERROR_STUFF = 1u << 1,
+	LELY_CAN_ERROR_STUFF = 1u << 1,
 	/// A CRC sequence error.
-	CAN_ERROR_CRC = 1u << 2,
+	LELY_CAN_ERROR_CRC = 1u << 2,
 	/// A form error.
-	CAN_ERROR_FORM = 1u << 3,
+	LELY_CAN_ERROR_FORM = 1u << 3,
 	/// An acknowledgment error.
-	CAN_ERROR_ACK = 1u << 4,
+	LELY_CAN_ERROR_ACK = 1u << 4,
 	/// One or more other errors.
-	CAN_ERROR_OTHER = 1u << 5
+	LELY_CAN_ERROR_OTHER = 1u << 5
 };
 
 #endif // !LELY_CAN_ERR_H_

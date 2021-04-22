@@ -26,7 +26,7 @@
 #if !LELY_NO_CO_SDEV
 
 #include <lely/co/sdev.h>
-#include <lely/libc/stdio.h>
+//#include <lely/libc/stdio.h>
 #include <lely/util/errnum.h>
 #if !LELY_NO_STDIO
 #include <lely/util/lex.h>

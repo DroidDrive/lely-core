@@ -308,7 +308,7 @@ io_vcan_ctrl_init(io_can_ctrl_t *ctrl, io_clock_t *clock, int flags,
 	}
 #endif
 
-	vcan->stopped = state == CAN_STATE_STOPPED;
+	vcan->stopped = state == LELY_CAN_STATE_STOPPED;
 	vcan->nominal = nominal;
 	vcan->data = 0;
 #if !LELY_NO_CANFD
@@ -395,7 +395,7 @@ io_vcan_ctrl_set_state(io_can_ctrl_t *ctrl, int state)
 	int changed = vcan->state != state;
 	if (changed) {
 		vcan->state = state;
-		if (!vcan->stopped && vcan->state == CAN_STATE_STOPPED)
+		if (!vcan->stopped && vcan->state == LELY_CAN_STATE_STOPPED)
 			io_vcan_ctrl_do_stop(vcan);
 	}
 #if !LELY_NO_THREADS
@@ -404,7 +404,7 @@ io_vcan_ctrl_set_state(io_can_ctrl_t *ctrl, int state)
 
 	// Send an error frame if the state of the CAN bus changed. We ignore
 	// write errors, since the user does not expect this operation to block.
-	if (changed && state != CAN_STATE_STOPPED
+	if (changed && state != LELY_CAN_STATE_STOPPED
 			&& (vcan->flags & IO_CAN_BUS_FLAG_ERR)) {
 		struct can_err err = { .state = state };
 		int errsv = get_errc();
@@ -682,7 +682,7 @@ io_vcan_ctrl_restart(io_can_ctrl_t *ctrl)
 	int stopped = vcan_ctrl->stopped;
 	if (stopped) {
 		vcan_ctrl->stopped = 0;
-		vcan_ctrl->state = CAN_STATE_ACTIVE;
+		vcan_ctrl->state = LELY_CAN_STATE_ACTIVE;
 		// Update the state of each channel.
 		sllist_foreach (&vcan_ctrl->list, node) {
 			struct io_vcan_chan *vcan_chan = structof(
@@ -703,7 +703,7 @@ io_vcan_ctrl_restart(io_can_ctrl_t *ctrl)
 	// Send an error frame if the CAN bus was restarted. We ignore write
 	// errors, since the user does not expect this operation to block.
 	if (stopped && (vcan_ctrl->flags & IO_CAN_BUS_FLAG_ERR)) {
-		struct can_err err = { .state = CAN_STATE_ACTIVE };
+		struct can_err err = { .state = LELY_CAN_STATE_ACTIVE };
 		int errsv = get_errc();
 		if (io_vcan_ctrl_write_err(ctrl, &err, 0) == -1)
 			set_errc(errsv);
@@ -1037,7 +1037,7 @@ io_vcan_ctrl_do_stop(struct io_vcan_ctrl *vcan_ctrl)
 	assert(vcan_ctrl);
 
 	vcan_ctrl->stopped = 1;
-	vcan_ctrl->state = CAN_STATE_STOPPED;
+	vcan_ctrl->state = LELY_CAN_STATE_STOPPED;
 
 	struct sllist read_queue, write_queue;
 	sllist_init(&read_queue);

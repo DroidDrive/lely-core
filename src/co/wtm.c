@@ -361,23 +361,23 @@ co_wtm_set_diag_can(co_wtm_t *wtm, uint_least8_t nif, uint_least8_t st,
 	struct co_wtm_can *can = &wtm->can[nif - 1];
 
 	switch (st) {
-	case CAN_STATE_ACTIVE: st = 0; break;
-	case CAN_STATE_PASSIVE: st = 1; break;
-	case CAN_STATE_BUSOFF: st = 2; break;
+	case LELY_CAN_STATE_ACTIVE: st = 0; break;
+	case LELY_CAN_STATE_PASSIVE: st = 1; break;
+	case LELY_CAN_STATE_BUSOFF: st = 2; break;
 	case 0xf: break;
 	default: set_errnum(ERRNUM_INVAL); return -1;
 	}
 
 	if (err == 0xf) {
-	} else if (err & CAN_ERROR_BIT) {
+	} else if (err & LELY_CAN_ERROR_BIT) {
 		err = 1;
-	} else if (err & CAN_ERROR_STUFF) {
+	} else if (err & LELY_CAN_ERROR_STUFF) {
 		err = 2;
-	} else if (err & CAN_ERROR_CRC) {
+	} else if (err & LELY_CAN_ERROR_CRC) {
 		err = 3;
-	} else if (err & CAN_ERROR_FORM) {
+	} else if (err & LELY_CAN_ERROR_FORM) {
 		err = 4;
-	} else if (err & CAN_ERROR_ACK) {
+	} else if (err & LELY_CAN_ERROR_ACK) {
 		err = 5;
 	} else if (err) {
 		err = 0xf;
@@ -674,17 +674,17 @@ co_wtm_recv(co_wtm_t *wtm, const void *buf, size_t nbytes)
 					continue;
 				uint_least8_t st = 0xf;
 				switch ((wtm->recv_buf[5] >> 4) & 0xf) {
-				case 0: st = CAN_STATE_ACTIVE; break;
-				case 1: st = CAN_STATE_PASSIVE; break;
-				case 2: st = CAN_STATE_BUSOFF; break;
+				case 0: st = LELY_CAN_STATE_ACTIVE; break;
+				case 1: st = LELY_CAN_STATE_PASSIVE; break;
+				case 2: st = LELY_CAN_STATE_BUSOFF; break;
 				}
 				uint_least8_t err = 0xf;
 				switch (wtm->recv_buf[5] & 0xf) {
-				case 1: err = CAN_ERROR_BIT; break;
-				case 2: err = CAN_ERROR_STUFF; break;
-				case 3: err = CAN_ERROR_CRC; break;
-				case 4: err = CAN_ERROR_FORM; break;
-				case 5: err = CAN_ERROR_ACK; break;
+				case 1: err = LELY_CAN_ERROR_BIT; break;
+				case 2: err = LELY_CAN_ERROR_STUFF; break;
+				case 3: err = LELY_CAN_ERROR_CRC; break;
+				case 4: err = LELY_CAN_ERROR_FORM; break;
+				case 5: err = LELY_CAN_ERROR_ACK; break;
 				}
 				uint_least8_t load = wtm->recv_buf[6];
 				uint_least16_t ec = ldle_u16(wtm->recv_buf + 7);

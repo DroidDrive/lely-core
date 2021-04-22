@@ -202,7 +202,11 @@ static void default_on_can_error_func(int error, void *arg);
 void *
 io_can_net_alloc(void)
 {
-	void *ptr = aligned_alloc(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+	// void *ptr = aligned_alloc(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+	/// kikass13:
+	/// changed because of 'undefined reference to posix_memalign'
+	void* ptr;
+	ptr = (void*) memalign(_Alignof(io_can_net_t), sizeof(io_can_net_t));
 #if !LELY_NO_ERRNO
 	if (!ptr)
 		set_errc(errno2c(errno));
@@ -262,7 +266,7 @@ io_can_net_init(io_can_net_t *net, ev_exec_t *exec, io_timer_t *timer,
 	net->read_errc = 0;
 	net->read_errcnt = 0;
 
-	net->state = CAN_STATE_ACTIVE;
+	net->state = LELY_CAN_STATE_ACTIVE;
 
 	net->write_msg = (struct can_msg)CAN_MSG_INIT;
 	net->write = (struct io_can_chan_write)IO_CAN_CHAN_WRITE_INIT(
@@ -804,7 +808,7 @@ io_can_net_read_func(struct ev_task *task)
 			int old_state = net->state;
 			net->state = net->read_err.state;
 
-			if (old_state == CAN_STATE_BUSOFF)
+			if (old_state == LELY_CAN_STATE_BUSOFF)
 				// Cancel the ongoing write operation if we just
 				// recovered from bus off.
 				io_can_chan_cancel_write(
@@ -1098,19 +1102,19 @@ default_on_can_state_func(int new_state, int old_state, void *arg)
 	(void)arg;
 
 	switch (new_state) {
-	case CAN_STATE_ACTIVE:
+	case LELY_CAN_STATE_ACTIVE:
 		diag(DIAG_INFO, 0, "CAN bus is in the error active state");
 		break;
-	case CAN_STATE_PASSIVE:
+	case LELY_CAN_STATE_PASSIVE:
 		diag(DIAG_INFO, 0, "CAN bus is in the error passive state");
 		break;
-	case CAN_STATE_BUSOFF:
+	case LELY_CAN_STATE_BUSOFF:
 		diag(DIAG_WARNING, 0, "CAN bus is in the bus off state");
 		break;
-	case CAN_STATE_SLEEPING:
+	case LELY_CAN_STATE_SLEEPING:
 		diag(DIAG_INFO, 0, "CAN interface is in sleep mode");
 		break;
-	case CAN_STATE_STOPPED:
+	case LELY_CAN_STATE_STOPPED:
 		diag(DIAG_WARNING, 0, "CAN interface is stopped");
 		break;
 	}
@@ -1121,18 +1125,18 @@ default_on_can_error_func(int error, void *arg)
 {
 	(void)arg;
 
-	if (error & CAN_ERROR_BIT)
+	if (error & LELY_CAN_ERROR_BIT)
 		diag(DIAG_WARNING, 0, "single bit error detected on CAN bus");
-	if (error & CAN_ERROR_STUFF)
+	if (error & LELY_CAN_ERROR_STUFF)
 		diag(DIAG_WARNING, 0, "bit stuffing error detected on CAN bus");
-	if (error & CAN_ERROR_CRC)
+	if (error & LELY_CAN_ERROR_CRC)
 		diag(DIAG_WARNING, 0, "CRC sequence error detected on CAN bus");
-	if (error & CAN_ERROR_FORM)
+	if (error & LELY_CAN_ERROR_FORM)
 		diag(DIAG_WARNING, 0, "form error detected on CAN bus");
-	if (error & CAN_ERROR_ACK)
+	if (error & LELY_CAN_ERROR_ACK)
 		diag(DIAG_WARNING, 0,
 				"acknowledgment error detected on CAN bus");
-	if (error & CAN_ERROR_OTHER)
+	if (error & LELY_CAN_ERROR_OTHER)
 		diag(DIAG_WARNING, 0,
 				"one or more unknown errors detected on CAN bus");
 }

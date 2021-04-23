@@ -52,8 +52,8 @@ extern "C" {
  * @returns 1 if the CAN frame is an error frame, 0 if not, and -1 on error. In
  * the latter case, the error number can be obtained with get_errc().
  */
-int can_frame_is_error(const struct can_frame *frame, enum can_state *pstate,
-		enum can_error *perror);
+int can_frame_is_error(const struct can_frame *frame, enum lely_can_state *pstate,
+		enum lely_can_error *perror);
 
 /**
  * Converts a SocketCAN CAN frame to a #can_msg frame.

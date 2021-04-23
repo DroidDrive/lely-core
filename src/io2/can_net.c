@@ -202,11 +202,14 @@ static void default_on_can_error_func(int error, void *arg);
 void *
 io_can_net_alloc(void)
 {
-	// void *ptr = aligned_alloc(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+#ifdef __unix__
+	void *ptr = aligned_alloc(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+#else
 	/// kikass13:
 	/// changed because of 'undefined reference to posix_memalign'
 	void* ptr;
 	ptr = (void*) memalign(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+#endif
 #if !LELY_NO_ERRNO
 	if (!ptr)
 		set_errc(errno2c(errno));

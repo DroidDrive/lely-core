@@ -192,7 +192,7 @@ io_open_can(const char *path)
 #endif
 	((struct can *)handle)->ifindex = ifindex;
 	((struct can *)handle)->ifflags = ifflags;
-	((struct can *)handle)->state = CAN_STATE_ACTIVE;
+	((struct can *)handle)->state = LELY_CAN_STATE_ACTIVE;
 	((struct can *)handle)->error = 0;
 
 	return io_handle_acquire(handle);
@@ -418,9 +418,9 @@ io_can_get_state(io_handle_t handle)
 
 	switch (attr) {
 	case CAN_STATE_ERROR_ACTIVE:
-	case CAN_STATE_ERROR_WARNING: can->state = CAN_STATE_ACTIVE; break;
-	case CAN_STATE_ERROR_PASSIVE: can->state = CAN_STATE_PASSIVE; break;
-	case CAN_STATE_BUS_OFF: can->state = CAN_STATE_BUSOFF; break;
+	case CAN_STATE_ERROR_WARNING: can->state = LELY_CAN_STATE_ACTIVE; break;
+	case CAN_STATE_ERROR_PASSIVE: can->state = LELY_CAN_STATE_PASSIVE; break;
+	case CAN_STATE_BUS_OFF: can->state = LELY_CAN_STATE_BUSOFF; break;
 	}
 
 error:
@@ -751,43 +751,43 @@ can_err(struct can *can, const struct can_frame *frame)
 
 #ifdef HAVE_LINUX_CAN_ERROR_H
 	if (frame->can_id & CAN_ERR_RESTARTED)
-		state = CAN_STATE_ACTIVE;
+		state = LELY_CAN_STATE_ACTIVE;
 
 	if (frame->can_id & CAN_ERR_CRTL) {
 #ifdef CAN_ERR_CRTL_ACTIVE
 		if (frame->data[1] & CAN_ERR_CRTL_ACTIVE)
-			state = CAN_STATE_ACTIVE;
+			state = LELY_CAN_STATE_ACTIVE;
 #endif
 		// clang-format off
 		if (frame->data[1] & (CAN_ERR_CRTL_RX_PASSIVE
 				| CAN_ERR_CRTL_TX_PASSIVE))
 			// clang-format on
-			state = CAN_STATE_PASSIVE;
+			state = LELY_CAN_STATE_PASSIVE;
 	}
 
 	if (frame->can_id & CAN_ERR_PROT) {
 		if (frame->data[2] & CAN_ERR_PROT_BIT)
-			error |= CAN_ERROR_BIT;
+			error |= LELY_CAN_ERROR_BIT;
 		if (frame->data[2] & CAN_ERR_PROT_FORM)
-			error |= CAN_ERROR_FORM;
+			error |= LELY_CAN_ERROR_FORM;
 		if (frame->data[2] & CAN_ERR_PROT_STUFF)
-			error |= CAN_ERROR_STUFF;
+			error |= LELY_CAN_ERROR_STUFF;
 		if (frame->data[3] & CAN_ERR_PROT_LOC_CRC_SEQ)
-			error |= CAN_ERROR_CRC;
+			error |= LELY_CAN_ERROR_CRC;
 	}
 
 	if (frame->can_id & CAN_ERR_ACK)
-		error |= CAN_ERROR_ACK;
+		error |= LELY_CAN_ERROR_ACK;
 
 	if (frame->can_id & CAN_ERR_BUSOFF)
-		state = CAN_STATE_BUSOFF;
+		state = LELY_CAN_STATE_BUSOFF;
 #endif
 
 	can->state = state;
 	can->error = error;
 
 	// cppcheck-suppress knownConditionTrueFalse
-	if (state != CAN_STATE_ACTIVE || error) {
+	if (state != LELY_CAN_STATE_ACTIVE || error) {
 		errno = EIO;
 		return -1;
 	}

@@ -343,7 +343,7 @@ io_can_ctrl_impl_get_state(const io_can_ctrl_t *ctrl)
 	if (flags == -1)
 		return -1;
 	if (!(flags & IFF_UP))
-		return CAN_STATE_STOPPED;
+		return LELY_CAN_STATE_STOPPED;
 
 	struct io_can_attr attr = IO_CAN_ATTR_INIT;
 	if (io_can_attr_get(&attr, impl->index) == -1)

@@ -39,6 +39,7 @@
 // in Newlib.
 #include <inttypes.h>
 #include <stdlib.h>
+#include <stdio.h>
 #endif
 
 static int co_sdev_load(const struct co_sdev *sdev, co_dev_t *dev);

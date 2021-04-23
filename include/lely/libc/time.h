@@ -81,7 +81,7 @@
 #endif
 
 #endif // !_POSIX_C_SOURCE && !_POSIX_TIMERS && !__MINGW32__
-
+/*
 #if LELY_HAVE_TIMESPEC
 
 /// A time type with nanosecond resolution.
@@ -105,6 +105,7 @@ struct itimerspec {
 };
 
 #endif // LELY_HAVE_ITIMERSPEC
+*/
 
 #ifdef __cplusplus
 extern "C" {

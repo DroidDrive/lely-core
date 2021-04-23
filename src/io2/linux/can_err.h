@@ -55,53 +55,53 @@ can_frame2can_err(const struct can_frame *frame, struct can_err *err)
 		return -1;
 	}
 
-	enum can_state state = err ? err->state : CAN_STATE_ACTIVE;
-	enum can_error error = err ? err->error : 0;
+	enum lely_can_state state = err ? err->state : LELY_CAN_STATE_ACTIVE;
+	enum lely_can_error error = err ? err->error : 0;
 
 	if (frame->can_id & CAN_ERR_RESTARTED)
-		state = CAN_STATE_ACTIVE;
+		state = LELY_CAN_STATE_ACTIVE;
 
 	if (frame->can_id & CAN_ERR_TX_TIMEOUT)
-		error |= CAN_ERROR_OTHER;
+		error |= LELY_CAN_ERROR_OTHER;
 
 	if (frame->can_id & CAN_ERR_CRTL) {
 #ifdef CAN_ERR_CRTL_ACTIVE
 		if (frame->data[1] & CAN_ERR_CRTL_ACTIVE)
-			state = CAN_STATE_ACTIVE;
+			state = LELY_CAN_STATE_ACTIVE;
 #endif
 		// clang-format off
 		if (frame->data[1] & (CAN_ERR_CRTL_RX_PASSIVE
 				| CAN_ERR_CRTL_TX_PASSIVE))
 			// clang-format on
-			state = CAN_STATE_PASSIVE;
+			state = LELY_CAN_STATE_PASSIVE;
 	}
 
 	if (frame->can_id & CAN_ERR_PROT) {
 		if (frame->data[2] & CAN_ERR_PROT_BIT)
-			error |= CAN_ERROR_BIT;
+			error |= LELY_CAN_ERROR_BIT;
 		if (frame->data[2] & CAN_ERR_PROT_FORM)
-			error |= CAN_ERROR_FORM;
+			error |= LELY_CAN_ERROR_FORM;
 		if (frame->data[2] & CAN_ERR_PROT_STUFF)
-			error |= CAN_ERROR_STUFF;
+			error |= LELY_CAN_ERROR_STUFF;
 		// clang-format off
 		if (frame->data[2] & (CAN_ERR_PROT_BIT0 | CAN_ERR_PROT_BIT1
 				| CAN_ERR_PROT_OVERLOAD))
 			// clang-format on
-			error |= CAN_ERROR_OTHER;
+			error |= LELY_CAN_ERROR_OTHER;
 		if (frame->data[2] & CAN_ERR_PROT_ACTIVE)
-			state = CAN_STATE_ACTIVE;
+			state = LELY_CAN_STATE_ACTIVE;
 		if (frame->data[3] & CAN_ERR_PROT_LOC_CRC_SEQ)
-			error |= CAN_ERROR_CRC;
+			error |= LELY_CAN_ERROR_CRC;
 	}
 
 	if ((frame->can_id & CAN_ERR_TRX) && frame->data[4])
-		error |= CAN_ERROR_OTHER;
+		error |= LELY_CAN_ERROR_OTHER;
 
 	if (frame->can_id & CAN_ERR_ACK)
-		error |= CAN_ERROR_ACK;
+		error |= LELY_CAN_ERROR_ACK;
 
 	if (frame->can_id & CAN_ERR_BUSOFF)
-		state = CAN_STATE_BUSOFF;
+		state = LELY_CAN_STATE_BUSOFF;
 
 	if (err) {
 		err->state = state;

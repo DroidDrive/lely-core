@@ -59,12 +59,12 @@ struct io_can_attr {
 #if LELY_NO_CANFD
 #define IO_CAN_ATTR_INIT \
 	{ \
-		CAN_STATE_ACTIVE, 0, 0 \
+		LELY_CAN_STATE_ACTIVE, 0, 0 \
 	}
 #else
 #define IO_CAN_ATTR_INIT \
 	{ \
-		CAN_STATE_ACTIVE, 0, 0, 0 \
+		LELY_CAN_STATE_ACTIVE, 0, 0, 0 \
 	}
 #endif
 
@@ -155,19 +155,19 @@ io_can_attr_parse(struct nlmsghdr *nlh, size_t len, void *arg)
 			switch (*data) {
 			case CAN_STATE_ERROR_ACTIVE:
 			case CAN_STATE_ERROR_WARNING:
-				attr->state = CAN_STATE_ACTIVE;
+				attr->state = LELY_CAN_STATE_ACTIVE;
 				break;
 			case CAN_STATE_ERROR_PASSIVE:
-				attr->state = CAN_STATE_PASSIVE;
+				attr->state = LELY_CAN_STATE_PASSIVE;
 				break;
 			case CAN_STATE_BUS_OFF:
-				attr->state = CAN_STATE_BUSOFF;
+				attr->state = LELY_CAN_STATE_BUSOFF;
 				break;
 			case CAN_STATE_STOPPED_:
-				attr->state = CAN_STATE_STOPPED;
+				attr->state = LELY_CAN_STATE_STOPPED;
 				break;
 			case CAN_STATE_SLEEPING_:
-				attr->state = CAN_STATE_SLEEPING;
+				attr->state = LELY_CAN_STATE_SLEEPING;
 				break;
 			}
 		}

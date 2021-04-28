@@ -136,6 +136,8 @@ struct Node::Impl_ {
 #endif
 };
 
+#if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
            const ::std::string& dcf_txt, const ::std::string& dcf_bin,
            uint8_t id)
@@ -146,6 +148,19 @@ Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
   // Start processing CAN frames.
   start();
 }
+#endif
+/// kikass13:
+/// add static device here
+Node::Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
+           co_dev_t* staticDevice, uint8_t id)
+    : io::CanNet(exec, timer, chan, 0, 0),
+      Device(staticDevice, id, this),
+      tpdo_event_mutex(*this),
+      impl_(new Impl_(this, net(), Device::dev())) {
+  // Start processing CAN frames.
+  start();
+}
+#endif
 
 Node::~Node() = default;
 

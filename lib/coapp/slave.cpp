@@ -73,11 +73,20 @@ struct BasicSlave::Impl_ {
   ::std::function<void(bool)> on_life_guarding;
 };
 
+#if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 BasicSlave::BasicSlave(ev_exec_t* exec, io::TimerBase& timer,
                        io::CanChannelBase& chan, const ::std::string& dcf_txt,
                        const ::std::string& dcf_bin, uint8_t id)
     : Node(exec, timer, chan, dcf_txt, dcf_bin, id),
       impl_(new Impl_(this, Node::nmt())) {}
+
+#endif
+BasicSlave::BasicSlave(ev_exec_t* exec, io::TimerBase& timer,
+                       io::CanChannelBase& chan, co_dev_t* staticDevice, uint8_t id)
+    : Node(exec, timer, chan, staticDevice, id),
+      impl_(new Impl_(this, Node::nmt())) {}
+#endif
 
 BasicSlave::~BasicSlave() = default;
 

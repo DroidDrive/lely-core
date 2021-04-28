@@ -61,3 +61,5 @@ Makefile.in
 *.rc
 test-*
 unit-test-*
+
+.vscode/settings.json

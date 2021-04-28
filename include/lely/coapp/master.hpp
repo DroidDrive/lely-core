@@ -585,15 +585,24 @@ class BasicMaster : public Node, protected ::std::map<uint8_t, DriverBase*> {
    * @param id      the node-ID (in the range [1..127, 255]). If <b>id</b> is
    *                255 (unconfigured), the node-ID is obtained from the DCF.
    */
+#if !LELY_NO_DCF_VIA_FILESYSTEM
   explicit BasicMaster(ev_exec_t* exec, io::TimerBase& timer,
                        io::CanChannelBase& chan, const ::std::string& dcf_txt,
                        const ::std::string& dcf_bin = "", uint8_t id = 0xff);
+#endif
+  explicit BasicMaster(ev_exec_t* exec, io::TimerBase& timer,
+                       io::CanChannelBase& chan, co_dev_t* staticDevice, uint8_t id = 0xff);
 
   /// Creates a new CANopen master.
+#if !LELY_NO_DCF_VIA_FILESYSTEM
   explicit BasicMaster(io::TimerBase& timer, io::CanChannelBase& chan,
                        const ::std::string& dcf_txt,
                        const ::std::string& dcf_bin = "", uint8_t id = 0xff)
       : BasicMaster(nullptr, timer, chan, dcf_txt, dcf_bin, id) {}
+#endif
+  explicit BasicMaster(io::TimerBase& timer, io::CanChannelBase& chan,
+                       co_dev_t* staticDevice, uint8_t id = 0xff)
+      : BasicMaster(nullptr, timer, chan, staticDevice, id) {}
 
   virtual ~BasicMaster();
 

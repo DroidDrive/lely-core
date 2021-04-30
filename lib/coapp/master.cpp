@@ -204,6 +204,7 @@ BasicMaster::SetTimeout(const ::std::chrono::milliseconds& timeout) {
   co_nmt_set_timeout(nmt(), detail::to_sdo_timeout(timeout));
 }
 
+#if !LELY_NO_STDIO
 void
 BasicMaster::SubmitWriteDcf(uint8_t id, SdoDownloadDcfRequest& req) {
   ::std::error_code ec;
@@ -260,6 +261,7 @@ BasicMaster::AsyncWriteDcf(ev_exec_t* exec, uint8_t id, const char* path,
                                        "AsyncWriteDcf");
   }
 }
+#endif
 
 void
 BasicMaster::Insert(DriverBase& driver) {

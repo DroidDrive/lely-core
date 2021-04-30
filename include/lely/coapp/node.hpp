@@ -140,18 +140,22 @@ class Node : public io::CanNet, public Device {
    * @param id      the node-ID (in the range [1..127, 255]). If <b>id</b> is
    *                255 (unconfigured), the node-ID is obtained from the DCF.
    */
+#if !LELY_NO_DCF_VIA_FILESYSTEM
   explicit Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
                 const ::std::string& dcf_txt, const ::std::string& dcf_bin = "",
                 uint8_t id = 0xff);
+#endif
   explicit Node(ev_exec_t* exec, io::TimerBase& timer, io::CanChannelBase& chan,
                 co_dev_t* staticDevice,
                 uint8_t id = 0xff);
 
   /// Creates a new CANopen node.
+#if !LELY_NO_DCF_VIA_FILESYSTEM
   explicit Node(io::TimerBase& timer, io::CanChannelBase& chan,
                 const ::std::string& dcf_txt, const ::std::string& dcf_bin = "",
                 uint8_t id = 0xff)
       : Node(nullptr, timer, chan, dcf_txt, dcf_bin, id) {}
+#endif
   explicit Node(io::TimerBase& timer, io::CanChannelBase& chan,
                 co_dev_t* staticDevice,
                 uint8_t id = 0xff)

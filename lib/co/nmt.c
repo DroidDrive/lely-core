@@ -2971,6 +2971,7 @@ co_nmt_reset_comm_on_enter(co_nmt_t *nmt)
 	// Stop receiving NMT commands.
 	can_recv_stop(nmt->recv_000);
 
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 	// Reset communication parameters.
 	size_t size = nmt->dcf_comm_end - nmt->dcf_comm_begin;
 	// clang-format off
@@ -2990,7 +2991,7 @@ co_nmt_reset_comm_on_enter(co_nmt_t *nmt)
 			diag(DIAG_ERROR, get_errc(),
 					"unable to store communication parameters");
 	}
-
+#endif
 	// Load the NMT startup value.
 	nmt->startup = co_dev_get_val_u32(nmt->dev, 0x1f80, 0x00);
 #if !LELY_NO_CO_MASTER

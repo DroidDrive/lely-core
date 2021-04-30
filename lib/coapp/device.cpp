@@ -61,8 +61,10 @@ struct Device::Impl_ : util::BasicLockable {
   };
 
 #if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
   Impl_(Device* self, const ::std::string& dcf_txt,
         const ::std::string& dcf_bin, uint8_t id, util::BasicLockable* mutex);
+#endif
   Impl_(Device* self, co_dev_t* staticDevice, uint8_t id, util::BasicLockable* mutex);
 
 #endif
@@ -176,9 +178,11 @@ struct Device::Impl_ : util::BasicLockable {
 };
 
 #if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 Device::Device(const ::std::string& dcf_txt, const ::std::string& dcf_bin,
                uint8_t id, util::BasicLockable* mutex)
     : impl_(new Impl_(this, dcf_txt, dcf_bin, id, mutex)) {}
+#endif
 Device::Device(co_dev_t* staticDevice,
                uint8_t id, util::BasicLockable* mutex)
     : impl_(new Impl_(this, staticDevice, id, mutex)) {}
@@ -522,6 +526,7 @@ Device::Write(uint16_t idx, uint8_t subidx, const void* p, ::std::size_t n,
   set_errc(errsv);
 }
 
+#if !LELY_NO_STDIO
 void
 Device::WriteDcf(const uint8_t* begin, const uint8_t* end) {
   ::std::error_code ec;
@@ -555,7 +560,6 @@ Device::WriteDcf(const char* path) {
   if (ec) throw_sdo_error(id(), 0, 0, ec, "WriteDcf");
 }
 
-#if !LELY_NO_STDIO
 void
 Device::WriteDcf(const char* path, ::std::error_code& ec) {
   int errsv = get_errc();
@@ -1231,6 +1235,8 @@ Device::Set(uint16_t idx, uint8_t subidx, const void* p, ::std::size_t n,
   set_errc(errsv);
 }
 
+#if !LELY_NO_DCF_VIA_FILESYSTEM
+
 const char*
 Device::GetUploadFile(uint16_t idx, uint8_t subidx) const {
   ::std::error_code ec;
@@ -1315,7 +1321,9 @@ Device::GetDownloadFile(uint16_t idx, uint8_t subidx,
   ec.clear();
   return co_sub_get_download_file(sub);
 }
+#endif
 
+#if LELY_NO_DCF
 void
 Device::SetDownloadFile(uint16_t idx, uint8_t subidx, const char* filename) {
   ::std::error_code ec;
@@ -1346,6 +1354,7 @@ Device::SetDownloadFile(uint16_t idx, uint8_t subidx, const char* filename,
     ec = util::make_error_code();
   set_errc(errsv);
 }
+#endif
 
 void
 Device::SetEvent(uint16_t idx, uint8_t subidx) {
@@ -1712,6 +1721,7 @@ Device::UpdateTpdoMapping() {
 }
 
 #if !LELY_NO_CO_DCF
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 Device::Impl_::Impl_(Device* self_, const ::std::string& dcf_txt,
                      const ::std::string& dcf_bin, uint8_t id,
                      util::BasicLockable* mutex_)
@@ -1748,7 +1758,7 @@ Device::Impl_::Impl_(Device* self_, const ::std::string& dcf_txt,
         static_cast<void*>(this));
   }
 }
-
+#endif
 Device::Impl_::Impl_(Device* self_, co_dev_t* staticDevice, uint8_t id, util::BasicLockable* mutex_)
     : self(self_),
       mutex(mutex_),

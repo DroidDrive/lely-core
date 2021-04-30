@@ -23,7 +23,7 @@
 
 #include "ev.h"
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 #include <lely/ev/exec.h>
 #include <lely/ev/std_exec.h>

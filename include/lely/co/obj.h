@@ -211,7 +211,7 @@ co_obj_t *co_obj_init(
  */
 void co_obj_fini(co_obj_t *obj);
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 /**
  * Creates a CANopen object.
@@ -433,7 +433,7 @@ void co_obj_set_dn_ind(co_obj_t *obj, co_sub_dn_ind_t *ind, void *data);
  */
 void co_obj_set_up_ind(co_obj_t *obj, co_sub_up_ind_t *ind, void *data);
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 /**
  * Allocates memory for #co_sub_t structure.
@@ -483,7 +483,7 @@ co_sub_t *co_sub_init(co_sub_t *sub, co_unsigned8_t subidx,
  */
 void co_sub_fini(co_sub_t *sub);
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 /**
  * Creates a CANopen sub-object.
@@ -777,6 +777,7 @@ unsigned int co_sub_get_flags(const co_sub_t *sub);
 /// Sets the object flags of a CANopen sub-object. @see co_sub_get_flags()
 void co_sub_set_flags(co_sub_t *sub, unsigned int flags);
 
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 /**
  * Returns a pointer to the value of the UploadFile attribute of a CANopen
  * sub-object, or NULL if the attribute does not exist.
@@ -824,6 +825,7 @@ const char *co_sub_get_download_file(const co_sub_t *sub);
  * @see co_sub_get_download_file()
  */
 int co_sub_set_download_file(co_sub_t *sub, const char *filename);
+#endif
 
 /**
  * Retrieves the download indication function for a CANopen sub-object.

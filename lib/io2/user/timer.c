@@ -23,7 +23,7 @@
 
 #include "../timer.h"
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 #if !LELY_NO_THREADS
 #include <lely/compat/threads.h>

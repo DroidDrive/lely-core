@@ -174,9 +174,9 @@ can_net_t *
 can_net_create(alloc_t *alloc)
 {
 	can_net_t *net = can_net_alloc(alloc);
-	if (!net)
+	if (!net){
 		return NULL;
-
+	}
 	can_net_init(net);
 
 	return net;

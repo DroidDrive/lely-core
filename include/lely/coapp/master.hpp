@@ -1184,12 +1184,13 @@ class BasicMaster : public Node, protected ::std::map<uint8_t, DriverBase*> {
     }
   }
 
+#if !LELY_NO_STDIO
   /**
    * Equivalent to
    * #SubmitWriteDcf(uint8_t id, SdoDownloadDcfRequest& req, ::std::error_code& ec),
    * except that it throws #lely::canopen::SdoError on error.
    */
-  void SubmitWriteDcf(uint8_t id, SdoDownloadDcfRequest& req);
+  void SubmitWriteDcf(uint8_t id, SdoDownloadDcfRequest& req); 
 
   /**
    * Queues an asynchronous write (SDO download) operation.
@@ -1352,6 +1353,8 @@ class BasicMaster : public Node, protected ::std::map<uint8_t, DriverBase*> {
       ec = SdoErrc::NO_SDO;
     }
   }
+#endif
+
 
   /**
    * Equivalent to

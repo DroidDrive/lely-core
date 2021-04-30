@@ -30,7 +30,7 @@
 
 #include "util.h"
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 #include <lely/compat/stddef.h>
 #include <lely/util/error.h>

@@ -539,6 +539,7 @@ size_t co_dev_read_dcf(co_dev_t *dev, co_unsigned16_t *pmin,
 		co_unsigned16_t *pmax, const uint_least8_t *begin,
 		const uint_least8_t *end);
 
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 /**
  * Reads the values of a range of objects from a file, in the concise DCF
  * format, and stores them in the object dictionary of a CANopen device. If an
@@ -558,7 +559,7 @@ size_t co_dev_read_dcf(co_dev_t *dev, co_unsigned16_t *pmin,
  */
 int co_dev_read_dcf_file(co_dev_t *dev, co_unsigned16_t *pmin,
 		co_unsigned16_t *pmax, const char *filename);
-
+#endif
 /**
  * Loads the values of a range of objects in the object dictionary of a CANopen
  * device, and writes them to a memory buffer, in the concise DCF format.
@@ -592,9 +593,10 @@ size_t co_dev_write_dcf(const co_dev_t *dev, co_unsigned16_t min,
  *
  * @see co_dev_write_dcf()
  */
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 int co_dev_write_dcf_file(const co_dev_t *dev, co_unsigned16_t min,
 		co_unsigned16_t max, const char *filename);
-
+#endif
 /**
  * Retrieves the indication function invoked by co_dev_tpdo_event() when an
  * event is indicated for (a sub-object mapped into) an acyclic or event-driven

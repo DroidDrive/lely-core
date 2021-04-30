@@ -708,6 +708,7 @@ class BasicDriver : DriverBase,
                             timeout, ec);
   }
 
+#if !LELY_NO_STDIO
   /**
    * Equivalent to
    * #SubmitWriteDcf(const uint8_t* begin, const uint8_t* end, F&& con, const ::std::chrono::milliseconds& timeout),
@@ -838,6 +839,7 @@ class BasicDriver : DriverBase,
     master.SubmitWriteDcf(GetExecutor(), id(), path, ::std::forward<F>(con),
                           timeout, ec);
   }
+#endif
 
   /**
    * Equivalent to

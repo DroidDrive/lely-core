@@ -59,8 +59,10 @@ class Device {
    *                internal device description is accessed. The mutex MUST be
    *                unlocked when any member function is invoked.
    */
+  #if !LELY_NO_DCF_VIA_FILESYSTEM
   Device(const ::std::string& dcf_txt, const ::std::string& dcf_bin = "",
          uint8_t id = 0xff, util::BasicLockable* mutex = nullptr);
+  #endif
   Device(co_dev_t* staticDevice, uint8_t id = 0xff, util::BasicLockable* mutex = nullptr);
 
 
@@ -216,6 +218,7 @@ class Device {
   void Write(uint16_t idx, uint8_t subidx, const void* p, ::std::size_t n,
              ::std::error_code& ec);
 
+#if !LELY_NO_STDIO
   /**
    * Submits a series of SDO download requests to the local object dictionary.
    * This functions writes each entry in the specified concise DCF to a
@@ -268,6 +271,7 @@ class Device {
    * @param ec   on error, the SDO abort code is stored in <b>ec</b>.
    */
   void WriteDcf(const char* path, ::std::error_code& ec);
+#endif
 
   /**
    * Checks if the specified sub-object in the local object dictionary can be

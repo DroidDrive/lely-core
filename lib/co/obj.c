@@ -30,11 +30,11 @@
 #include <lely/util/error.h>
 
 #include <assert.h>
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 #include <stdlib.h>
 #endif
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 /**
  * Updates an object by allocating a new memory region containing the members
@@ -97,7 +97,7 @@ co_obj_fini(co_obj_t *obj)
 	if (obj->dev)
 		co_dev_remove_obj(obj->dev, obj);
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 	co_obj_clear(obj);
 #endif
 
@@ -106,7 +106,7 @@ co_obj_fini(co_obj_t *obj)
 #endif
 }
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 co_obj_t *
 co_obj_create(co_unsigned16_t idx)
@@ -204,7 +204,7 @@ co_obj_insert_sub(co_obj_t *obj, co_sub_t *sub)
 	sub->obj = obj;
 	rbtree_insert(&sub->obj->tree, &sub->node);
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 	co_obj_update(obj);
 #endif
 
@@ -401,7 +401,7 @@ co_obj_set_up_ind(co_obj_t *obj, co_sub_up_ind_t *ind, void *data)
 }
 #endif
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 void *
 co_sub_alloc(void)
@@ -485,7 +485,7 @@ co_sub_fini(co_sub_t *sub)
 #endif
 }
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 co_sub_t *
 co_sub_create(co_unsigned8_t subidx, co_unsigned16_t type)
@@ -822,7 +822,7 @@ co_sub_set_flags(co_sub_t *sub, unsigned int flags)
 	sub->flags = flags;
 }
 
-#if !LELY_NO_CO_OBJ_FILE
+#if !LELY_NO_DCF_VIA_FILESYSTEM
 
 const char *
 co_sub_get_upload_file(const co_sub_t *sub)
@@ -1102,7 +1102,7 @@ co_sub_default_up_ind(const co_sub_t *sub, struct co_sdo_req *req,
 	return ac;
 }
 
-#if !LELY_NO_MALLOC
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
 
 static void
 co_obj_update(co_obj_t *obj)

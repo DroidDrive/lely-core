@@ -47,6 +47,12 @@
 #endif
 #endif // !LELY_NO_MALLOC
 
+
+#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
+#include <stdlib.h>
+#endif
+
+
 static void *default_mem_alloc(size_t alignment, size_t size);
 static void default_mem_free(void *ptr);
 
@@ -114,11 +120,9 @@ default_mem_alloc(size_t alignment, size_t size)
 {
 	if (!size)
 		return NULL;
-
 	if (!alignment)
 		alignment = _Alignof(max_align_t);
-
-#if LELY_NO_MALLOC
+#if LELY_NO_MALLOC && !LELY_KEEP_CPP_API_STUFF
 	if (!powerof2(alignment)) {
 		set_errnum(ERRNUM_INVAL);
 		return NULL;

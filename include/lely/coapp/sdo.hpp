@@ -229,6 +229,7 @@ class SdoDownloadRequestBase : public SdoRequestBase {
   T value{};
 };
 
+#if !LELY_NO_STDIO
 class SdoDownloadDcfRequestBase : public SdoRequestBase {
  public:
   using SdoRequestBase::SdoRequestBase;
@@ -264,6 +265,7 @@ class SdoDownloadDcfRequestBase : public SdoRequestBase {
  private:
   void* dom_{nullptr};
 };
+#endif
 
 template <class T>
 class SdoUploadRequestBase : public SdoRequestBase {
@@ -315,6 +317,8 @@ class SdoDownloadRequest : public detail::SdoDownloadRequestBase<T> {
  * A series of SDO download (i.e., write) requests corresponding to the entries
  * in a concise DCF.
  */
+
+#if !LELY_NO_STDIO
 class SdoDownloadDcfRequest : public detail::SdoDownloadDcfRequestBase {
  public:
   /**
@@ -355,6 +359,7 @@ class SdoDownloadDcfRequest : public detail::SdoDownloadDcfRequestBase {
 
   ::std::function<Signature> con_;
 };
+#endif
 
 /// An SDO upload (i.e., read) request.
 template <class T>
@@ -416,6 +421,7 @@ class SdoDownloadRequestWrapper : public SdoDownloadRequestBase<T> {
   ::std::function<Signature> con_;
 };
 
+#if !LELY_NO_STDIO
 class SdoDownloadDcfRequestWrapper : public SdoDownloadDcfRequestBase {
  public:
   using Signature = void(uint8_t id, uint16_t idx, uint8_t subidx,
@@ -448,6 +454,7 @@ class SdoDownloadDcfRequestWrapper : public SdoDownloadDcfRequestBase {
 
   ::std::function<Signature> con_;
 };
+#endif
 
 template <class T>
 class SdoUploadRequestWrapper : public SdoUploadRequestBase<T> {
@@ -502,6 +509,7 @@ make_sdo_download_request(ev_exec_t* exec, uint16_t idx, uint8_t subidx,
       block, timeout);
 }
 
+#if !LELY_NO_STDIO
 /**
  * Creates a series of SDO download requests, corresponding to the entries in a
  * concise DCF, with a completion task. The request deletes itself after it is
@@ -555,6 +563,7 @@ make_sdo_download_dcf_request(ev_exec_t* exec, const char* path, F&& con,
   return new detail::SdoDownloadDcfRequestWrapper(
       exec, path, ::std::forward<F>(con), timeout);
 }
+#endif
 
 /**
  * Creates an SDO upload request with a completion task. The request deletes
@@ -589,7 +598,9 @@ class Sdo {
   template <class>
   friend class SdoDownloadRequest;
 
+#if !LELY_NO_STDIO
   friend class SdoDownloadDcfRequest;
+#endif
 
   template <class>
   friend class SdoUploadRequest;
@@ -597,8 +608,9 @@ class Sdo {
   template <class>
   friend class detail::SdoDownloadRequestWrapper;
 
+#if !LELY_NO_STDIO
   friend class detail::SdoDownloadDcfRequestWrapper;
-
+#endif
   template <class>
   friend class detail::SdoUploadRequestWrapper;
 
@@ -700,6 +712,7 @@ class Sdo {
     return Abort(req);
   }
 
+#if !LELY_NO_STDIO
   /// Queues an SDO download DCF request.
   void
   SubmitDownloadDcf(SdoDownloadDcfRequest& req) {
@@ -764,6 +777,7 @@ class Sdo {
   AbortDownloadDcf(SdoDownloadDcfRequest& req) {
     return Abort(req);
   }
+#endif
 
   /// Queues an SDO upload request.
   template <class T>
@@ -848,6 +862,7 @@ class Sdo {
     return p.get_future();
   }
 
+#if !LELY_NO_STDIO
   /**
    * Queues a series asynchronous SDO download requests, corresponding to the
    * entries in the specified concise DCF, and creates a future which
@@ -886,6 +901,7 @@ class Sdo {
   SdoFuture<void> AsyncDownloadDcf(
       ev_exec_t* exec, const char* path,
       const ::std::chrono::milliseconds& timeout = {});
+#endif
 
   /**
    * Queues an asynchronous SDO upload request and creates a future which

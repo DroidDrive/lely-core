@@ -58,7 +58,9 @@ struct Sdo::Impl_ {
 
   template <class T>
   void OnDownload(detail::SdoDownloadRequestBase<T>& req) noexcept;
+#if !LELY_NO_STDIO 
   void OnDownloadDcf(detail::SdoDownloadDcfRequestBase& req) noexcept;
+#endif
   template <class T>
   void OnUpload(detail::SdoUploadRequestBase<T>& req) noexcept;
 
@@ -94,11 +96,12 @@ SdoDownloadDcfRequestBase::Read(const char* path) {
       static_cast<const uint8_t*>(co_val_addressof(CO_DEFTYPE_DOMAIN, &dom_));
   end = begin + co_val_sizeof(CO_DEFTYPE_DOMAIN, &dom_);
 }
-#endif
 
 SdoDownloadDcfRequestBase::~SdoDownloadDcfRequestBase() {
   if (dom_) co_val_fini(CO_DEFTYPE_DOMAIN, &dom_);
 }
+#endif
+
 
 template <class T>
 void
@@ -123,6 +126,7 @@ SdoDownloadRequestWrapper<T>::OnRequest(void* data) noexcept {
 #endif
 }
 
+#if !LELY_NO_STDIO
 void
 SdoDownloadDcfRequestWrapper::operator()() noexcept {
   auto id = this->id;
@@ -143,6 +147,7 @@ SdoDownloadDcfRequestWrapper::OnRequest(void* data) noexcept {
   static_cast<Sdo::Impl_*>(data)->OnDownloadDcf(*this);
 #endif
 }
+#endif
 
 template <class T>
 void
@@ -260,6 +265,7 @@ SdoDownloadRequest<T>::OnRequest(void* data) noexcept {
 #endif
 }
 
+#if !LELY_NO_STDIO
 void
 SdoDownloadDcfRequest::operator()() noexcept {
   if (con_) con_(this->id, this->idx, this->subidx, this->ec);
@@ -273,6 +279,7 @@ SdoDownloadDcfRequest::OnRequest(void* data) noexcept {
   static_cast<Sdo::Impl_*>(data)->OnDownloadDcf(*this);
 #endif
 }
+#endif
 
 template <class T>
 void
@@ -385,6 +392,7 @@ Sdo& Sdo::operator=(Sdo&&) = default;
 
 Sdo::~Sdo() = default;
 
+#if !LELY_NO_STDIO
 SdoFuture<void>
 Sdo::AsyncDownloadDcf(ev_exec_t* exec, const uint8_t* begin, const uint8_t* end,
                       const ::std::chrono::milliseconds& timeout) {
@@ -420,6 +428,8 @@ Sdo::AsyncDownloadDcf(ev_exec_t* exec, const char* path,
       timeout);
   return p.get_future();
 }
+#endif
+
 
 void
 Sdo::Submit(detail::SdoRequestBase& req) {
@@ -602,6 +612,7 @@ Sdo::Impl_::OnDownload(detail::SdoDownloadRequestBase<T>& req) noexcept {
   }
 }
 
+#if !LELY_NO_STDIO
 void
 Sdo::Impl_::OnDownloadDcf(detail::SdoDownloadDcfRequestBase& req) noexcept {
   assert(&req._node == sllist_first(&queue));
@@ -623,6 +634,7 @@ Sdo::Impl_::OnDownloadDcf(detail::SdoDownloadDcfRequestBase& req) noexcept {
 
   set_errc(errsv);
 }
+#endif
 
 template <class T>
 void

@@ -213,13 +213,16 @@ OnDnInd(co_sub_t* sub, co_sdo_req* req, const F& ind) noexcept {
   auto val = c_type();
 
   if (co_sdo_req_dn_val(req, traits::index, &val, &ac) == -1) return ac;
-
-  if (!(ac = co_sub_chk_val(sub, traits::index, &val))) {
+#if !LELY_NO_CO_OBJ_LIMITS
+  if (!(ac = co_sub_chk_val(sub, traits::index, &val)))
+#endif
+  {
     auto pval = static_cast<const c_type*>(co_sub_get_val(sub));
     auto ec = ind(co_obj_get_idx(co_sub_get_obj(sub)), co_sub_get_subidx(sub),
                   val, *pval);
     ac = static_cast<uint32_t>(ec.value());
   }
+
 
   if (!ac) co_sub_dn(sub, &val);
 
@@ -240,7 +243,10 @@ OnDnInd(co_sub_t* sub, co_sdo_req* req, const F& ind) noexcept {
 
   if (co_sdo_req_dn_val(req, traits::index, &val, &ac) == -1) return ac;
 
-  if (!(ac = co_sub_chk_val(sub, traits::index, &val))) {
+#if !LELY_NO_CO_OBJ_LIMITS
+  if (!(ac = co_sub_chk_val(sub, traits::index, &val)))
+#endif
+  {   
     auto value = traits::from_c_type(val);
     auto ec =
         ind(co_obj_get_idx(co_sub_get_obj(sub)), co_sub_get_subidx(sub), value);

@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #endif
 
-#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
+#if !LELY_NO_MALLOC
 
 /**
  * Updates an object by allocating a new memory region containing the members
@@ -97,7 +97,7 @@ co_obj_fini(co_obj_t *obj)
 	if (obj->dev)
 		co_dev_remove_obj(obj->dev, obj);
 
-#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
+#if !LELY_NO_MALLOC
 	co_obj_clear(obj);
 #endif
 
@@ -106,7 +106,7 @@ co_obj_fini(co_obj_t *obj)
 #endif
 }
 
-#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
+#if !LELY_NO_MALLOC
 
 co_obj_t *
 co_obj_create(co_unsigned16_t idx)
@@ -204,7 +204,7 @@ co_obj_insert_sub(co_obj_t *obj, co_sub_t *sub)
 	sub->obj = obj;
 	rbtree_insert(&sub->obj->tree, &sub->node);
 
-#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
+#if !LELY_NO_MALLOC
 	co_obj_update(obj);
 #endif
 
@@ -1102,7 +1102,7 @@ co_sub_default_up_ind(const co_sub_t *sub, struct co_sdo_req *req,
 	return ac;
 }
 
-#if !LELY_NO_MALLOC || LELY_KEEP_CPP_API_STUFF
+#if !LELY_NO_MALLOC
 
 static void
 co_obj_update(co_obj_t *obj)

@@ -82,6 +82,8 @@
 #define LELY_IO_USER_CAN_RXLEN 32
 #define LELY_NO_MALLOC 1
 #define LELY_NO_CO_OBJ_NAME 1
+//#define LELY_NO_CO_OBJ_UPLOAD 1
+#define LELY_NO_CO_OBJ_LIMITS 1
 #define LELY_NO_THREADS 1
 /* ########################################################################## */
 

@@ -24,7 +24,7 @@
 
 #include <lely/compat/sys/types.h>
 
-#if !LELY_NO_HOSTED
+#if !LELY_NO_HOSTED || LELY_KEEP_TIME_HOSTED
 #include <time.h>
 #endif
 

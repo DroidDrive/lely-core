@@ -427,9 +427,11 @@ Fiber::func_(fiber_t* fiber, void* arg) noexcept {
       data->eptr = ::std::current_exception();
       return fiber;
     }
+#if !LELY_NO_TERMINATE
     // Similar to threads, exceptions thrown by a fiber function will result in
     // termination.
     ::std::terminate();
+  #endif
   }
 }
 

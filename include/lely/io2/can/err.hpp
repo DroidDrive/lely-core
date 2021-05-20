@@ -50,7 +50,7 @@ enum class CanError : int {
   /// A bit stuffing error.
   STUFF = CAN_ERROR_STUFF,
   /// A CRC sequence error.
-  CRC = CAN_ERROR_CRC,
+  CRC_ERROR = CAN_ERROR_CRC,
   /// A form error.
   FORM = CAN_ERROR_FORM,
   /// An acknowledgment error.

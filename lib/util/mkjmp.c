@@ -161,7 +161,7 @@ ctx_func(void)
 	// environment to restore, terminate the current thread.
 #if !LELY_NO_THREADS
 	thrd_exit(0);
-#else
+#elif !LELY_NO_TERMINATE 
 	exit(EXIT_SUCCESS);
 #endif
 	for (;;)

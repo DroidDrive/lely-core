@@ -202,7 +202,11 @@ static void default_on_can_error_func(int error, void *arg);
 void *
 io_can_net_alloc(void)
 {
-	void *ptr = aligned_alloc(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+	/// kikass13:
+	/// changed from aligned_alloc to memalign
+	void* ptr;
+	ptr = (void*) memalign(_Alignof(io_can_net_t), sizeof(io_can_net_t));
+	//void *ptr = aligned_alloc(_Alignof(io_can_net_t), sizeof(io_can_net_t));
 	if (!ptr)
 		set_errc_from_errno();
 	return ptr;

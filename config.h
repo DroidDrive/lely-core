@@ -26,19 +26,19 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the <linux/can/error.h> header file. */
-#define HAVE_LINUX_CAN_ERROR_H 1
+//#define HAVE_LINUX_CAN_ERROR_H 1
 
 /* Define to 1 if you have the <linux/can.h> header file. */
-#define HAVE_LINUX_CAN_H 1
+//#define HAVE_LINUX_CAN_H 1
 
 /* Define to 1 if you have the <linux/can/netlink.h> header file. */
-#define HAVE_LINUX_CAN_NETLINK_H 1
+//#define HAVE_LINUX_CAN_NETLINK_H 1
 
 /* Define to 1 if you have the <linux/can/raw.h> header file. */
-#define HAVE_LINUX_CAN_RAW_H 1
+//#define HAVE_LINUX_CAN_RAW_H 1
 
 /* Define to 1 if you have the <linux/rtnetlink.h> header file. */
-#define HAVE_LINUX_RTNETLINK_H 1
+//#define HAVE_LINUX_RTNETLINK_H 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -59,10 +59,10 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the <sys/epoll.h> header file. */
-#define HAVE_SYS_EPOLL_H 1
+//#define HAVE_SYS_EPOLL_H 1
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
-#define HAVE_SYS_IOCTL_H 1
+//#define HAVE_SYS_IOCTL_H 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -78,20 +78,14 @@
 /* ########################################################################## */
 #define LELY_KEEP_CPP_API_STUFF 1
 #define LELY_NO_DCF_VIA_FILESYSTEM 1
-#define LELY_NO_CO_DCF_RESTORE 1
 #define LELY_IO_USER_CAN_RXLEN 32
-#define LELY_NO_MALLOC 1
-#define LELY_NO_CO_OBJ_NAME 1
-//#define LELY_NO_CO_OBJ_UPLOAD 1
-#define LELY_NO_CO_OBJ_LIMITS 1
-#define LELY_NO_THREADS 1
 /* ########################################################################## */
 
 /* Define to 1 if you have the IXXAT VCI SDK. */
 /* #undef LELY_HAVE_IXXAT */
 
 /* Define to 1 if you have SocketCAN. */
-#define LELY_HAVE_SOCKET_CAN 1
+// #define LELY_HAVE_SOCKET_CAN 0
 
 /* Define to 1 if you have the <valgrind/valgrind.h> header file. */
 /* #undef LELY_HAVE_VALGRIND */
@@ -101,6 +95,7 @@
 
 /* Define to 1 if CAN FD support is disabled. */
 /* #undef LELY_NO_CANFD */
+#define LELY_NO_CANFD 1
 
 /* Define to 1 if C++ CANopen application master support is disabled. */
 /* #undef LELY_NO_COAPP_MASTER */
@@ -117,6 +112,7 @@
 /* Define to 1 if concise DCF of the application parameters is not (re)stored.
    */
 /* #undef LELY_NO_CO_DCF_RESTORE */
+#define LELY_NO_CO_DCF_RESTORE 1
 
 /* Define to 1 if emergency (EMCY) object support is disabled. */
 /* #undef LELY_NO_CO_EMCY */
@@ -126,6 +122,7 @@
 
 /* Define to 1 if ASCII gateway support is disabled. */
 /* #undef LELY_NO_CO_GW_TXT */
+#define LELY_NO_CO_GW_TXT 1
 
 /* Define to 1 if Layer Setting Services (LSS) and protocols support is
    disabled. */
@@ -149,13 +146,16 @@
 /* Define to 1 if UploadFile/DownloadFile support is disabled for the object
    dictionary. */
 /* #undef LELY_NO_CO_OBJ_FILE */
+#define LELY_NO_CO_OBJ_FILE 1
 
 /* Define to 1 if minimum/maximum values are disabled in the object
    dictionary. */
 /* #undef LELY_NO_CO_OBJ_LIMITS */
+#define LELY_NO_CO_OBJ_LIMITS 1
 
 /* Define to 1 if names are disabled in the object dictionary. */
 /* #undef LELY_NO_CO_OBJ_NAME */
+#define LELY_NO_CO_OBJ_NAME 1
 
 /* Define to 1 if custom upload indication functions are disabled in the
    object dictionary. */
@@ -193,9 +193,11 @@
 
 /* Define to 1 if a freestanding instead of a hosted environment is used. */
 /* #undef LELY_NO_HOSTED */
+//#define LELY_NO_HOSTED 1
 
 /* Define to 1 if dynamic memory allocation is disabled. */
 /* #undef LELY_NO_MALLOC */
+#define LELY_NO_MALLOC 1
 
 /* Define to 1 if Realtime Extensions are disabled. */
 /* #undef LELY_NO_RT */
@@ -205,6 +207,7 @@
 
 /* Define to 1 if multithreading support is disabled. */
 /* #undef LELY_NO_THREADS */
+#define LELY_NO_THREADS 1
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"

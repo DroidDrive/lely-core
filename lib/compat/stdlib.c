@@ -23,7 +23,7 @@
 #include "compat.h"
 #include <lely/compat/stdlib.h>
 
-#if !(__STDC_VERSION__ >= 201112L) && !LELY_NO_MALLOC
+#if !(__STDC_VERSION__ >= 201112L) && !LELY_NO_MALLOC && !LEEP_CPP_API_STUFF
 
 #ifndef LELY_HAVE_POSIX_MEMALIGN
 #if _POSIX_C_SOURCE >= 200112L

@@ -38,7 +38,7 @@
 #include <ws2tcpip.h>
 #include <mstcpip.h>
 // clang-format on
-#elif defined(_POSIX_C_SOURCE)
+#elif _POSIX_C_SOURCE >= 0
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <net/if.h>

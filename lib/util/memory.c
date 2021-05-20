@@ -141,8 +141,13 @@ default_mem_alloc(size_t alignment, size_t size)
 	if (powerof2(alignment))
 		size = ALIGN(size, alignment);
 
-	void *ptr = aligned_alloc(alignment, size);
-#elif _POSIX_C_SOURCE >= 200112L
+	/// kikass13:
+	/// changed from aligned_alloc to memalign
+	void* ptr;
+	ptr = (void*) memalign(alignment, size);
+	//void *ptr = aligned_alloc(alignment, size);
+	
+#elif _POSIX_C_SOURCE >= 200112L && LELY_HAVE_POSIX_MEMALIGN
 	// posix_memalign() requires the alignment to be a multiple of
 	// sizeof(void *).
 	alignment = ALIGN(alignment, sizeof(void *));

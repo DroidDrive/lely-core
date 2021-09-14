@@ -1,6 +1,10 @@
 # Lely core libraries
 
+![image](https://user-images.githubusercontent.com/6985609/133221976-c0a11265-811c-475e-933b-c6b2f3304e6f.png)
+
 This is a fork of the [n7 space (ecss) lely-core library](https://gitlab.com/n7space/canopen/lely-core) which was adapted for the use with [modm](https://github.com/modm-io/modm). A more specific explanation of how to use this can be found in the [modm repository for this module](https://github.com/DroidDrive/lely_modm) and the [stm32 example project](https://github.com/DroidDrive/lely_modm_example/)
+
+
 
 > The Lely core libraries are a collection of C and C++ libraries and tools,
 > providing hih-performance I/O and sensor/actuator control for robotics and IoT

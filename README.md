@@ -1,9 +1,19 @@
 # Lely core libraries
 
-The Lely core libraries are a collection of C and C++ libraries and tools,
-providing hih-performance I/O and sensor/actuator control for robotics and IoT
-applications. The libraries are cross-platform and have few dependencies. They
-can be even be used on bare-metal microcontrollers with as little as 32 kB RAM.
+This is a fork of the [n7 space (ecss) lely-core library](https://gitlab.com/n7space/canopen/lely-core) which was adapted for the use with [modm](https://github.com/modm-io/modm). A more specific explanation of how to use this can be found in the [modm repository for this module](https://github.com/DroidDrive/lely_modm) and the [stm32 example project](https://github.com/DroidDrive/lely_modm_example/)
+
+> The Lely core libraries are a collection of C and C++ libraries and tools,
+> providing hih-performance I/O and sensor/actuator control for robotics and IoT
+> applications. The libraries are cross-platform and have few dependencies. They
+> can be even be used on bare-metal microcontrollers with as little as 32 kB RAM.
+
+
+
+
+
+
+
+
 
 ## Overview
 

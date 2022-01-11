@@ -491,7 +491,7 @@ BasicMaster::GetSdo(uint8_t id) {
   // Client-SDO queue may be available.
   auto it = impl_->sdos.find(id);
   if (it != impl_->sdos.end()) return &it->second;
-#if !LELY_NO_CO_NMT_BOOT
+#if !LELY_NO_CO_NMT_BOOT && !NO_IS_BOOTING_CHECK_WHEN_SDO_WAS_NOT_FOUND
   // The master needs the Client-SDO service during the NMT 'boot slave'
   // process.
   if (co_nmt_is_booting(nmt(), id)) return nullptr;
